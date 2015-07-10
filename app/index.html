@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CommonGround</title>
+    <link rel="stylesheet" href="assets/style/libs.css">
+    <link rel="stylesheet" href="assets/style/app.css">
+</head>
+<body>
+
+<div id="query-area">
+    <label id="title">CommonGround</label>
+    <div id="query" >
+        <form >
+            <input type="date" id="date-input" required="required" placeholder="from date">
+            <input type="text" class="input" id="duration-input" maxlength="3" persistent="true" placeholder="duration">wks
+            <br><br>
+            <input type="text" id="keywords" name="keywords" placeholder="keywords">
+            <br><br>
+            <input type="button" value="Search">
+        </form>
+    </div>
+
+    <div id="tags" class="x-panel">
+        <div class="x-panel-header">Tags</div>
+        <div class="x-panel-body">
+            <div class="placeholder">placeholder</div>
+        </div>
+    </div>
+</div>
+
+<div id="main-area">
+    <div id="tags-info">
+        <!--<div class="placeholder">placeholder</div>-->
+    </div>
+    <div id="cg">
+        <!--<div class="placeholder">placeholder</div>-->
+    </div>
+</div>
+
+<div id="info-area">
+    <div id="detectors">
+        <div class="placeholder">placeholder</div>
+        <div class="placeholder">placeholder</div>
+        <div class="placeholder">placeholder</div>
+    </div>
+    <div id="charts">
+        <!--<div class="placeholder">placeholder</div>-->
+        <!--<div class="placeholder">placeholder</div>-->
+        <!--<div class="placeholder">placeholder</div>-->
+    </div>
+    <div id="map">
+        <!--<div class="placeholder">placeholder</div>-->
+    </div>
+</div>
+
+<script data-main="src/init" src="lib/requirejs/require.js"></script>
+</body>
+</html>

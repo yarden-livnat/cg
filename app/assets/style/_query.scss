@@ -1,0 +1,27 @@
+input[type=date]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  display: none;
+}
+
+#date-input {
+  width:9em;
+}
+
+
+#duration-input {
+  width: 4em;
+}
+
+input[type=button] {
+  //background: #f0f;
+//  -webkit-border-radius: 15px;
+//  -moz-border-radius: 15px;
+//  border-radius: 15px;
+//  border: 1p solid #999;
+}
+
+input[type=button]:hover {
+  //background:#ddd;
+  //color:#09C;
+  //font-weight: bold;
+}

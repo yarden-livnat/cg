@@ -1,0 +1,29 @@
+.x-panel {
+  width: auto;
+  position: relative;
+  min-height: 20px;
+  overflow: auto;
+  margin-bottom: 5px;
+  /*border:1px solid #999;*/
+}
+
+.x-panel-header{
+  width: auto;
+  cursor: pointer;
+  min-height: 20px;
+  clear: both;
+  background-color: #fff;
+  position: relative;
+  font: bold 12px Arial;
+}
+
+.x-panel-body {
+  padding: 0 5px 0 5px;
+  /*margin-top: -999px;*/
+  font-size: 11px;
+}
+
+.x-panel-body img {
+  float: right;
+  padding-left: 12px;
+}
