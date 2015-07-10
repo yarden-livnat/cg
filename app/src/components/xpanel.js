@@ -95,4 +95,4 @@ define(['exports', 'd3'], function (exports, _d3) {
   exports.XPanel = XPanel;
 });
 
-//# sourceMappingURL=xpanel-compiled.js.map
+//# sourceMappingURL=xpanel.js.map

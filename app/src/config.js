@@ -23,4 +23,4 @@ define(['exports'], function (exports) {
   exports.MAP_DEFAULTS = MAP_DEFAULTS;
 });
 
-//# sourceMappingURL=config-compiled.js.map
+//# sourceMappingURL=config.js.map

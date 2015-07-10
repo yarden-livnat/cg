@@ -2,9 +2,11 @@
  * Created by yarden on 6/30/15.
  */
 
-import * as xpanel from 'components/xpanel';
+console.log('in app');
+import * as xpanel from './components/xpanel';
 import * as Formater from 'formatter';
 import * as Map from 'map/Map';
+import * as kb from 'model/kb';
 
 let map = Map('map');
 
@@ -23,4 +25,5 @@ function initHTML() {
 }
 
 function initModules() {
+  kb.init();
 }

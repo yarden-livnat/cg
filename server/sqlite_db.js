@@ -4,17 +4,19 @@
 var sqlite = require('sqlite3');
 
 var DB_FILE = 'cg.sqlite';
-var DB_DIR = process.env.GG_DIR || '../data';
+var DB_DIR = process.env.CG_DIR || '../data';
 
 //debugging
 sqlite.verbose();
 
-
-var db = new sqlite.Database(DB_DIR_+ '/' + DB_FILE);
+var db = new sqlite.Database(DB_DIR+ '/' + DB_FILE);
 
 function kb(req, res, next) {
-  var stmt = db.run('select id, category, system, name specific from kb', function(err, rows) {
-
+  db.serialize(function() {
+    db.all('select id, category, system, name, specific from kb', function(err, rows) {
+      if (err) next(err);
+      res.send(JSON.stringify(rows));
+    });
   });
 }
 

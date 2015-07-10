@@ -1,9 +1,11 @@
-define(['exports', 'components/xpanel', 'formatter', 'map/Map'], function (exports, _componentsXpanel, _formatter, _mapMap) {
+define(['exports', './components/xpanel', 'formatter', 'map/Map', 'model/kb'], function (exports, _componentsXpanel, _formatter, _mapMap, _modelKb) {
   /**
    * Created by yarden on 6/30/15.
    */
 
   'use strict';
+
+  console.log('in app');
 
   var map = (0, _mapMap)('map');
 
@@ -21,7 +23,9 @@ define(['exports', 'components/xpanel', 'formatter', 'map/Map'], function (expor
     }
   }
 
-  function initModules() {}
+  function initModules() {
+    _modelKb.init();
+  }
 });
 
-//# sourceMappingURL=app-compiled.js.map
+//# sourceMappingURL=app.js.map

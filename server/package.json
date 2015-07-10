@@ -2,7 +2,7 @@
   "name": "server",
   "version": "1.0.0",
   "description": "cg server",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,6 +11,7 @@
   "dependencies": {
     "body-parser": "^1.13.2",
     "express": "^4.13.1",
+    "method-override": "^2.3.3",
     "morgan": "^1.6.1",
     "pg": "^4.4.0",
     "pg-format": "^0.1.4",

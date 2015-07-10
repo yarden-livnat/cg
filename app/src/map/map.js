@@ -66,4 +66,4 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
   };
 });
 
-//# sourceMappingURL=map-compiled.js.map
+//# sourceMappingURL=map.js.map
