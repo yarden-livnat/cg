@@ -28,10 +28,10 @@ input[type=date]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   display: none; }
 
-#date-input {
+#date {
   width: 9em; }
 
-#duration-input {
+#duration {
   width: 4em; }
 
 body {

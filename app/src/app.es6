@@ -6,7 +6,8 @@ console.log('in app');
 import * as xpanel from './components/xpanel';
 import * as Formater from 'formatter';
 import * as Map from 'map/Map';
-import * as kb from 'model/kb';
+import * as data from 'services/data';
+import * as query from 'query';
 
 let map = Map('map');
 
@@ -25,5 +26,6 @@ function initHTML() {
 }
 
 function initModules() {
-  kb.init();
+  data.init();
+  query.init();
 }

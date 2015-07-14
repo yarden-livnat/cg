@@ -1,4 +1,4 @@
-define(['exports', './components/xpanel', 'formatter', 'map/Map', 'model/kb'], function (exports, _componentsXpanel, _formatter, _mapMap, _modelKb) {
+define(['exports', './components/xpanel', 'formatter', 'map/Map', 'services/data', 'query'], function (exports, _componentsXpanel, _formatter, _mapMap, _servicesData, _query) {
   /**
    * Created by yarden on 6/30/15.
    */
@@ -24,7 +24,8 @@ define(['exports', './components/xpanel', 'formatter', 'map/Map', 'model/kb'], f
   }
 
   function initModules() {
-    _modelKb.init();
+    _servicesData.init();
+    _query.init();
   }
 });
 

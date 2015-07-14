@@ -48,7 +48,7 @@ def parse_file(d, filename):
                     if tag_id != "":
                         enc_tags.append((enc_id, tag_id))
                 else:
-                    print name,' ignored'
+                    print name, ': ignored'
     with con:
         con.executemany('insert into enc_tag values (?, ?)', enc_tags)
 
@@ -72,22 +72,28 @@ def init():
     with con:
         # kb
         tags = []
+        tags_map = {}
         with open(root+'/'+KB_FILENAME) as kb:
             f = csv.reader(kb)
-            f.next() # skip header
+            f.next()  # skip header
+            n = 0
             for row in f:
-                tags.append([row[i] for i in range(5)])
+                item = [row[i] for i in range(5)]
+                item.insert(0, n)
+                tags.append(item)
+                tags_map[item[1]] = n
+                n += 1
 
         con.execute('drop table if exists kb')
         con.execute("""create table kb (
-                    id integer primary key autoincrement,
+                    id integer primary key,
                     tid text,
                     category text,
                     system text,
                     name text,
                     specific text)""")
 
-        con.executemany('insert into kb (tid, category, system, name, specific) values(?, ?, ?, ?, ?)', tags)
+        con.executemany('insert into kb (id, tid, category, system, name, specific) values(?, ?, ?, ?, ?, ?)', tags)
 
         # tagging
         con.execute('drop table if exists enc_tag')
@@ -107,7 +113,10 @@ def init():
     with open(root + '/' + TRANSLATE_FILENAME) as tf:
         f = csv.reader(tf)
         for line in f:
-            translate[line[0]] = line[1]
+            if line[1] in tags_map:
+                translate[line[0]] = tags_map[line[1]]
+            else:
+                print 'ignored: ', line
 
 
 # *** Main ***
