@@ -18,10 +18,9 @@ requirejs.config({
     d3: '../lib/d3/d3.min',
     lodash: '../lib/lodash/lodash.min',
     jquery: '../lib/jquery/dist/jquery.min',
-    postal: '../lib/postal/lib/postal.min',
+    postal: '../lib/postal/lib/postal',
     formatter: '../lib/formatter/dist/formatter.min',
-    leaflet: '../lib/leaflet/dist/leaflet',
-    jquery: '../lib/jquery/dist/jquery.min'
+    leaflet: '../lib/leaflet/dist/leaflet'
   }
 });
 

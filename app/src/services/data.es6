@@ -6,9 +6,11 @@ import * as postal from 'postal'
 
 let dateFormat = d3.time.format('%Y-%m-%d');
 
-let encounters = new Map();
-let associations = new Map();
+let items = new Map();
 let kb = new Map();
+
+export let tags = [];
+export let domain = [];
 
 export function init() {
   d3.json('/kb', function(data) {
@@ -23,23 +25,26 @@ export function fetchAssociations(params) {
   uri += '&to='+params.to;
 
   d3.json(uri, function(err, data) {
-    associations = new Map();
+    tags = [];
+    domain = data.enc;
 
-    data.enc.forEach(d  => encounters.set(d.id, d));
+    let map = new Map();
 
-    data.associations.map(d => {
-      let entry = associations.get(d.tag_id);
+    data.enc.forEach(d  => items.set(d.id, d));
+
+    data.associations.forEach(d => {
+      let entry = map.get(d.tag_id);
       if (!entry) {
-        entry = {tid: d.tag_id, enc: []};
-        associations.set(d.tag_id, entry);
+        entry = {id: d.tag_id, concept: kb.get(d.tag_id), items: []};
+        map.set(d.tag_id, entry);
+        tags.push(entry);
       }
-      entry.enc.push(d.enc_id);
+      entry.items.push(d.enc_id);
     });
 
-    console.debug('data:',data);
-    console.debug('enc:'+encounters.size+'  assoc:'+associations.size);
+    // TODO: handle probabilities
 
-    postal.publish('data.changed');
-
+    postal.publish({channel: 'data', topic: 'changed'});
   });
 }
+
