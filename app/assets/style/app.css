@@ -152,7 +152,7 @@ body {
     stroke: #ccc;
     stroke-width: 1px; }
   #map path:hover {
-    fill: brown;
-    fill-opacity: .7; }
+    stroke-width: 1.5px;
+    stroke: #000; }
 
 /*# sourceMappingURL=app.css.map */

@@ -209,7 +209,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
       var t = [];
       var l = [];
 
-      function clock() {};
+      function clock() {}
 
       clock.start = function () {
         t = [Date.now()];l = ['start'];
@@ -220,11 +220,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
         l.push(label);
       };
 
-      clock.print = function () {
-        for (var i = 1; i < t.length; i++) {
-          console.log(l[i], ':', t[i] - t[i - 1], t[i] - t[0]);
-        }
-      };
+      clock.print = function () {};
       return clock;
     })();
 
@@ -727,7 +723,6 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
     };
 
     cg.resize = function (w, h) {
-      console.log('cg resize: ' + w, +'x' + h);
       force.stop();
 
       width = w;
@@ -755,12 +750,16 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
 
     cg.selection = function (s) {
       selection = s;
-      selection.on('changed', selectionChanged);
+      selection.on('changed.cg', selectionChanged);
     };
 
     return cg;
   };
 });
+
+//for (var i=1; i<t.length; i++) {
+//  console.log(l[i], ':', t[i]-t[i-1], t[i]-t[0]);
+//}
 
 //.on('mouseover', mouseover)
 //.on('mouseout', mouseout)

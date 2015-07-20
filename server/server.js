@@ -28,7 +28,8 @@ app.get(function(req, res) {
   console.log('called');
 });
 
-app.get('/kb', db.kb);
+app.get('/data/kb', db.kb);
+app.get('/data/population', db.population);
 app.get('/query', db.query);
 
 app.get('/', function(req, res) {

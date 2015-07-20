@@ -241,8 +241,7 @@ export default function() {
       var t = [];
       var l = [];
 
-      function clock() {
-      };
+      function clock() {}
 
       clock.start = function() {
         t = [Date.now()]; l = ['start'];
@@ -254,9 +253,9 @@ export default function() {
       };
 
       clock.print = function() {
-        for (var i=1; i<t.length; i++) {
-          console.log(l[i], ':', t[i]-t[i-1], t[i]-t[0]);
-        }
+        //for (var i=1; i<t.length; i++) {
+        //  console.log(l[i], ':', t[i]-t[i-1], t[i]-t[0]);
+        //}
       };
       return clock;
     })();
@@ -791,7 +790,6 @@ export default function() {
   };
 
   cg.resize = function(w, h) {
-    console.log('cg resize: '+w,+'x'+h);
     force.stop();
 
     width = w;
@@ -821,7 +819,7 @@ export default function() {
 
   cg.selection = function(s) {
     selection = s;
-    selection.on('changed', selectionChanged);
+    selection.on('changed.cg', selectionChanged);
   };
 
   return cg;

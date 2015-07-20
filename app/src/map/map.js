@@ -6,6 +6,13 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
   'use strict';
 
   module.exports = function (el, opt) {
+
+    var width = undefined,
+        height = undefined;
+    var population = new Map();
+    var selection = undefined;
+    var zipcodes = new Map();
+
     // options = Object.assign({}, MAP_DEFAULTS, opt);
     var options = _config.MAP_DEFAULTS;
     var map = new _leaflet.Map(el).addLayer(_leaflet.tileLayer(options.mapbox.url, options.mapbox.opt)).setView(options.center, options.zoom);
@@ -13,8 +20,6 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
     var svgContainer = _d3.select(map.getPanes().overlayPane).append('svg').attr('width', 200).attr('height', 200);
 
     var svg = svgContainer.append('g').attr('class', 'leaflet-zoom-hide');
-
-    initLeaflet();
 
     function projectPoint(x, y) {
       var point = map.latLngToLayerPoint(new _leaflet.LatLng(y, x));
@@ -32,6 +37,9 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
           return;
         }
 
+        collection.features.forEach(function (d) {
+          zipcodes.set(d.properties.Zip_Code, d);
+        });
         var feature = svg.selectAll('path').data(collection.features).enter().append('path');
 
         map.on('viewreset', reset);
@@ -51,18 +59,37 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
       });
     }
 
-    var Map = {};
+    function selectionChanged() {
+      console.log('Map: selection changed');
+    }
 
-    //Map.resize = function(w, h) {
-    //  width = w;
-    //  height = h;
-    //
-    //  svgContainer.attr("width", w).attr("height", h);
-    //
-    //  return this;
-    //};
+    var api = {};
 
-    return Map;
+    api.init = function () {
+      initLeaflet();
+    };
+
+    api.population = function (map) {
+      population = map;
+      return this;
+    };
+
+    api.selection = function (s) {
+      selection = s;
+      selection.on('changed.map', selectionChanged);
+      return this;
+    };
+
+    api.resize = function (w, h) {
+      width = w;
+      height = h;
+
+      svgContainer.attr('width', w).attr('height', h);
+
+      return this;
+    };
+
+    return api;
   };
 });
 

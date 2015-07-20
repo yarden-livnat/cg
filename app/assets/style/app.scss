@@ -99,7 +99,9 @@ body {
   }
 
   path:hover {
-    fill: brown;
-    fill-opacity: .7;
+    stroke-width: 1.5px;
+    stroke: #000;
+    //fill: brown;
+    //fill-opacity: .7;
   }
 }

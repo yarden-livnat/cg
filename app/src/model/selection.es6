@@ -12,20 +12,20 @@ import * as d3 from 'd3'
 
     if (a.length === 0 || b.length === 0) { return list; }
 
-    va = a[0];
-    vb = b[0];
+    va = a[0].id;
+    vb = b[0].id;
     while (true) {
       if (va < vb) {
         if (++ia === na) { return list; }
-        va = a[ia];
+        va = a[ia].id;
       } else if (va > vb) {
         if (++ib === nb) { return list; }
-        vb = b[ib];
+        vb = b[ib].id;
       } else { // va == vb
-        list.push(va);
+        list.push(a[ia]);
         if (++ia === na || ++ib === nb) { return list; }
-        va = a[ia];
-        va = b[ib];
+        va = a[ia].id;
+        va = b[ib].id;
       }
     }
   }
@@ -38,21 +38,21 @@ import * as d3 from 'd3'
 
     if (a.length === 0 || b.length === 0) { return list; }
 
-    va = a[0];
-    vb = b[0];
+    va = a[0].id;
+    vb = b[0].id;
     while (true) {
       if (va < vb) {
-        list.push(va);
+        list.push(a[ia]);
         if (++ia === na) { return list; }
-        va = a[ia];
+        va = a[ia].id;
       } else if (va > vb) {
         if (++ib === nb) {
           // accept remaining items in a
-          list.push(va);
+          list.push(a[ia]);
           while (ia < na) { list.push(a[ia]); ia++; }
           return list;
         }
-        vb = b[ib];
+        vb = b[ib].id;
       } else { // va == vb
         // exclude va
         if (++ia === na) { return list; }
@@ -60,8 +60,8 @@ import * as d3 from 'd3'
           while (ia < na){ list.push(a[ia]); ia++; }
           return list;
         }
-        va = a[ia];
-        vb = b[ib];
+        va = a[ia].id;
+        vb = b[ib].id;
       }
     }
   }
@@ -74,7 +74,7 @@ import * as d3 from 'd3'
     let excluded = new Set();
     let filters = new Map();
 
-    let currentTags = new Set();
+    let tags = new Set();
 
     let dispatch = d3.dispatch('changed');
 
@@ -82,20 +82,20 @@ import * as d3 from 'd3'
 
 
     function add(tag) {
-      if (currentTags.has(tag)) return;
+      if (tags.has(tag)) return;
 
-      currentTags.add(tag);
+      tags.add(tag);
       excluded.delete(tag);
       recompute();
     }
 
     function remove(tag) {
-      if (!currentTags.delete(tag)) return;
+      if (!tags.delete(tag)) return;
       recompute();
     }
 
     function clear(silent) {
-      currentTags = new Set();
+      tags = new Set();
       excluded = new Set();
       filteredDomain = initialDomain;
       domain = initialDomain;
@@ -114,7 +114,7 @@ import * as d3 from 'd3'
 
     function recompute() {
       domain = filteredDomain;
-      currentTags.forEach(function (tag) {
+      tags.forEach(function (tag) {
         domain = intersect(domain, tag.items);
       });
       excluded.forEach(function (tag) {
@@ -150,7 +150,7 @@ import * as d3 from 'd3'
       if (add) {
         if (excluded.has(tag)) return;
         excluded.add(tag);
-        currentTags.delete(tag);
+        tags.delete(tag);
       } else {
         if (!excluded.delete(tag)) return;
       }
@@ -178,12 +178,12 @@ import * as d3 from 'd3'
     };
 
     selection.tags = function() {
-      return currentTags;
+      return tags;
     };
 
     selection.isAnySelected = function () {
       return _.some(arguments, function (tag) {
-        if (currentTags.has(tag)) return true;
+        if (tags.has(tag)) return true;
       }, this
       );
     };

@@ -14,19 +14,20 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
   var cg = (0, _CG['default'])();
 
   _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
-      selection.domain = _servicesData.domain.map(function (d) {
-        return d.id;
-      });
+      selection.domain = _servicesData.domain; //map(function(d) { return d.id;});
+    } });
+
+  _postal.subscribe({ channel: 'data', topic: 'ready', callback: function callback() {
+      initModules();
     } });
 
   initHTML();
-  initModules();
+  _servicesData.init();
 
   function resize() {
     var div = _d3.select('#cg');
     var w = parseInt(div.style('width'));
     var h = parseInt(div.style('height'));
-    console.log('resize:' + w + ', ' + h);
     cg.resize(w, h);
   }
 
@@ -44,8 +45,10 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
   }
 
   function initModules() {
-    _servicesData.init();
     _query.init();
+
+    map.population(_servicesData.population).selection(selection).init();
+
     cg.init('#cg').selection(selection);
     resize();
   }

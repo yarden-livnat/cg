@@ -14,6 +14,11 @@ db.on('profile', function(sql, time) {
   console.log('['+time/1000+' secs] query:'+sql);
 });
 
+
+function population(req, res, next) {
+  res.sendfile('data/population.csv');
+}
+
 function kb(req, res, next) {
   db.serialize(function() {
     db.all('select id, category, system, name, specific from kb', function(err, rows) {
@@ -51,3 +56,4 @@ function query(req, res, next) {
 
 exports.kb = kb;
 exports.query = query;
+exports.population = population;

@@ -10,20 +10,20 @@ function shared(a, b) {
 
   if (a.length === 0 || b.length === 0) { return count; }
 
-  va = a[0];
-  vb = b[0];
+  va = a[0].id;
+  vb = b[0].id;
   while (true) {
     if (va < vb) {
       if (++ia === na) { return count; }
-      va = a[ia];
+      va = a[ia].id;
     } else if (va > vb) {
       if (++ib === nb) { return count; }
-      vb = b[ib];
+      vb = b[ib].id;
     } else { // va== vb
       count++;
       if (++ia === na || ++ib === nb) { return count; }
-      va = a[ia];
-      vb = b[ib];
+      va = a[ia].id;
+      vb = b[ib].id;
     }
   }
 }
@@ -75,26 +75,26 @@ function intersect(a, b) {
     return list;
   }
 
-  va = a[0];
-  vb = b[0];
+  va = a[0].id;
+  vb = b[0].id;
   while (true) {
     if (va < vb) {
       if (++ia === na) {
         return list;
       }
-      va = a[ia];
+      va = a[ia].id;
     } else if (va > vb) {
       if (++ib === nb) {
         return list;
       }
-      vb = b[ib];
+      vb = b[ib].id;
     } else { // va == vb
-      list.push(va);
+      list.push(a[ia]);
       if (++ia === na || ++ib === nb) {
         return list;
       }
-      va = a[ia];
-      va = b[ib];
+      va = a[ia].id;
+      va = b[ib].id;
     }
   }
 }

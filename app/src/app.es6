@@ -19,19 +19,20 @@ let selection = model.selection();
 let cg = CG();
 
 postal.subscribe({channel:'data', topic:'changed', callback: () => {
-  selection.domain = data.domain.map(function(d) { return d.id;});
+  selection.domain = data.domain; //map(function(d) { return d.id;});
 }});
 
+postal.subscribe({channel:'data', topic:'ready', callback: () => {initModules()}});
+
 initHTML();
-initModules();
+data.init();
+
 
 function resize() {
   let div = d3.select('#cg');
   let w = parseInt(div.style('width'));
   let h = parseInt(div.style('height'));
-  console.log('resize:'+w+', '+h);
   cg.resize(w, h);
-
 }
 
 function initHTML() {
@@ -48,8 +49,12 @@ function initHTML() {
 }
 
 function initModules() {
-  data.init();
   query.init();
+
+  map.population(data.population)
+    .selection(selection)
+    .init();
+
   cg.init('#cg')
     .selection(selection);
   resize();

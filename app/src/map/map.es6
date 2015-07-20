@@ -7,6 +7,13 @@ import * as d3 from 'd3';
 import * as L from 'leaflet';
 
 export default function (el, opt) {
+
+  let width, height;
+  let population = new Map();
+  let selection;
+  let zipcodes = new Map();
+
+
   // options = Object.assign({}, MAP_DEFAULTS, opt);
   let options = MAP_DEFAULTS;
   let map = new L.Map(el)
@@ -15,13 +22,11 @@ export default function (el, opt) {
 
   let svgContainer = d3.select(map.getPanes().overlayPane)
     .append("svg")
-    .attr('width', 200)
-    .attr('height', 200);
+      .attr('width', 200)
+      .attr('height', 200);
 
   let svg = svgContainer.append("g")
     .attr("class", "leaflet-zoom-hide");
-
-  initLeaflet();
 
   function projectPoint(x, y) {
     let point = map.latLngToLayerPoint(new L.LatLng(y, x));
@@ -39,6 +44,9 @@ export default function (el, opt) {
         return;
       }
 
+      collection.features.forEach(d => {
+        zipcodes.set(d.properties.Zip_Code, d);
+      });
       let feature = svg.selectAll("path")
         .data(collection.features)
         .enter().append("path");
@@ -63,16 +71,33 @@ export default function (el, opt) {
     });
   }
 
-  var Map = {};
+  function selectionChanged() {
+    console.log('Map: selection changed');
+  }
 
-  //Map.resize = function(w, h) {
-  //  width = w;
-  //  height = h;
-  //
-  //  svgContainer.attr("width", w).attr("height", h);
-  //
-  //  return this;
-  //};
+  var api = {};
 
-  return Map;
+  api.init = function() {initLeaflet(); };
+
+  api.population = function(map) {
+    population = map;
+    return this;
+  };
+
+  api.selection = function(s) {
+    selection = s;
+    selection.on('changed.map', selectionChanged);
+    return this;
+  };
+
+  api.resize = function(w, h) {
+    width = w;
+    height = h;
+
+    svgContainer.attr("width", w).attr("height", h);
+
+    return this;
+  };
+
+  return api;
 }
