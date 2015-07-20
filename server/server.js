@@ -21,7 +21,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride());
 
 app.use(express.static(app_dir));
-app.use(express.static(app_dir+'/src'));
+app.use(express.static(app_dir+'/lib'));
+//app.use(express.static(app_dir+'/src'));
 
 app.get(function(req, res) {
   console.log('called');
