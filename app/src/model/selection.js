@@ -171,15 +171,19 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         },
         set: function (list) {
           initialDomain = list;
-          clear(true);
+          clear(false);
         },
         configurable: true,
         enumerable: true
       }
     });
 
+    selection.selectedItems = function () {
+      return tags.size || excluded.size ? domain : [];
+    };
+
     selection.clear = function (silent) {
-      clear(silent);
+      clear(false);
     };
 
     selection.exclude = function (tag, add) {

@@ -1,4 +1,4 @@
-define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './services/data', 'query', 'map/Map', 'cg/cg', 'model/models'], function (exports, _componentsXpanel, _formatter, _d3, _postal, _servicesData, _query, _mapMap, _cgCg, _modelModels) {
+define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './services/data', 'query', 'map/map', 'cg/cg', 'info', 'model/models'], function (exports, _componentsXpanel, _formatter, _d3, _postal, _servicesData, _query, _mapMap, _cgCg, _info, _modelModels) {
   /**
    * Created by yarden on 6/30/15.
    */
@@ -12,6 +12,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
   var map = (0, _mapMap)('map');
   var selection = _modelModels.selection();
   var cg = (0, _CG['default'])();
+  var info = (0, _info)();
 
   _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
       selection.domain = _servicesData.domain; //map(function(d) { return d.id;});
@@ -26,9 +27,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
 
   function resize() {
     var div = _d3.select('#cg');
-    var w = parseInt(div.style('width'));
-    var h = parseInt(div.style('height'));
-    cg.resize(w, h);
+    cg.resize(parseInt(div.style('width')), parseInt(div.style('height')));
   }
 
   function initHTML() {
@@ -50,6 +49,9 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
     map.population(_servicesData.population).selection(selection).init();
 
     cg.init('#cg').selection(selection);
+
+    info.init().selection(selection);
+
     resize();
   }
 });

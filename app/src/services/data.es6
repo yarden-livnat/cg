@@ -11,6 +11,9 @@ let post = postal.channel('data');
 let items = new Map();
 let kb = new Map();
 
+export let fromDate = Date.now();
+export let toDate = Date.now();
+
 export let tags = [];
 export let domain = [];
 export let population = new Map();
@@ -52,6 +55,8 @@ export function fetchAssociations(params) {
 
     // TODO: handle probabilities
 
+    fromDate = params.from;
+    toDate = params.to;
     post.publish('changed');
   });
 }

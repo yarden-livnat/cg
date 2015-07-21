@@ -137,13 +137,16 @@ import * as d3 from 'd3'
 
       set domain(list) {
         initialDomain = list;
-        clear(true);
+        clear(false);
       }
     };
 
+    selection.selectedItems = function() {
+      return tags.size || excluded.size ? domain : [];
+    };
 
     selection.clear = function(silent) {
-      clear(silent);
+      clear(false);
     };
 
     selection.exclude = function (tag, add) {

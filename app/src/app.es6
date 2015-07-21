@@ -9,14 +9,16 @@ import * as postal from 'postal'
 
 import * as data from './services/data';
 import * as query from 'query';
-import * as Map from 'map/Map';
+import * as Map from 'map/map'
 import CG from 'cg/cg';
+import * as Info from 'info';
 
 import * as model from 'model/models'
 
 let map = Map('map');
 let selection = model.selection();
 let cg = CG();
+let info = Info();
 
 postal.subscribe({channel:'data', topic:'changed', callback: () => {
   selection.domain = data.domain; //map(function(d) { return d.id;});
@@ -30,9 +32,7 @@ data.init();
 
 function resize() {
   let div = d3.select('#cg');
-  let w = parseInt(div.style('width'));
-  let h = parseInt(div.style('height'));
-  cg.resize(w, h);
+  cg.resize(parseInt(div.style('width')), parseInt(div.style('height')));
 }
 
 function initHTML() {
@@ -57,5 +57,9 @@ function initModules() {
 
   cg.init('#cg')
     .selection(selection);
+
+  info.init()
+    .selection(selection);
+
   resize();
 }
