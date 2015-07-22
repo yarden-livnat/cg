@@ -677,7 +677,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
           var nodes = _servicesData.tags.map(function (d) {
             return {
               id: d.id,
-              label: d.concept.name,
+              label: d.concept.label,
               tag: d,
               items: d.items
             };

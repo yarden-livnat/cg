@@ -10,13 +10,13 @@ import sqlite3 as sql
 META_FILENAME = 'meta.csv'
 TRANSLATE_FILENAME = 'translate.csv'
 KB_FILENAME = 'kb.csv'
-ENC_DIR = 'sample'
+ENC_DIR = 'encounters'
 
 CG_DB = 'cg.sqlite'
 
-translate = dict()
 con = None
 root = None
+tags_map = {}
 
 def parse_info(filename):
     return filename[:filename.find('.')]
@@ -43,12 +43,12 @@ def parse_file(d, filename):
                     type = 'absent'
 
             if type == 'present':
-                if name in translate:
-                    tag_id = translate[name]
+                if name in tags_map:
+                    tag_id = tags_map[name]
                     if tag_id != "":
                         enc_tags.append((enc_id, tag_id))
-                else:
-                    print name, ': ignored'
+                # else:
+                #     print name, ': ignored'
     with con:
         con.executemany('insert into enc_tag values (?, ?)', enc_tags)
 
@@ -72,28 +72,30 @@ def init():
     with con:
         # kb
         tags = []
-        tags_map = {}
         with open(root+'/'+KB_FILENAME) as kb:
             f = csv.reader(kb)
             f.next()  # skip header
             n = 0
             for row in f:
-                item = [row[i] for i in range(5)]
-                item.insert(0, n)
-                tags.append(item)
-                tags_map[item[1]] = n
-                n += 1
+                if row[0] == '' and row[1] != "":
+                    item = [n]
+                    item.extend(row[4:])
+                    tags.append(item)
+                    tags_map[row[1]] = n
+                    n += 1
 
         con.execute('drop table if exists kb')
-        con.execute("""create table kb (
-                    id integer primary key,
-                    tid text,
-                    category text,
-                    system text,
-                    name text,
-                    specific text)""")
+        con.execute("""
+            create table kb (
+            id integer primary key,
+            category text,
+            name text,
+            details text,
+            system text
+            )
+           """)
 
-        con.executemany('insert into kb (id, tid, category, system, name, specific) values(?, ?, ?, ?, ?, ?)', tags)
+        con.executemany('insert into kb (id, category, name, details, system) values(?, ?, ?, ?, ?)', tags)
 
         # tagging
         con.execute('drop table if exists enc_tag')
@@ -108,16 +110,6 @@ def init():
                     ' date date,'
                     ' age integer,'
                     ' zipcode text)')
-
-    # translation
-    with open(root + '/' + TRANSLATE_FILENAME) as tf:
-        f = csv.reader(tf)
-        for line in f:
-            if line[1] in tags_map:
-                translate[line[0]] = tags_map[line[1]]
-            else:
-                print 'ignored: ', line
-
 
 # *** Main ***
 if len(argv) == 1:

@@ -18,12 +18,20 @@ export let tags = [];
 export let domain = [];
 export let population = new Map();
 
+let ignore_tags = ["conjunctivitis"];
+let ignore = [];
+
 export function init() {
   queue()
     .defer(d3.json, '/data/kb')
     .defer(d3.csv, '/data/population')
     .await( (err, kbData, popData) => {
-      kbData.forEach(d => kb.set(d.id, d));
+      kbData.forEach(d => {
+        d.label = d.details == '' ? d.name : d.name+'['+d.details+']';
+        kb.set(d.id, d);
+        if (ignore_tags.indexOf(d.name) != -1) ignore.push(d.id);
+      });
+
       popData.forEach(function(d) { population.set(d.zipcode, +d.population);});
       post.publish('ready');
     });
@@ -41,16 +49,18 @@ export function fetchAssociations(params) {
 
     let map = new Map();
 
-    data.enc.forEach(d  => items.set(d.id, d));
+    data.enc.forEach(d  => {items.set(d.id, d); });
 
     data.associations.forEach(d => {
-      let entry = map.get(d.tag_id);
-      if (!entry) {
-        entry = {id: d.tag_id, concept: kb.get(d.tag_id), items: []};
-        map.set(d.tag_id, entry);
-        tags.push(entry);
+      if (ignore.indexOf(d.tag_id) == -1) {
+        let entry = map.get(d.tag_id);
+        if (!entry) {
+          entry = {id: d.tag_id, concept: kb.get(d.tag_id), items: []};
+          map.set(d.tag_id, entry);
+          tags.push(entry);
+        }
+        entry.items.push(items.get(d.enc_id));
       }
-      entry.items.push(items.get(d.enc_id));
     });
 
     // TODO: handle probabilities

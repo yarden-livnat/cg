@@ -21,7 +21,7 @@ function population(req, res, next) {
 
 function kb(req, res, next) {
   db.serialize(function() {
-    db.all('select id, category, system, name, specific from kb', function(err, rows) {
+    db.all('select id, category, name, system, details from kb', function(err, rows) {
       if (err) next(err);
       res.send(JSON.stringify(rows));
     });

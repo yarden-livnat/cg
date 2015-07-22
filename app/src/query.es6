@@ -25,5 +25,5 @@ export function init() {
 
   // default dates
   d3.select('#date').property('value', '2007-12-14');
-  d3.select('#duration').property('value', '50');
+  d3.select('#duration').property('value', '4');
 }

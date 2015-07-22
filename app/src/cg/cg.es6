@@ -736,7 +736,7 @@ export default function() {
       let nodes = data.tags.map(function(d) {
         return {
           id: d.id,
-          label: d.concept.name,
+          label: d.concept.label,
           tag: d,
           items: d.items
         };

@@ -9,7 +9,7 @@ import * as L from 'leaflet';
 export default function (el, opt) {
 
   const AREA_ALPHA = 0.6;
-  const POPULATION_FACTOR = 10000;
+  const POPULATION_FACTOR = 1000;
   const DURATION = 500;
 
   let colorScale = d3.interpolateLab('#fff', '#f00');

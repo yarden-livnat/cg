@@ -4,28 +4,45 @@
 
 import * as c3 from 'c3'
 
-import * as data from 'data'
+import * as data from 'services/data'
+import * as table from 'components/table'
+import * as postal from 'postal'
 
 export default function(opt) {
   let selection;
 
-  let summary = c3.generate({
-    bindto: '#summary-chart',
-    data: {
-      columns: [
-        ['data1', 30, 200, 100, 400, 150, 250],
-        ['data2', 50, 20, 10, 40, 15, 25]
-      ],
-      axes: {
-        data2: 'y2' // ADD
+  let tagsTable = table().el('#tags-table').columns(['name', 'n']);
+
+  //let summary = c3.generate({
+  //  bindto: '#summary-chart',
+  //  data: {
+  //    columns: [
+  //      ['data1', 30, 200, 100, 400, 150, 250],
+  //      ['data2', 50, 20, 10, 40, 15, 25]
+  //    ],
+  //    axes: {
+  //      data2: 'y2' // ADD
+  //    }
+  //  },
+  //  axis: {
+  //    y2: {
+  //      show: true // ADD
+  //    }
+  //  }
+  //});
+
+  function init() {
+    postal.subscribe({channel:'data', topic:'changed', callback: dataChanged});
+  }
+
+  function dataChanged() {
+    tagsTable.data(data.tags.map(tag => {
+      return {
+        name: tag.concept.label,
+        n: tag.items.length
       }
-    },
-    axis: {
-      y2: {
-        show: true // ADD
-      }
-    }
-  });
+    }));
+  }
 
   function selectionChanged() {
     //selection.domain
@@ -35,6 +52,7 @@ export default function(opt) {
   let api = {};
 
   api.init = function() {
+    init();
     return this;
   };
 
