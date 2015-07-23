@@ -32,6 +32,7 @@ data.init();
 
 function resize() {
   let div = d3.select('#cg');
+  console.log('cg: '+parseInt(div.style('width')) + 'x' +parseInt(div.style('height')));
   cg.resize(parseInt(div.style('width')), parseInt(div.style('height')));
 }
 

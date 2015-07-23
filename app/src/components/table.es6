@@ -122,9 +122,10 @@ export default function() {
 
   api.el = function(el) {
     if (!arguments.length) return d3el;
-    d3el = d3.select(el);
-    table = d3el.append('table')
-      .classed('table', true);
+    d3el = typeof el == 'string' ? d3.select(el) : el;
+    //table = d3el.append('table')
+    //  .classed('table', true);
+    table = d3el;
 
     if (width) table.attr('width', width);
     if (height) table.attr('height', height);

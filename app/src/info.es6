@@ -6,30 +6,16 @@ import * as c3 from 'c3'
 
 import * as data from 'services/data'
 import * as table from 'components/table'
+import * as chart from 'components/chart'
 import * as postal from 'postal'
 
 export default function(opt) {
   let selection;
 
-  let tagsTable = table().el('#tags-table').columns(['name', 'n']);
+  let tagsTable = table().el(d3.select('#tags-table').select('table'))
+    .columns([{title: 'Tag', name: 'name'}, 'n']);
 
-  //let summary = c3.generate({
-  //  bindto: '#summary-chart',
-  //  data: {
-  //    columns: [
-  //      ['data1', 30, 200, 100, 400, 150, 250],
-  //      ['data2', 50, 20, 10, 40, 15, 25]
-  //    ],
-  //    axes: {
-  //      data2: 'y2' // ADD
-  //    }
-  //  },
-  //  axis: {
-  //    y2: {
-  //      show: true // ADD
-  //    }
-  //  }
-  //});
+  let summary = chart().el('#summary-chart');
 
   function init() {
     postal.subscribe({channel:'data', topic:'changed', callback: dataChanged});
@@ -42,6 +28,13 @@ export default function(opt) {
         n: tag.items.length
       }
     }));
+
+
+    let perDay = [];
+    data.domain.forEach( enc => {
+
+    });
+    summary.data();
   }
 
   function selectionChanged() {

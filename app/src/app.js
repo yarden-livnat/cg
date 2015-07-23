@@ -27,6 +27,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
 
   function resize() {
     var div = _d3.select('#cg');
+    console.log('cg: ' + parseInt(div.style('width')) + 'x' + parseInt(div.style('height')));
     cg.resize(parseInt(div.style('width')), parseInt(div.style('height')));
   }
 
