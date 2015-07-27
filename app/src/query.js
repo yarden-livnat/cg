@@ -17,7 +17,7 @@ define(['exports', 'd3', 'services/data'], function (exports, _d3, _servicesData
     var duration = _d3.select('#duration').property('value');
 
     _servicesData.fetchAssociations({
-      from: dateFormat(_d3.time.week.offset(dateFormat.parse(date), -duration)),
+      from: dateFormat(_d3.time.day.offset(_d3.time.week.offset(dateFormat.parse(date), -duration), 1)),
       to: date
     });
   }
@@ -27,7 +27,7 @@ define(['exports', 'd3', 'services/data'], function (exports, _d3, _servicesData
 
     // default dates
     _d3.select('#date').property('value', '2007-12-14');
-    _d3.select('#duration').property('value', '4');
+    _d3.select('#duration').property('value', '1');
   }
 });
 

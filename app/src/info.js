@@ -7,10 +7,11 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
 
   module.exports = function (opt) {
     var MIN_Y = 5;
+    var CHART_MAX_WIDTH = 500;
 
     var selection = undefined;
 
-    var tagsTable = (0, _componentsTable)().el(d3.select('#tags-table').select('table')).columns([{ title: 'Tag', name: 'name' }, 'n']);
+    var tagsTable = (0, _componentsTable)().el(d3.select('#tags-table')).columns([{ title: 'Tag', name: 'name' }, 'n']);
 
     var summary = (0, _componentsChart)().el('#summary-chart');
 
@@ -30,7 +31,7 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
     }
 
     function binData(items) {
-      var f = d3.time.day.offset(d3.time.day.ceil(_servicesData.fromDate), 1),
+      var f = d3.time.day.ceil(_servicesData.fromDate),
           t = d3.time.day.offset(d3.time.day.ceil(_servicesData.toDate), 1),
           range = d3.time.day.range(f, t),
           scale = d3.time.scale().domain([f, t]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
@@ -61,6 +62,13 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
     api.selection = function (s) {
       selection = s;
       selection.on('changed', selectionChanged);
+      return this;
+    };
+
+    api.resize = function (size) {
+      var w = Math.min(size[0] - parseInt(d3.select('#tags-table').style('width')), CHART_MAX_WIDTH);
+      d3.select('#summary-chart').attr('width', w).attr('height', size[1]);
+      summary.resize([w, size[1]]);
       return this;
     };
 

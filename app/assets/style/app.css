@@ -84,10 +84,12 @@ input[type=date]::-webkit-inner-spin-button {
 .chart .x.axis path {
   stroke: #000; }
 .chart .x.axis line {
-  stroke: #fff;
-  stroke-opacity: .5; }
+  stroke: #aaa;
+  stroke-opacity: .5;
+  stroke-width: 1px; }
 .chart .y.axis line {
-  stroke: #ddd; }
+  stroke: none;
+  stroke-opacity: 0.5; }
 .chart path.line {
   fill: none;
   stroke: #000;
@@ -122,14 +124,14 @@ body {
   left: 0;
   top: 0;
   width: 16em;
-  height: 200px;
+  height: 150px;
   padding: 10px; }
 
 #main-area {
   position: fixed;
   left: 0;
   right: 200px;
-  top: 200px;
+  top: 150px;
   bottom: 0;
   padding: 10px; }
 
@@ -138,7 +140,7 @@ body {
   left: 16em;
   top: 0;
   right: 200px;
-  height: 200px;
+  height: 150px;
   padding: 0 20px 0 10px; }
   #results-area ul {
     list-style: none;
@@ -150,33 +152,35 @@ body {
     padding: 0 10px;
     vertical-align: top; }
 
-#tags-table table {
+#tags-table {
+  display: inline-block;
+  vertical-align: top;
   max-height: 150px;
   width: 180px;
   table-layout: fixed;
   border-collapse: collapse; }
-  #tags-table table th {
+  #tags-table th {
     border-bottom: solid thin;
     text-decoration: underline; }
-  #tags-table table td, #tags-table table th {
+  #tags-table td, #tags-table th {
     padding: 0.25rem; }
-  #tags-table table td.text-col, #tags-table table th.text-col {
+  #tags-table td.text-col, #tags-table th.text-col {
     text-align: left; }
-  #tags-table table td.number-col, #tags-table table th.number-col {
+  #tags-table td.number-col, #tags-table th.number-col {
     text-align: right; }
-  #tags-table table td:nth-child(1), #tags-table table th:nth-child(1) {
+  #tags-table td:nth-child(1), #tags-table th:nth-child(1) {
     min-width: 120px; }
-  #tags-table table td:nth-child(2), #tags-table table th:nth-child(2) {
+  #tags-table td:nth-child(2), #tags-table th:nth-child(2) {
     width: 50px; }
-  #tags-table table td:nth-child(2) {
+  #tags-table td:nth-child(2) {
     text-align: right; }
-  #tags-table table thead {
+  #tags-table thead {
     background-color: #eee;
     font: 9pt sans-serif; }
-    #tags-table table thead tr {
+    #tags-table thead tr {
       display: block;
       position: relative; }
-  #tags-table table tbody {
+  #tags-table tbody {
     display: block;
     overflow: auto;
     width: 100%;
@@ -184,8 +188,8 @@ body {
     font: 9pt sans-serif; }
 
 #summary-chart {
-  width: 150px;
-  height: 150px; }
+  display: inline-block;
+  vertical-align: top; }
 
 #info-area {
   position: fixed;
@@ -206,13 +210,13 @@ body {
 /* main area */
 #tags-info {
   width: auto;
-  height: 200px; }
+  height: 150px; }
 
 #cg {
   position: fixed;
   left: 0;
   right: 200px;
-  top: 200px;
+  top: 150px;
   bottom: 0; }
 
 /* info */

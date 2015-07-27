@@ -21,7 +21,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var xAxis = _d3.svg.axis().scale(x).orient('bottom').tickSize(-height, 0).tickPadding(6).ticks(4);
 
-    var yAxis = _d3.svg.axis().scale(y).orient('right').tickSize(-width).tickPadding(6);
+    var yAxis = _d3.svg.axis().scale(y).orient('right').tickSize(-width).tickPadding(6).ticks(4);
 
     //let area = d3.svg.area()
     //  .interpolate('step-after')
@@ -46,6 +46,17 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       height = h - margin.top - margin.bottom;
       x.range([0, width]);
       y.range([height, 0]);
+
+      xAxis.tickSize(-width);
+      yAxis.tickSize(-width);
+
+      svg.select('#clip rect').attr('x', x(0)).attr('y', y(1)).attr('width', x(1) - x(0)).attr('height', y(0) - y(1));
+
+      svg.select('g.y.axis').attr('transform', 'translate(' + width + ',0)');
+
+      svg.select('g.x.axis').attr('transform', 'translate(0,' + height + ')');
+
+      svg.select('.pane').attr('width', width).attr('height', height).call(zoom);
     }
 
     function init() {
@@ -94,6 +105,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     api.resize = function (w, h) {
       resize(w, h);
+      if (data) draw();
     };
 
     api.data = function (series) {
@@ -112,6 +124,11 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       svg.select('path.line').data([data]);
 
       draw();
+      return this;
+    };
+
+    api.resize = function (size) {
+      resize(size[0], size[1]);
       return this;
     };
 

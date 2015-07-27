@@ -25,10 +25,14 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
   initHTML();
   _servicesData.init();
 
+  function getSize(el) {
+    var d3el = _d3.select(el);
+    return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
+  }
+
   function resize() {
-    var div = _d3.select('#cg');
-    console.log('cg: ' + parseInt(div.style('width')) + 'x' + parseInt(div.style('height')));
-    cg.resize(parseInt(div.style('width')), parseInt(div.style('height')));
+    cg.resize(getSize('#cg'));
+    info.resize(getSize('#results-area'));
   }
 
   function initHTML() {

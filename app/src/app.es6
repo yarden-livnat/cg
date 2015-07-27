@@ -30,10 +30,14 @@ initHTML();
 data.init();
 
 
+function getSize(el) {
+  let d3el = d3.select(el);
+  return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
+}
+
 function resize() {
-  let div = d3.select('#cg');
-  console.log('cg: '+parseInt(div.style('width')) + 'x' +parseInt(div.style('height')));
-  cg.resize(parseInt(div.style('width')), parseInt(div.style('height')));
+  cg.resize(getSize('#cg'));
+  info.resize(getSize('#results-area'));
 }
 
 function initHTML() {

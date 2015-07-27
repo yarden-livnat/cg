@@ -17,12 +17,14 @@
   }
 
   .x.axis line {
-    stroke: #fff;
+    stroke: #aaa;
     stroke-opacity: .5;
+    stroke-width: 1px;
   }
 
   .y.axis line {
-    stroke: #ddd;
+    stroke: none;
+    stroke-opacity: 0.5;
   }
 
   path.line {

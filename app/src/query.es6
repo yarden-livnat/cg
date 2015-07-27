@@ -13,7 +13,7 @@ function submit() {
   let duration = d3.select('#duration').property('value');
 
   data.fetchAssociations({
-    from: dateFormat(d3.time.week.offset(dateFormat.parse(date), -duration)),
+    from: dateFormat(d3.time.day.offset(d3.time.week.offset(dateFormat.parse(date), -duration), 1)),
     to: date
   });
 
@@ -25,5 +25,5 @@ export function init() {
 
   // default dates
   d3.select('#date').property('value', '2007-12-14');
-  d3.select('#duration').property('value', '4');
+  d3.select('#duration').property('value', '1');
 }

@@ -9,10 +9,11 @@ import * as postal from 'postal'
 
 export default function(opt) {
   const MIN_Y = 5;
+  const CHART_MAX_WIDTH = 500;
 
   let selection;
 
-  let tagsTable = table().el(d3.select('#tags-table').select('table'))
+  let tagsTable = table().el(d3.select('#tags-table'))
     .columns([{title: 'Tag', name: 'name'}, 'n']);
 
   let summary = chart().el('#summary-chart');
@@ -33,7 +34,7 @@ export default function(opt) {
   }
 
   function binData(items) {
-    let f = d3.time.day.offset(d3.time.day.ceil(data.fromDate), 1),
+    let f = d3.time.day.ceil(data.fromDate),
         t = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
         range = d3.time.day.range(f, t),
         scale = d3.time.scale()
@@ -67,6 +68,15 @@ export default function(opt) {
   api.selection = function(s) {
     selection = s;
     selection.on('changed', selectionChanged);
+    return this;
+  };
+
+  api.resize = function(size) {
+    let w = Math.min(size[0] - parseInt(d3.select('#tags-table').style('width')), CHART_MAX_WIDTH);
+    d3.select('#summary-chart')
+      .attr('width', w)
+      .attr('height', size[1]);
+    summary.resize([w, size[1]]);
     return this;
   };
 

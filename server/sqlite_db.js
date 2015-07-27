@@ -36,8 +36,8 @@ function query(req, res, next) {
   var from = query.from;
   var to = query.to;
 
-  var enc_stmt = db.prepare('select id, strftime("%Y-%m-%d", date) as date, age, zipcode from encounter where date > ? and date <= ?');
-  var association_stmt = db.prepare('select enc_id, tag_id from enc_tag, encounter where encounter.date > ? and date <= ? and enc_id = encounter.id');
+  var enc_stmt = db.prepare('select id, date, age, zipcode from encounter where date between ? and ?');
+  var association_stmt = db.prepare('select enc_id, tag_id from enc_tag, encounter where encounter.date between ? and ? and enc_id = encounter.id');
 
   db.serialize(function() {
     enc_stmt.all(from, to,

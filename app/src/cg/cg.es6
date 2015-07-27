@@ -789,14 +789,14 @@ export default function() {
     return this;
   };
 
-  cg.resize = function(w, h) {
+  cg.resize = function(size) {
     force.stop();
 
-    width = w;
-    height = h;
+    width = size[0];
+    height = size[1];
 
-    svgContainer.attr("width", w).attr("height", h);
-    force.size([w, h]);
+    svgContainer.attr("width", width).attr("height", height);
+    force.size([width, height]);
 
     x.domain([0, width]).range([0, width]);
 
