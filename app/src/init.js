@@ -16,7 +16,7 @@ requirejs.config({
     es6: '../lib/requirejs-babel/es6',
     babel: '../lib/requirejs-babel/babel-4.6.6.min',
     d3: '../lib/d3/d3.min',
-    c3: '../lib/c3/c3.min',
+    //c3: '../lib/c3/c3.min',
     queue: '../lib/queue-async/queue.min',
     lodash: '../lib/lodash/lodash.min',
     jquery: '../lib/jquery/dist/jquery.min',

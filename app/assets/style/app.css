@@ -74,6 +74,29 @@ input[type=date]::-webkit-inner-spin-button {
       stroke: red;
       stroke-opacity: 1; }
 
+.chart svg {
+  font: 10px sans-serif; }
+.chart .axis {
+  shape-rendering: crispEdges; }
+.chart .axis path, .chart .axis line {
+  fill: none;
+  stroke-width: .5px; }
+.chart .x.axis path {
+  stroke: #000; }
+.chart .x.axis line {
+  stroke: #fff;
+  stroke-opacity: .5; }
+.chart .y.axis line {
+  stroke: #ddd; }
+.chart path.line {
+  fill: none;
+  stroke: #000;
+  stroke-width: .5px; }
+.chart rect.pane {
+  cursor: move;
+  fill: none;
+  pointer-events: all; }
+
 body {
   position: fixed;
   top: 0;
@@ -124,7 +147,8 @@ body {
     margin: 0; }
   #results-area ul li {
     display: inline-block;
-    padding: 0 10px; }
+    padding: 0 10px;
+    vertical-align: top; }
 
 #tags-table table {
   max-height: 150px;

@@ -2,14 +2,14 @@
  * Created by yarden on 7/21/15.
  */
 
-import * as c3 from 'c3'
-
 import * as data from 'services/data'
 import * as table from 'components/table'
 import * as chart from 'components/chart'
 import * as postal from 'postal'
 
 export default function(opt) {
+  const MIN_Y = 5;
+
   let selection;
 
   let tagsTable = table().el(d3.select('#tags-table').select('table'))
@@ -29,12 +29,27 @@ export default function(opt) {
       }
     }));
 
+    summary.data(binData(data.domain));
+  }
 
-    let perDay = [];
-    data.domain.forEach( enc => {
+  function binData(items) {
+    let f = d3.time.day.offset(d3.time.day.ceil(data.fromDate), 1),
+        t = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
+        range = d3.time.day.range(f, t),
+        scale = d3.time.scale()
+          .domain([f, t])
+          .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
 
+    let bins = range.map(function (day) { return {date: day, value: 0, items: []}; });
+
+    items.forEach(function (item) {
+      let i = scale(item.date);
+      console.log(item.date+'  scale='+i);
+      bins[i].value++;
+      bins[i].items.push(item);
     });
-    summary.data();
+
+    return bins;
   }
 
   function selectionChanged() {

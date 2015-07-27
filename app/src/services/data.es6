@@ -49,7 +49,10 @@ export function fetchAssociations(params) {
 
     let map = new Map();
 
-    data.enc.forEach(d  => {items.set(d.id, d); });
+    data.enc.forEach(d  => {
+      d.date = dateFormat.parse(d.date);
+      items.set(d.id, d);
+    });
 
     data.associations.forEach(d => {
       if (ignore.indexOf(d.tag_id) == -1) {
@@ -65,8 +68,8 @@ export function fetchAssociations(params) {
 
     // TODO: handle probabilities
 
-    fromDate = params.from;
-    toDate = params.to;
+    fromDate = dateFormat.parse(params.from);
+    toDate = dateFormat.parse(params.to);
     post.publish('changed');
   });
 }
