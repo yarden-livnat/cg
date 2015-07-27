@@ -13,7 +13,8 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
 
     var tagsTable = (0, _componentsTable)().el(d3.select('#tags-table')).columns([{ title: 'Tag', name: 'name' }, 'n']);
 
-    var summary = (0, _componentsChart)().el('#summary-chart');
+    var summaryChart = (0, _componentsChart)().el('#summary-chart');
+    var selectedChart = (0, _componentsChart)().el('#selected-chart');
 
     function init() {
       _postal.subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
@@ -27,7 +28,7 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
         };
       }));
 
-      summary.data(binData(_servicesData.domain));
+      summaryChart.data(binData(_servicesData.domain));
     }
 
     function binData(items) {
@@ -39,18 +40,103 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
       var bins = range.map(function (day) {
         return { date: day, value: 0, items: [] };
       });
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-      items.forEach(function (item) {
-        var i = scale(item.date);
-        console.log(item.date + '  scale=' + i);
-        bins[i].value++;
-        bins[i].items.push(item);
-      });
+      try {
+        for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var item = _step.value;
 
-      return bins;
+          var i = scale(item.date);
+          bins[i].value++;
+          bins[i].items.push(item);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      return [{ label: 'data', values: bins }];
     }
 
-    function selectionChanged() {}
+    function selectionChanged() {
+      var from = d3.time.day.ceil(_servicesData.fromDate),
+          to = d3.time.day.offset(d3.time.day.ceil(_servicesData.toDate), 1),
+          range = d3.time.day.range(from, to),
+          scale = d3.time.scale().domain([from, to]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
+
+      var series = [];
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = selection.tags()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var tag = _step2.value;
+
+          var bins = range.map(function (day) {
+            return { date: day, value: 0, items: [] };
+          });
+          var _iteratorNormalCompletion3 = true;
+          var _didIteratorError3 = false;
+          var _iteratorError3 = undefined;
+
+          try {
+            for (var _iterator3 = tag.items[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+              var item = _step3.value;
+
+              var i = scale(item.date);
+              bins[i].value++;
+              bins[i].items.push(item);
+            }
+          } catch (err) {
+            _didIteratorError3 = true;
+            _iteratorError3 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+                _iterator3['return']();
+              }
+            } finally {
+              if (_didIteratorError3) {
+                throw _iteratorError3;
+              }
+            }
+          }
+
+          series.push({
+            label: tag.concept.label,
+            values: bins
+          });
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      selectedChart.data(series);
+    }
 
     var api = {};
 
@@ -66,16 +152,19 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
     };
 
     api.resize = function (size) {
-      var w = Math.min(size[0] - parseInt(d3.select('#tags-table').style('width')), CHART_MAX_WIDTH);
+      var w = Math.min((size[0] - parseInt(d3.select('#tags-table').style('width'))) / 2, CHART_MAX_WIDTH) - 10;
+
       d3.select('#summary-chart').attr('width', w).attr('height', size[1]);
-      summary.resize([w, size[1]]);
+      summaryChart.resize([w, size[1]]);
+
+      d3.select('#selected-chart').attr('width', w).attr('height', size[1]);
+      selectedChart.resize([w, size[1]]);
+
       return this;
     };
 
     return api;
   };
 });
-
-//selection.domain
 
 //# sourceMappingURL=info.js.map

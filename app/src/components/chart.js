@@ -50,7 +50,9 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       xAxis.tickSize(-width);
       yAxis.tickSize(-width);
 
-      svg.select('#clip rect').attr('x', x(0)).attr('y', y(1)).attr('width', x(1) - x(0)).attr('height', y(0) - y(1));
+      var xr = x.range();
+      var yr = y.range();
+      svg.select('#clip rect').attr('x', xr[0]).attr('y', yr[1]).attr('width', xr[1] - xr[0]).attr('height', yr[0] - yr[1]);
 
       svg.select('g.y.axis').attr('transform', 'translate(' + width + ',0)');
 
@@ -83,10 +85,13 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     }
 
     function draw() {
-      svg.select('g.x.axis').call(xAxis);
-      svg.select('g.y.axis').call(yAxis);
-      //svg.select('path.area').attr('d', area);
-      svg.select('path.line').attr('d', line);
+      if (data) {
+        svg.select('g.x.axis').call(xAxis);
+        svg.select('g.y.axis').call(yAxis);
+
+        //svg.select('path.area').attr('d', area);
+        svg.select('path.line').attr('d', line);
+      }
     }
 
     function api() {}
@@ -110,14 +115,41 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     api.data = function (series) {
       data = series;
-      x.domain([_d3.min(data, function (d) {
-        return d.date;
-      }), _d3.max(data, function (d) {
-        return d.date;
-      })]);
-      y.domain([0, _d3.max(data, function (d) {
-        return d.value;
-      })]);
+      var n = series.length;
+      var x_min = series[0].values[0].date;
+      var x_max = series[0].values[series[0].values.length - 1].date;
+      var y_max = 0;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = series[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var s = _step.value;
+
+          y_max = Math.max(y_max, _d3.max(s.values, function (d) {
+            return d.value;
+          }));
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      //x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
+      //y.domain([0, d3.max(data, d => { return d.value; })]);
+      x.domain([x_min, x_max]);
+      y.domain([0, y_max]);
       zoom.x(x);
 
       //svg.select('path.area').data([data]);
@@ -129,6 +161,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     api.resize = function (size) {
       resize(size[0], size[1]);
+      draw();
       return this;
     };
 

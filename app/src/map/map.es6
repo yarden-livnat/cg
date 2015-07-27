@@ -69,7 +69,7 @@ export default function (el, opt) {
 
   function assignColor(zipcode, n) {
     let f =  n * POPULATION_FACTOR/population.get(zipcode);
-    console.log('zipcode: '+zipcode+' factor: '+n+'/'+population.get(zipcode)+' -> '+f);
+    //console.log('zipcode: '+zipcode+' factor: '+n+'/'+population.get(zipcode)+' -> '+f);
     if (f > 1) f = 1;
     return colorScale(f);
   }

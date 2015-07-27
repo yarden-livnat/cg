@@ -16,7 +16,8 @@ export default function(opt) {
   let tagsTable = table().el(d3.select('#tags-table'))
     .columns([{title: 'Tag', name: 'name'}, 'n']);
 
-  let summary = chart().el('#summary-chart');
+  let summaryChart = chart().el('#summary-chart');
+  let selectedChart = chart().el('#selected-chart');
 
   function init() {
     postal.subscribe({channel:'data', topic:'changed', callback: dataChanged});
@@ -30,7 +31,7 @@ export default function(opt) {
       }
     }));
 
-    summary.data(binData(data.domain));
+    summaryChart.data(binData(data.domain));
   }
 
   function binData(items) {
@@ -42,19 +43,38 @@ export default function(opt) {
           .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
 
     let bins = range.map(function (day) { return {date: day, value: 0, items: []}; });
-
-    items.forEach(function (item) {
+    for (let item of items) {
       let i = scale(item.date);
-      console.log(item.date+'  scale='+i);
       bins[i].value++;
       bins[i].items.push(item);
-    });
+    }
 
-    return bins;
+    return [{label: 'data', values: bins}];
   }
 
   function selectionChanged() {
-    //selection.domain
+    let from = d3.time.day.ceil(data.fromDate),
+        to = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
+        range = d3.time.day.range(from, to),
+        scale = d3.time.scale()
+          .domain([from, to])
+          .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
+
+    let series = [];
+    for (let tag of selection.tags()) {
+      let bins = range.map(function (day) { return {date: day, value: 0, items: []}; });
+      for (let item of tag.items) {
+        let i = scale(item.date);
+        bins[i].value++;
+        bins[i].items.push(item);
+      }
+      series.push({
+        label: tag.concept.label,
+        values: bins
+      });
+    }
+
+    selectedChart.data(series);
   }
 
 
@@ -72,11 +92,18 @@ export default function(opt) {
   };
 
   api.resize = function(size) {
-    let w = Math.min(size[0] - parseInt(d3.select('#tags-table').style('width')), CHART_MAX_WIDTH);
+    let w = Math.min((size[0] - parseInt(d3.select('#tags-table').style('width')))/2, CHART_MAX_WIDTH) - 10;
+
     d3.select('#summary-chart')
       .attr('width', w)
       .attr('height', size[1]);
-    summary.resize([w, size[1]]);
+    summaryChart.resize([w, size[1]]);
+
+    d3.select('#selected-chart')
+      .attr('width', w)
+      .attr('height', size[1]);
+    selectedChart.resize([w, size[1]]);
+
     return this;
   };
 

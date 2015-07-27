@@ -63,11 +63,13 @@ export default function() {
     xAxis.tickSize(-width);
     yAxis.tickSize(-width);
 
+    let xr = x.range();
+    let yr = y.range();
     svg.select('#clip rect')
-      .attr('x', x(0))
-      .attr('y', y(1))
-      .attr('width', x(1) - x(0))
-      .attr('height', y(0) - y(1));
+      .attr('x', xr[0])
+      .attr('y', yr[1])
+      .attr('width', xr[1]-xr[0])
+      .attr('height', yr[0]-yr[1]);
 
     svg.select('g.y.axis')
       .attr('transform', 'translate(' + width + ',0)');
@@ -130,10 +132,13 @@ export default function() {
   }
 
   function draw() {
-    svg.select('g.x.axis').call(xAxis);
-    svg.select('g.y.axis').call(yAxis);
-    //svg.select('path.area').attr('d', area);
-    svg.select('path.line').attr('d', line);
+    if (data) {
+      svg.select('g.x.axis').call(xAxis);
+      svg.select('g.y.axis').call(yAxis);
+
+      //svg.select('path.area').attr('d', area);
+      svg.select('path.line').attr('d', line);
+    }
   }
 
   function api() {}
@@ -160,8 +165,17 @@ export default function() {
 
   api.data = function(series) {
     data = series;
-    x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
-    y.domain([0, d3.max(data, d => { return d.value; })]);
+    let n = series.length;
+    let x_min = series[0].values[0].date;
+    let x_max = series[0].values[series[0].values.length-1].date;
+    let y_max = 0;
+    for (let s of series) {
+      y_max = Math.max(y_max, d3.max(s.values, d => { return d.value; }));
+    }
+    //x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
+    //y.domain([0, d3.max(data, d => { return d.value; })]);
+    x.domain([x_min, x_max]);
+    y.domain([0, y_max]);
     zoom.x(x);
 
     //svg.select('path.area').data([data]);
@@ -173,6 +187,7 @@ export default function() {
 
   api.resize = function(size) {
     resize(size[0], size[1]);
+    draw();
     return this;
   };
 

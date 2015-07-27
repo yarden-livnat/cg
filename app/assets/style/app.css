@@ -191,6 +191,10 @@ body {
   display: inline-block;
   vertical-align: top; }
 
+#selected-chart {
+  display: inline-block;
+  vertical-align: top; }
+
 #info-area {
   position: fixed;
   right: 10px;
