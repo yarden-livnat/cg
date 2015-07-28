@@ -37,13 +37,14 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var zoom = _d3.behavior.zoom().on('zoom', draw);
 
-    var gradient = undefined;
+    //let gradient;
 
     function resize(w, h) {
       svgContainer.attr('width', w).attr('height', h);
 
       width = w - margin.left - margin.right;
       height = h - margin.top - margin.bottom;
+
       x.range([0, width]);
       y.range([height, 0]);
 
@@ -62,13 +63,24 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     }
 
     function init() {
-      gradient = svg.append('defs').append('linearGradient').attr('id', 'gradient').attr('x2', '0%').attr('y2', '100%');
+      //gradient = svg.append("defs").append("linearGradient")
+      //  .attr("id", "gradient")
+      //  .attr("x2", "0%")
+      //  .attr("y2", "100%");
+      //
+      //gradient.append("stop")
+      //  .attr("offset", "0%")
+      //  .attr("stop-color", "#fff")
+      //  .attr("stop-opacity", .5);
+      //
+      //gradient.append("stop")
+      //  .attr("offset", "100%")
+      //  .attr("stop-color", "#999")
+      //  .attr("stop-opacity", 1);
 
-      gradient.append('stop').attr('offset', '0%').attr('stop-color', '#fff').attr('stop-opacity', 0.5);
-
-      gradient.append('stop').attr('offset', '100%').attr('stop-color', '#999').attr('stop-opacity', 1);
-
-      svg.append('clipPath').attr('id', 'clip').append('rect').attr('x', x(0)).attr('y', y(1)).attr('width', x(1) - x(0)).attr('height', y(0) - y(1));
+      var xr = x.range();
+      var yr = y.range();
+      svg.append('clipPath').attr('id', 'clip').append('rect').attr('x', xr[0]).attr('y', yr[1]).attr('width', xr[1] - xr[0]).attr('height', yr[0] - yr[1]);
 
       svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + width + ',0)');
 
@@ -89,8 +101,12 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         svg.select('g.x.axis').call(xAxis);
         svg.select('g.y.axis').call(yAxis);
 
+        var lines = data.map(function (item) {
+          return item.values;
+        });
+
         //svg.select('path.area').attr('d', area);
-        svg.select('path.line').attr('d', line);
+        svg.selectAll('path.line').data(lines).attr('d', line);
       }
     }
 
@@ -115,45 +131,47 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     api.data = function (series) {
       data = series;
-      var n = series.length;
-      var x_min = series[0].values[0].date;
-      var x_max = series[0].values[series[0].values.length - 1].date;
-      var y_max = 0;
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      if (data.length > 0) {
+        var n = series.length;
+        var x_min = series[0].values[0].date;
+        var x_max = series[0].values[series[0].values.length - 1].date;
+        var y_max = 0;
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
-      try {
-        for (var _iterator = series[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var s = _step.value;
-
-          y_max = Math.max(y_max, _d3.max(s.values, function (d) {
-            return d.value;
-          }));
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator['return']) {
-            _iterator['return']();
+          for (var _iterator = series[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var s = _step.value;
+
+            y_max = Math.max(y_max, _d3.max(s.values, function (d) {
+              return d.value;
+            }));
           }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
         } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
+          try {
+            if (!_iteratorNormalCompletion && _iterator['return']) {
+              _iterator['return']();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
           }
         }
+
+        //x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
+        //y.domain([0, d3.max(data, d => { return d.value; })]);
+        x.domain([x_min, x_max]);
+        y.domain([0, y_max]);
+        zoom.x(x);
       }
 
-      //x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
-      //y.domain([0, d3.max(data, d => { return d.value; })]);
-      x.domain([x_min, x_max]);
-      y.domain([0, y_max]);
-      zoom.x(x);
-
       //svg.select('path.area').data([data]);
-      svg.select('path.line').data([data]);
+      var lines = svg.selectAll('path.line').data(data).enter().append('path').attr('class', 'line');
 
       draw();
       return this;

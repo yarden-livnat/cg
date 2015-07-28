@@ -48,7 +48,7 @@ export default function() {
   let zoom = d3.behavior.zoom()
     .on('zoom', draw);
 
-  let gradient;
+  //let gradient;
 
   function resize(w, h) {
     svgContainer
@@ -57,6 +57,7 @@ export default function() {
 
     width = w -margin.left - margin.right;
     height = h -margin.top - margin.bottom;
+
     x.range([0, width]);
     y.range([height, 0]);
 
@@ -84,28 +85,30 @@ export default function() {
   }
 
   function init() {
-    gradient = svg.append("defs").append("linearGradient")
-      .attr("id", "gradient")
-      .attr("x2", "0%")
-      .attr("y2", "100%");
+    //gradient = svg.append("defs").append("linearGradient")
+    //  .attr("id", "gradient")
+    //  .attr("x2", "0%")
+    //  .attr("y2", "100%");
+    //
+    //gradient.append("stop")
+    //  .attr("offset", "0%")
+    //  .attr("stop-color", "#fff")
+    //  .attr("stop-opacity", .5);
+    //
+    //gradient.append("stop")
+    //  .attr("offset", "100%")
+    //  .attr("stop-color", "#999")
+    //  .attr("stop-opacity", 1);
 
-    gradient.append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", "#fff")
-      .attr("stop-opacity", .5);
-
-    gradient.append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", "#999")
-      .attr("stop-opacity", 1);
-
+    let xr = x.range();
+    let yr = y.range();
     svg.append('clipPath')
         .attr('id', 'clip')
       .append('rect')
-        .attr('x', x(0))
-        .attr('y', y(1))
-        .attr('width', x(1) - x(0))
-        .attr('height', y(0) - y(1));
+        .attr('x', xr[0])
+        .attr('y', yr[1])
+        .attr('width', xr[1]-xr[0])
+        .attr('height', yr[0]-yr[1]);
 
     svg.append('g')
       .attr('class', 'y axis')
@@ -136,8 +139,13 @@ export default function() {
       svg.select('g.x.axis').call(xAxis);
       svg.select('g.y.axis').call(yAxis);
 
+
+      let lines = data.map( item => { return item.values;});
+
       //svg.select('path.area').attr('d', area);
-      svg.select('path.line').attr('d', line);
+      svg.selectAll('path.line')
+        .data(lines)
+        .attr('d', line);
     }
   }
 
@@ -165,21 +173,27 @@ export default function() {
 
   api.data = function(series) {
     data = series;
-    let n = series.length;
-    let x_min = series[0].values[0].date;
-    let x_max = series[0].values[series[0].values.length-1].date;
-    let y_max = 0;
-    for (let s of series) {
-      y_max = Math.max(y_max, d3.max(s.values, d => { return d.value; }));
+    if (data.length > 0) {
+      let n = series.length;
+      let x_min = series[0].values[0].date;
+      let x_max = series[0].values[series[0].values.length-1].date;
+      let y_max = 0;
+      for (let s of series) {
+        y_max = Math.max(y_max, d3.max(s.values, d => { return d.value; }));
+      }
+      //x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
+      //y.domain([0, d3.max(data, d => { return d.value; })]);
+      x.domain([x_min, x_max]);
+      y.domain([0, y_max]);
+      zoom.x(x);
     }
-    //x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
-    //y.domain([0, d3.max(data, d => { return d.value; })]);
-    x.domain([x_min, x_max]);
-    y.domain([0, y_max]);
-    zoom.x(x);
 
     //svg.select('path.area').data([data]);
-    svg.select('path.line').data([data]);
+    let lines = svg.selectAll('path.line')
+        .data(data)
+      .enter()
+        .append('path')
+        .attr('class', 'line');
 
     draw();
     return this;
