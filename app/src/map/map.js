@@ -5,7 +5,7 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
 
   'use strict';
 
-  module.exports = function (el, opt) {
+  module.exports = function (opt) {
 
     var AREA_ALPHA = 0.6;
     var POPULATION_FACTOR = 1000;
@@ -23,7 +23,7 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
 
     // options = Object.assign({}, MAP_DEFAULTS, opt);
     var options = _config.MAP_DEFAULTS;
-    var map = new _leaflet.Map(el).addLayer(_leaflet.tileLayer(options.mapbox.url, options.mapbox.opt)).setView(options.center, options.zoom);
+    var map = new _leaflet.Map('map').addLayer(_leaflet.tileLayer(options.mapbox.url, options.mapbox.opt)).setView(options.center, options.zoom);
 
     var transform = _d3.geo.transform({ point: projectPoint });
     var path = _d3.geo.path().projection(transform);
@@ -49,7 +49,11 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
 
         var feature = svg.selectAll('path').data(collection.features, function (d) {
           return d.properties.Zip_Code;
-        }).enter().append('path');
+        }).enter().append('path').on('mousein', function (d) {
+          console.log('in: ' + d.properties.Zip_Code);
+        }).on('mouseout', function (d) {
+          console.log('out: ' + d.properties.Zip_Code);
+        });
 
         function update() {
           feature.attr('d', path);
@@ -80,9 +84,6 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
           current.set(enc.zipcode, count + 1);
         }
       });
-
-      console.log(current);
-
       var update = [];
       current.forEach(function (n, zipcode) {
         var feature = zipcodes.get(zipcode);

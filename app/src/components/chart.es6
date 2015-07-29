@@ -114,6 +114,7 @@ export default function() {
 
       let lines = svg.selectAll('path.line')
         .data(data)
+        .attr('stroke', d => { return d.color; })
         .attr('d', d => { return line(d.values); });
 
       lines.exit().remove();

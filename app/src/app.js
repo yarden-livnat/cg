@@ -9,7 +9,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
 
   var _CG = _interopRequireDefault(_cgCg);
 
-  var map = (0, _mapMap)('map');
+  var map = (0, _mapMap)();
   var selection = _modelModels.selection();
   var cg = (0, _CG['default'])();
   var info = (0, _info)();

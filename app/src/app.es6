@@ -15,7 +15,7 @@ import * as Info from 'info';
 
 import * as model from 'model/models'
 
-let map = Map('map');
+let map = Map();
 let selection = model.selection();
 let cg = CG();
 let info = Info();

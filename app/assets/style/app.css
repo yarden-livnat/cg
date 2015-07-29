@@ -92,7 +92,6 @@ input[type=date]::-webkit-inner-spin-button {
   stroke-opacity: 0.5; }
 .chart path.line, #summary-chart path.line, #selected-chart path.line {
   fill: none;
-  stroke: #000;
   stroke-width: .5px; }
 .chart rect.pane, #summary-chart rect.pane, #selected-chart rect.pane {
   cursor: move;

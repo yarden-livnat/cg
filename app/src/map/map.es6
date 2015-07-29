@@ -6,7 +6,7 @@ import {MAP_DEFAULTS} from 'config';
 import * as d3 from 'd3';
 import * as L from 'leaflet';
 
-export default function (el, opt) {
+export default function (opt) {
 
   const AREA_ALPHA = 0.6;
   const POPULATION_FACTOR = 1000;
@@ -22,7 +22,7 @@ export default function (el, opt) {
 
   // options = Object.assign({}, MAP_DEFAULTS, opt);
   let options = MAP_DEFAULTS;
-  let map = new L.Map(el)
+  let map = new L.Map('map')
     .addLayer(L.tileLayer(options.mapbox.url, options.mapbox.opt))
     .setView(options.center, options.zoom);
 
@@ -51,7 +51,10 @@ export default function (el, opt) {
 
       let feature = svg.selectAll("path")
         .data(collection.features, function(d) { return d.properties.Zip_Code;})
-        .enter().append("path");
+        .enter()
+          .append("path")
+          .on('mousein', d => { console.log('in: '+d.properties.Zip_Code); })
+          .on('mouseout', d => { console.log('out: '+d.properties.Zip_Code); });
 
       function update() {
         feature.attr("d", path);
@@ -82,9 +85,6 @@ export default function (el, opt) {
         current.set(enc.zipcode, count+1);
       }
     });
-
-    console.log(current);
-
     let update = [];
     current.forEach((n, zipcode) => {
       let feature = zipcodes.get(zipcode);

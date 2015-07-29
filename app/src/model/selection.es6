@@ -4,6 +4,30 @@
 
 import * as d3 from 'd3'
 
+let available_colors = d3.scale.category10().range();
+let default_color = "gray";
+
+function assign_color(tag) {
+  if (!tag.color) {
+    tag.color = available_colors.shift() || default_color;
+  } else {
+    let i = available_colors.indexOf(tag.color);
+    if (i == -1) {
+      tag.color = available_colors.shift() || default_color;
+    } else {
+      available_colors.splice(i, 1);
+    }
+  }
+}
+
+function release_color(tag) {
+  if (tag.color != default_color) {
+    available_colors.push(tag.color);
+  } else {
+    tag.color = undefined;
+  }
+}
+
   function intersect(a, b) {
     let list = [],
       ia = 0, ib = 0, // indices
@@ -84,6 +108,8 @@ import * as d3 from 'd3'
     function add(tag) {
       if (tags.has(tag)) return;
 
+      assign_color(tag);
+
       tags.add(tag);
       excluded.delete(tag);
       recompute();
@@ -91,6 +117,7 @@ import * as d3 from 'd3'
 
     function remove(tag) {
       if (!tags.delete(tag)) return;
+      release_color(tag);
       recompute();
     }
 

@@ -74,7 +74,9 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         svg.select('g.x.axis').call(xAxis);
         svg.select('g.y.axis').call(yAxis);
 
-        var lines = svg.selectAll('path.line').data(data).attr('d', function (d) {
+        var lines = svg.selectAll('path.line').data(data).attr('stroke', function (d) {
+          return d.color;
+        }).attr('d', function (d) {
           return line(d.values);
         });
 

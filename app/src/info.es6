@@ -18,6 +18,13 @@ export default function(opt) {
 
   let summaryChart = chart().el('#summary-chart');
   let selectedChart = chart().el('#selected-chart');
+  let currentChart = chart().el('#current-chart');
+
+  let charts = new Map([
+    ['#summary-chart', summaryChart],
+    ['#selected-chart', selectedChart],
+    ['#current-chart', currentChart]
+  ]);
 
   function init() {
     postal.subscribe({channel:'data', topic:'changed', callback: dataChanged});
@@ -49,7 +56,7 @@ export default function(opt) {
       bins[i].items.push(item);
     }
 
-    return [{label: 'data', values: bins}];
+    return [{label: 'data', color: 'black', values: bins}];
   }
 
   function selectionChanged() {
@@ -60,23 +67,41 @@ export default function(opt) {
           .domain([from, to])
           .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
 
-    let series = [];
+    let domain = new Set(selection.domain);
+    let selectedSeries = [];
+    let currentSeries = [];
+
     for (let tag of selection.tags()) {
-      let bins = range.map(function (day) { return {date: day, value: 0, items: []}; });
+      let selectedBins = range.map(function (day) { return {date: day, value: 0, items: []}; });
+      let currentBins = range.map(function (day) { return {date: day, value: 0, items: []}; });
+
       for (let item of tag.items) {
         let i = scale(item.date);
-        bins[i].value++;
-        bins[i].items.push(item);
+        selectedBins[i].value++;
+        selectedBins[i].items.push(item);
+
+        if (domain.has(item)) {
+          currentBins[i].value++;
+          currentBins[i].items.push(item);
+        }
       }
-      series.push({
+
+      selectedSeries.push({
         label: tag.concept.label,
-        values: bins
+        color: tag.color,
+        values: selectedBins
+      });
+
+      currentSeries.push({
+        label: tag.concept.label,
+        color: tag.color,
+        values: currentBins
       });
     }
 
-    selectedChart.data(series);
+    selectedChart.data(selectedSeries);
+    currentChart.data(currentSeries);
   }
-
 
   let api = {};
 
@@ -92,18 +117,11 @@ export default function(opt) {
   };
 
   api.resize = function() {
-    let b = d3.select('#summary-chart').node().getBoundingClientRect();
-    let w = parseInt(d3.select('#summary-chart').style('width'));
-    let h = parseInt(d3.select('#summary-chart').style('height'));
-    summaryChart.resize([w, h]);
-
-    //d3.select('#selected-chart')
-    //  .attr('width', w)
-    //  .attr('height', size[1]);
-    b = d3.select('#selected-chart').node().getBoundingClientRect();
-    w = parseInt(d3.select('#selected-chart').style('width'));
-    h = parseInt(d3.select('#selected-chart').style('height'));
-    selectedChart.resize([w, h]);
+    for (var [name, chart] of charts) {
+      let w = parseInt(d3.select(name).style('width'));
+      let h = parseInt(d3.select(name).style('height'));
+      chart.resize([w, h]);
+    }
 
     return this;
   };
