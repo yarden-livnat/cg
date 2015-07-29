@@ -27,12 +27,17 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
 
   function getSize(el) {
     var d3el = _d3.select(el);
+    var w = parseInt(d3el.style('width'));
+    var h = parseInt(d3el.style('height'));
+
+    console.log('resize ' + el + ': ' + parseInt(d3el.style('width')) + 'x' + parseInt(d3el.style('height')));
+
     return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
   }
 
   function resize() {
     cg.resize(getSize('#cg'));
-    info.resize(getSize('#results-area'));
+    info.resize();
   }
 
   function initHTML() {

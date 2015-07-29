@@ -7,7 +7,7 @@ import * as d3 from 'd3'
 export default function() {
 
   let data;
-  let margin = {top:10, right: 60, bottom: 30, left:20};
+  let margin = {top:0, right: 30, bottom: 20, left:0};
   let width = 350 - margin.left - margin.right,
       height = 150 - margin.top - margin.bottom;
 
@@ -23,22 +23,16 @@ export default function() {
   let xAxis = d3.svg.axis()
     .scale(x)
     .orient('bottom')
-    .tickSize(-height, 0)
+    .tickSize(3, 0)
     .tickPadding(6)
     .ticks(4);
 
   let yAxis = d3.svg.axis()
     .scale(y)
     .orient('right')
-    .tickSize(-width)
+    .tickSize(3)
     .tickPadding(6)
     .ticks(4);
-
-  //let area = d3.svg.area()
-  //  .interpolate('step-after')
-  //  .x( d => { return x(d.date); })
-  //  .y0(y(0))
-  //  .y1( d => { return y(d.value); });
 
   let line = d3.svg.line()
     .interpolate('step-after')
@@ -47,8 +41,6 @@ export default function() {
 
   let zoom = d3.behavior.zoom()
     .on('zoom', draw);
-
-  //let gradient;
 
   function resize(w, h) {
     svgContainer
@@ -61,11 +53,12 @@ export default function() {
     x.range([0, width]);
     y.range([height, 0]);
 
-    xAxis.tickSize(-width);
-    yAxis.tickSize(-width);
+    xAxis.tickSize(3);
+    yAxis.tickSize(3);
 
     let xr = x.range();
     let yr = y.range();
+
     svg.select('#clip rect')
       .attr('x', xr[0])
       .attr('y', yr[1])
@@ -85,21 +78,6 @@ export default function() {
   }
 
   function init() {
-    //gradient = svg.append("defs").append("linearGradient")
-    //  .attr("id", "gradient")
-    //  .attr("x2", "0%")
-    //  .attr("y2", "100%");
-    //
-    //gradient.append("stop")
-    //  .attr("offset", "0%")
-    //  .attr("stop-color", "#fff")
-    //  .attr("stop-opacity", .5);
-    //
-    //gradient.append("stop")
-    //  .attr("offset", "100%")
-    //  .attr("stop-color", "#999")
-    //  .attr("stop-opacity", 1);
-
     let xr = x.range();
     let yr = y.range();
     svg.append('clipPath')
@@ -113,11 +91,6 @@ export default function() {
     svg.append('g')
       .attr('class', 'y axis')
       .attr('transform', 'translate(' + width + ',0)');
-
-    //svg.append('path')
-    //  .attr('class', 'area')
-    //  .attr('clip-path', 'url(#clip)')
-    //  .style('fill', 'url(#gradient)');
 
     svg.append("g")
       .attr("class", "x axis")
@@ -139,13 +112,11 @@ export default function() {
       svg.select('g.x.axis').call(xAxis);
       svg.select('g.y.axis').call(yAxis);
 
+      let lines = svg.selectAll('path.line')
+        .data(data)
+        .attr('d', d => { return line(d.values); });
 
-      let lines = data.map( item => { return item.values;});
-
-      //svg.select('path.area').attr('d', area);
-      svg.selectAll('path.line')
-        .data(lines)
-        .attr('d', line);
+      lines.exit().remove();
     }
   }
 
@@ -181,14 +152,11 @@ export default function() {
       for (let s of series) {
         y_max = Math.max(y_max, d3.max(s.values, d => { return d.value; }));
       }
-      //x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
-      //y.domain([0, d3.max(data, d => { return d.value; })]);
       x.domain([x_min, x_max]);
       y.domain([0, y_max]);
       zoom.x(x);
     }
 
-    //svg.select('path.area').data([data]);
     let lines = svg.selectAll('path.line')
         .data(data)
       .enter()

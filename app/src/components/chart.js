@@ -8,7 +8,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
   module.exports = function () {
 
     var data = undefined;
-    var margin = { top: 10, right: 60, bottom: 30, left: 20 };
+    var margin = { top: 0, right: 30, bottom: 20, left: 0 };
     var width = 350 - margin.left - margin.right,
         height = 150 - margin.top - margin.bottom;
 
@@ -19,15 +19,9 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var y = _d3.scale.linear().range([height, 0]);
 
-    var xAxis = _d3.svg.axis().scale(x).orient('bottom').tickSize(-height, 0).tickPadding(6).ticks(4);
+    var xAxis = _d3.svg.axis().scale(x).orient('bottom').tickSize(3, 0).tickPadding(6).ticks(4);
 
-    var yAxis = _d3.svg.axis().scale(y).orient('right').tickSize(-width).tickPadding(6).ticks(4);
-
-    //let area = d3.svg.area()
-    //  .interpolate('step-after')
-    //  .x( d => { return x(d.date); })
-    //  .y0(y(0))
-    //  .y1( d => { return y(d.value); });
+    var yAxis = _d3.svg.axis().scale(y).orient('right').tickSize(3).tickPadding(6).ticks(4);
 
     var line = _d3.svg.line().interpolate('step-after').x(function (d) {
       return x(d.date);
@@ -36,8 +30,6 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     });
 
     var zoom = _d3.behavior.zoom().on('zoom', draw);
-
-    //let gradient;
 
     function resize(w, h) {
       svgContainer.attr('width', w).attr('height', h);
@@ -48,11 +40,12 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       x.range([0, width]);
       y.range([height, 0]);
 
-      xAxis.tickSize(-width);
-      yAxis.tickSize(-width);
+      xAxis.tickSize(3);
+      yAxis.tickSize(3);
 
       var xr = x.range();
       var yr = y.range();
+
       svg.select('#clip rect').attr('x', xr[0]).attr('y', yr[1]).attr('width', xr[1] - xr[0]).attr('height', yr[0] - yr[1]);
 
       svg.select('g.y.axis').attr('transform', 'translate(' + width + ',0)');
@@ -63,31 +56,11 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     }
 
     function init() {
-      //gradient = svg.append("defs").append("linearGradient")
-      //  .attr("id", "gradient")
-      //  .attr("x2", "0%")
-      //  .attr("y2", "100%");
-      //
-      //gradient.append("stop")
-      //  .attr("offset", "0%")
-      //  .attr("stop-color", "#fff")
-      //  .attr("stop-opacity", .5);
-      //
-      //gradient.append("stop")
-      //  .attr("offset", "100%")
-      //  .attr("stop-color", "#999")
-      //  .attr("stop-opacity", 1);
-
       var xr = x.range();
       var yr = y.range();
       svg.append('clipPath').attr('id', 'clip').append('rect').attr('x', xr[0]).attr('y', yr[1]).attr('width', xr[1] - xr[0]).attr('height', yr[0] - yr[1]);
 
       svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + width + ',0)');
-
-      //svg.append('path')
-      //  .attr('class', 'area')
-      //  .attr('clip-path', 'url(#clip)')
-      //  .style('fill', 'url(#gradient)');
 
       svg.append('g').attr('class', 'x axis').attr('transform', 'translate(0,' + height + ')');
 
@@ -101,12 +74,11 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         svg.select('g.x.axis').call(xAxis);
         svg.select('g.y.axis').call(yAxis);
 
-        var lines = data.map(function (item) {
-          return item.values;
+        var lines = svg.selectAll('path.line').data(data).attr('d', function (d) {
+          return line(d.values);
         });
 
-        //svg.select('path.area').attr('d', area);
-        svg.selectAll('path.line').data(lines).attr('d', line);
+        lines.exit().remove();
       }
     }
 
@@ -163,14 +135,11 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
           }
         }
 
-        //x.domain([d3.min(data, d => { return d.date; }), d3.max(data, d => { return d.date; })]);
-        //y.domain([0, d3.max(data, d => { return d.value; })]);
         x.domain([x_min, x_max]);
         y.domain([0, y_max]);
         zoom.x(x);
       }
 
-      //svg.select('path.area').data([data]);
       var lines = svg.selectAll('path.line').data(data).enter().append('path').attr('class', 'line');
 
       draw();

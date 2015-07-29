@@ -91,18 +91,19 @@ export default function(opt) {
     return this;
   };
 
-  api.resize = function(size) {
-    let w = Math.min((size[0] - parseInt(d3.select('#tags-table').style('width')))/2, CHART_MAX_WIDTH) - 10;
+  api.resize = function() {
+    let b = d3.select('#summary-chart').node().getBoundingClientRect();
+    let w = parseInt(d3.select('#summary-chart').style('width'));
+    let h = parseInt(d3.select('#summary-chart').style('height'));
+    summaryChart.resize([w, h]);
 
-    d3.select('#summary-chart')
-      .attr('width', w)
-      .attr('height', size[1]);
-    summaryChart.resize([w, size[1]]);
-
-    d3.select('#selected-chart')
-      .attr('width', w)
-      .attr('height', size[1]);
-    selectedChart.resize([w, size[1]]);
+    //d3.select('#selected-chart')
+    //  .attr('width', w)
+    //  .attr('height', size[1]);
+    b = d3.select('#selected-chart').node().getBoundingClientRect();
+    w = parseInt(d3.select('#selected-chart').style('width'));
+    h = parseInt(d3.select('#selected-chart').style('height'));
+    selectedChart.resize([w, h]);
 
     return this;
   };
