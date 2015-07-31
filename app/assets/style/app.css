@@ -111,64 +111,49 @@ body {
   font: bold 16pt Arial;
   margin: 10px 0 10px 0; }
 
-.placeholder {
-  margin: 5px;
-  width: 200px;
-  height: 150px;
-  border: solid lightgray 1px;
-  background-color: lightgray; }
-
 #query-area {
   display: inline-block;
   width: 16em;
   height: auto;
   padding: 10px; }
 
-#results-area {
+#details-area {
   position: fixed;
   left: 21em;
   top: 0;
   right: 195px;
   height: 150px;
   padding: 0 20px 0 10px; }
-  #results-area ul {
-    list-style: none;
-    position: relative;
-    padding: 10px 0;
-    margin: 0; }
-  #results-area ul li {
-    display: inline-block;
-    padding: 0 10px;
-    vertical-align: top; }
 
-#tags-table {
-  max-height: 300px;
-  height: 300px;
+table {
+  display: inline-block;
+  max-height: 130px;
+  height: 130px;
   width: 180px;
   table-layout: fixed;
   border-collapse: collapse; }
-  #tags-table th {
+  table th {
     border-bottom: solid thin;
     text-decoration: underline; }
-  #tags-table td, #tags-table th {
+  table td, table th {
     padding: 0.25rem; }
-  #tags-table td.text-col, #tags-table th.text-col {
+  table td.text-col, table th.text-col {
     text-align: left; }
-  #tags-table td.number-col, #tags-table th.number-col {
+  table td.number-col, table th.number-col {
     text-align: right; }
-  #tags-table td:nth-child(1), #tags-table th:nth-child(1) {
+  table td:nth-child(1), table th:nth-child(1) {
     min-width: 120px; }
-  #tags-table td:nth-child(2), #tags-table th:nth-child(2) {
+  table td:nth-child(2), table th:nth-child(2) {
     width: 50px; }
-  #tags-table td:nth-child(2) {
+  table td:nth-child(2) {
     text-align: right; }
-  #tags-table thead {
+  table thead {
     background-color: #eee;
     font: 9pt sans-serif; }
-    #tags-table thead tr {
+    table thead tr {
       display: block;
       position: relative; }
-  #tags-table tbody {
+  table tbody {
     display: block;
     overflow: auto;
     width: 100%;
@@ -194,11 +179,6 @@ body {
   width: auto;
   height: 100%; }
 
-/* main area */
-#tags-info {
-  width: auto;
-  height: 150px; }
-
 #cg {
   position: fixed;
   left: 16em;
@@ -215,12 +195,14 @@ body {
   width: 400px;
   min-height: 100px; }
 
-#map {
-  width: 400px;
-  height: 400px;
+#map-area {
   position: fixed;
   right: 10px;
   bottom: 10px; }
+
+#map {
+  width: 400px;
+  height: 400px; }
   #map path {
     fill: #fff;
     fill-opacity: 0;

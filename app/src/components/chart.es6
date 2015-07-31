@@ -7,7 +7,7 @@ import * as d3 from 'd3'
 export default function() {
 
   let data;
-  let margin = {top:0, right: 30, bottom: 20, left:0};
+  let margin = {top:5, right: 30, bottom: 20, left:0};
   let width = 350 - margin.left - margin.right,
       height = 150 - margin.top - margin.bottom;
 
@@ -35,7 +35,8 @@ export default function() {
     .ticks(4);
 
   let line = d3.svg.line()
-    .interpolate('step-after')
+    //.interpolate('step-after')
+    .interpolate('cardinal')
     .x( d => { return x(d.date); })
     .y( d => { return y(d.value); });
 
@@ -98,7 +99,7 @@ export default function() {
 
     svg.append("path")
       .attr("class", "line")
-      .attr("clip-path", "url(#clip)");
+      .attr("clip-path", "url(#clip");
 
     svg.append("rect")
       .attr("class", "pane")
@@ -115,6 +116,7 @@ export default function() {
       let lines = svg.selectAll('path.line')
         .data(data)
         .attr('stroke', d => { return d.color; })
+        .attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
         .attr('d', d => { return line(d.values); });
 
       lines.exit().remove();
@@ -162,7 +164,8 @@ export default function() {
         .data(data)
       .enter()
         .append('path')
-        .attr('class', 'line');
+        .attr('class', 'line')
+        .attr("clip-path", "url(#clip)");
 
     draw();
     return this;

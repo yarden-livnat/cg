@@ -13,8 +13,17 @@ export default function(opt) {
 
   let selection;
 
-  let tagsTable = table().el(d3.select('#tags-table'))
+  let tagsTable = table().el('#tags-table')
     .columns([{title: 'Tag', name: 'name'}, 'n']);
+
+  let selectedTable = table().el('#selected-table')
+    .columns([{title: 'Selected', name: 'name'}, 'n']);
+
+  let categoryTable = table().el('#category-table')
+    .columns(['category', 'n']);
+
+  let systemTable = table().el('#system-table')
+    .columns(['system', 'n']);
 
   let summaryChart = chart().el('#summary-chart');
   let selectedChart = chart().el('#selected-chart');
@@ -67,40 +76,80 @@ export default function(opt) {
           .domain([from, to])
           .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
 
-    let domain = new Set(selection.domain);
     let selectedSeries = [];
-    let currentSeries = [];
 
     for (let tag of selection.tags()) {
-      let selectedBins = range.map(function (day) { return {date: day, value: 0, items: []}; });
-      let currentBins = range.map(function (day) { return {date: day, value: 0, items: []}; });
-
-      for (let item of tag.items) {
-        let i = scale(item.date);
-        selectedBins[i].value++;
-        selectedBins[i].items.push(item);
-
-        if (domain.has(item)) {
-          currentBins[i].value++;
-          currentBins[i].items.push(item);
-        }
-      }
-
+      let bins = histogram(tag.items, range, scale);
       selectedSeries.push({
         label: tag.concept.label,
         color: tag.color,
-        values: selectedBins
-      });
-
-      currentSeries.push({
-        label: tag.concept.label,
-        color: tag.color,
-        values: currentBins
+        type: 'line',
+        marker: 'solid',
+        values: bins
       });
     }
 
+    for (let tag of selection.excluded()) {
+      let bins = histogram(tag.items, range, scale);
+      selectedSeries.push({
+        label: tag.concept.label,
+        color: tag.color,
+        type: 'line',
+        marker: 'dash',
+        values: bins
+      });
+    }
+
+    //selectedSeries.push({
+    //  label: tag.concept.label,
+    //  color: tag.color,
+    //  type: 'line',
+    //  values: histogram(selection.selectedItems(), range)
+    //});
+
     selectedChart.data(selectedSeries);
-    currentChart.data(currentSeries);
+
+    let selected  = [];
+    let categories = new Map();
+    let systems = new Map();
+    for (let tag of selection.tags()) {
+      selected.push({name:tag.concept.label, n: tag.items.length, tag:tag});
+
+      let entry = categories.get(tag.concept.category);
+      if (!entry) {
+        entry = {category: tag.concept.category, n: 0};
+        categories.set(tag.concept.category, entry);
+      }
+      entry.n++;
+
+      entry = systems.get(tag.concept.system);
+      if (!entry) {
+        entry = {system: tag.concept.system, n: 0};
+        systems.set(tag.concept.system, entry);
+      }
+      entry.n++;
+    }
+
+    selectedTable.data(selected);
+    categoryTable.data(toArray(categories.values()));
+    systemTable.data(toArray(systems.values()));
+  }
+
+  function toArray(iter) {
+    let a = [];
+    for (let entry of iter) {
+      a.push(entry);
+    }
+    return a;
+  }
+  function histogram(items, range, scale) {
+    let bins = range.map(function (day) { return {date: day, value: 0, items: []}; });
+    for (let item of items) {
+      let i = scale(item.date);
+      bins[i].value++;
+      bins[i].items.push(item);
+    }
+    return bins;
   }
 
   let api = {};

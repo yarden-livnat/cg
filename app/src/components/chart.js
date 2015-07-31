@@ -8,7 +8,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
   module.exports = function () {
 
     var data = undefined;
-    var margin = { top: 0, right: 30, bottom: 20, left: 0 };
+    var margin = { top: 5, right: 30, bottom: 20, left: 0 };
     var width = 350 - margin.left - margin.right,
         height = 150 - margin.top - margin.bottom;
 
@@ -23,7 +23,9 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var yAxis = _d3.svg.axis().scale(y).orient('right').tickSize(3).tickPadding(6).ticks(4);
 
-    var line = _d3.svg.line().interpolate('step-after').x(function (d) {
+    var line = _d3.svg.line()
+    //.interpolate('step-after')
+    .interpolate('cardinal').x(function (d) {
       return x(d.date);
     }).y(function (d) {
       return y(d.value);
@@ -64,7 +66,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
       svg.append('g').attr('class', 'x axis').attr('transform', 'translate(0,' + height + ')');
 
-      svg.append('path').attr('class', 'line').attr('clip-path', 'url(#clip)');
+      svg.append('path').attr('class', 'line').attr('clip-path', 'url(#clip');
 
       svg.append('rect').attr('class', 'pane').attr('width', width).attr('height', height).call(zoom);
     }
@@ -76,6 +78,8 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
         var lines = svg.selectAll('path.line').data(data).attr('stroke', function (d) {
           return d.color;
+        }).attr('stroke-dasharray', function (d) {
+          return d.marker == 'dash' ? '3' : '0';
         }).attr('d', function (d) {
           return line(d.values);
         });
@@ -142,7 +146,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         zoom.x(x);
       }
 
-      var lines = svg.selectAll('path.line').data(data).enter().append('path').attr('class', 'line');
+      var lines = svg.selectAll('path.line').data(data).enter().append('path').attr('class', 'line').attr('clip-path', 'url(#clip)');
 
       draw();
       return this;

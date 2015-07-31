@@ -122,6 +122,14 @@ function release_color(tag) {
     }
 
     function clear(silent) {
+      for (let tag of tags) {
+        release_color(tag);
+      }
+
+      for (let tag of excluded) {
+        release_color(tag);
+      }
+
       tags = new Set();
       excluded = new Set();
       filteredDomain = initialDomain;
@@ -179,10 +187,12 @@ function release_color(tag) {
     selection.exclude = function (tag, add) {
       if (add) {
         if (excluded.has(tag)) return;
+        assign_color(tag);
         excluded.add(tag);
         tags.delete(tag);
       } else {
         if (!excluded.delete(tag)) return;
+        release_color(tag);
       }
       recompute();
     };
@@ -209,6 +219,10 @@ function release_color(tag) {
 
     selection.tags = function() {
       return tags;
+    };
+
+    selection.excluded = function() {
+      return excluded;
     };
 
     selection.isAnySelected = function () {

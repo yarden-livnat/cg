@@ -150,6 +150,56 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     }
 
     function clear(silent) {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = tags[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var tag = _step.value;
+
+          release_color(tag);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = excluded[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var tag = _step2.value;
+
+          release_color(tag);
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
       tags = new Set();
       excluded = new Set();
       filteredDomain = initialDomain;
@@ -216,10 +266,12 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     selection.exclude = function (tag, add) {
       if (add) {
         if (excluded.has(tag)) return;
+        assign_color(tag);
         excluded.add(tag);
         tags['delete'](tag);
       } else {
         if (!excluded['delete'](tag)) return;
+        release_color(tag);
       }
       recompute();
     };
@@ -247,6 +299,10 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     selection.tags = function () {
       return tags;
+    };
+
+    selection.excluded = function () {
+      return excluded;
     };
 
     selection.isAnySelected = function () {

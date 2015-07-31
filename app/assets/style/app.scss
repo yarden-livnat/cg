@@ -19,14 +19,6 @@ body {
   margin: 10px 0 10px 0;
 }
 
-.placeholder {
-  margin: 5px;
-  width: 200px;
-  height: 150px;
-  border: solid lightgray 1px;
-  background-color: lightgray;
-}
-
 #query-area {
   display: inline-block;
   width: $query-width;
@@ -35,44 +27,45 @@ body {
   //background-color: antiquewhite;
 }
 
-#results-area {
+#details-area {
   position: fixed;
   left: $query-width + 5;
   top: 0;
   right: $info-width - 5;
-  height: $lists-height;
+  height: $details-height;
   padding: 0 20px 0 10px;
 
-  ul { list-style: none; position: relative; padding: 10px 0; margin: 0;}
-  ul li { display: inline-block; padding: 0 10px; vertical-align: top;}
+  //ul { list-style: none; position: relative; padding: 10px 0; margin: 0;}
+  //ul li { display: inline-block; padding: 0 10px; vertical-align: top;}
 }
 
-#tags-table {
-    max-height: $table-max-height;
-    height: $table-max-height;
-    width: 180px;
+table {
+  display: inline-block;
+  max-height: $table-max-height;
+  height: $table-max-height;
+  width: 180px;
 
-    table-layout: fixed;
-    border-collapse: collapse;
-    //    border-width: 2px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  //    border-width: 2px;
 
-    th { border-bottom: solid thin;  text-decoration: underline; }
-    td, th { padding: 0.25rem;  }
-    td.text-col, th.text-col { text-align: left; }
-    td.number-col, th.number-col { text-align: right; }
+  th { border-bottom: solid thin;  text-decoration: underline; }
+  td, th { padding: 0.25rem;  }
+  td.text-col, th.text-col { text-align: left; }
+  td.number-col, th.number-col { text-align: right; }
 
-    td:nth-child(1), th:nth-child(1) { min-width: 120px; }
-    td:nth-child(2), th:nth-child(2) { width: 50px;}
-    td:nth-child(2) {text-align: right;}
+  td:nth-child(1), th:nth-child(1) { min-width: 120px; }
+  td:nth-child(2), th:nth-child(2) { width: 50px;}
+  td:nth-child(2) {text-align: right;}
 
-    thead {
-      background-color: #eee;
-      font: 9pt sans-serif;
-      tr {
-        display: block;
-        position: relative;
-      }
+  thead {
+    background-color: #eee;
+    font: 9pt sans-serif;
+    tr {
+      display: block;
+      position: relative;
     }
+  }
 
     tbody {
       display: block;
@@ -123,17 +116,11 @@ body {
   height: 100%;
 }
 
-/* main area */
-#tags-info {
-  width: auto;
-  height: $lists-height;
-}
-
 #cg {
   position: fixed;
   left: $query-width;
   right: $info-width;
-  top:$lists-height;
+  top: $details-height;
   bottom: 10px;
 }
 
@@ -148,13 +135,17 @@ body {
   min-height: 100px;
 }
 
-#map {
-  width: $map-width;
-  height: $map-height;
-
+#map-area {
   position: fixed;
   right: 10px;
   bottom: 10px;
+}
+
+
+
+#map {
+  width: $map-width;
+  height: $map-height;
 
   path {
     fill: #fff;

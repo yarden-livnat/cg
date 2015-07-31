@@ -11,6 +11,16 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
     var POPULATION_FACTOR = 1000;
     var DURATION = 500;
 
+    var BOUNDARY_HIGHLIGHT_WIDTH = '1.5px';
+    var BOUNDARY_ACTIVE_WIDTH = '0.5px';
+    var BOUNDARY_NON_ACTIVE_WIDTH = '0';
+
+    var BOUNDARY_SELECTED_COLOR = 'blue';
+    var BOUNDARY_ACTIVE_COLOR = '#333';
+    var BOUNDARY_NON_ACTIVE_COLOR = '#333';
+
+    var format = _d3.format('4.2f');
+
     var colorScale = _d3.interpolateLab('#fff', '#f00');
     var width = undefined,
         height = undefined;
@@ -18,8 +28,10 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
     var selection = undefined;
     var zipcodes = new Map();
     var active = new Map();
+    var current = new Map();
     var svg = undefined,
         svgContainer = undefined;
+    var selectedZipcodes = [];
 
     // options = Object.assign({}, MAP_DEFAULTS, opt);
     var options = _config.MAP_DEFAULTS;
@@ -44,15 +56,17 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
 
         collection.features.forEach(function (d) {
           zipcodes.set(d.properties.Zip_Code, d);
-          //d.LatLng = new L.LatLng(d.geometry.coordinates[1], d.geometry.coordinates[0]);
+          d.state = { n: 0, boundary_color: BOUNDARY_NON_ACTIVE_COLOR, boundary_width: BOUNDARY_NON_ACTIVE_WIDTH };
         });
 
         var feature = svg.selectAll('path').data(collection.features, function (d) {
           return d.properties.Zip_Code;
-        }).enter().append('path').on('mousein', function (d) {
-          console.log('in: ' + d.properties.Zip_Code);
+        }).enter().append('path').on('mouseenter', function (d) {
+          showInfo(d.properties.Zip_Code, true);
         }).on('mouseout', function (d) {
-          console.log('out: ' + d.properties.Zip_Code);
+          showInfo(d.properties.Zip_Code, false);
+        }).on('click', function (d) {
+          selectZipcode(d.properties.Zip_Code, _d3.event.metaKey);
         });
 
         function update() {
@@ -64,40 +78,130 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
       });
     }
 
+    function showInfo(zipcode, show) {
+      var cases = current.get(zipcode);
+      if (show && cases) {
+        var rate = format(cases * POPULATION_FACTOR / population.get(zipcode));
+        _d3.select('#map-info').text('Zipcode: ' + zipcode + ' cases:' + cases + '  rate:' + rate);
+      } else {
+        _d3.select('#map-info').text('');
+      }
+
+      var feature = zipcodes.get(zipcode);
+      feature.state.highlight = show;
+      feature.state.boundary_width = show && cases ? BOUNDARY_HIGHLIGHT_WIDTH : cases ? BOUNDARY_ACTIVE_WIDTH : BOUNDARY_NON_ACTIVE_WIDTH;
+
+      svg.selectAll('path').filter(function (d) {
+        return d.properties.Zip_Code == zipcode;
+      }).style('stroke-width', feature.state.boundary_width);
+    }
+
+    function selectZipcode(zipcode, append) {
+      _d3.event.preventDefault();
+      var update = [];
+      if (!append) {
+        if (selectedZipcodes.length == 1 && selectedZipcodes[0] == zipcode) {
+          select(zipcode, false);
+          update = [zipcode];
+          selectedZipcodes = [];
+        } else {
+          select(selectedZipcodes, false);
+          select(zipcode, true);
+          update = selectedZipcodes;
+          selectedZipcodes = [zipcode];
+          if (update.indexOf(zipcode) == -1) update.push(zipcode);
+        }
+      } else {
+        var i = selectedZipcodes.indexOf(zipcode);
+        if (i == -1) {
+          select(zipcode, true);
+          selectedZipcodes.push(zipcode);
+        } else {
+          select(zipcode, false);
+          selectedZipcodes.splice(i, 1);
+        }
+        update = [zipcode];
+      }
+
+      console.log('selected: ' + selectedZipcodes);
+      svg.selectAll('path').filter(function (d) {
+        return update.indexOf(d.properties.Zip_Code) != -1;
+      }).each(function (d) {
+        console.log(d + ': ' + d.state.boundary_color);
+      }).style('stroke', function (d) {
+        return d.state.boundary_color;
+      });
+    }
+
+    function select(zipcode, on) {
+      if (!zipcode) return;
+      var list = zipcode instanceof Array && zipcode || [zipcode];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var z = _step.value;
+
+          var feature = zipcodes.get(z);
+          feature.state.selected = on;
+          feature.state.boundary_color = on ? BOUNDARY_SELECTED_COLOR : feature.n > 0 ? BOUNDARY_ACTIVE_COLOR : BOUNDARY_NON_ACTIVE_COLOR;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+
     function projectPoint(x, y) {
       var point = map.latLngToLayerPoint(new _leaflet.LatLng(y, x));
       this.stream.point(point.x, point.y);
     }
 
     function assignColor(zipcode, n) {
-      var f = n * POPULATION_FACTOR / population.get(zipcode);
-      //console.log('zipcode: '+zipcode+' factor: '+n+'/'+population.get(zipcode)+' -> '+f);
-      if (f > 1) f = 1;
+      var f = Math.min(n * POPULATION_FACTOR / population.get(zipcode), 1);
       return colorScale(f);
     }
 
     function selectionChanged() {
-      var current = new Map();
+      current = new Map();
       selection.domain.forEach(function (enc) {
         if (population.has(enc.zipcode)) {
           var count = current.get(enc.zipcode) || 0;
           current.set(enc.zipcode, count + 1);
         }
       });
+
       var update = [];
       current.forEach(function (n, zipcode) {
         var feature = zipcodes.get(zipcode);
         if (feature) {
-          feature.alpha = AREA_ALPHA;
-          feature.color = assignColor(zipcode, n);
+          feature.state.alpha = AREA_ALPHA;
+          feature.state.color = assignColor(zipcode, n);
+          feature.state.active = true;
+          feature.state.boundary_width = BOUNDARY_ACTIVE_WIDTH;
+          feature.state.boundary_color = feature.state.selected ? BOUNDARY_SELECTED_COLOR : BOUNDARY_ACTIVE_COLOR;
           update.push(feature);
         }
       });
       active.forEach(function (n, zipcode) {
         if (!current.has(zipcode)) {
           var feature = zipcodes.get(zipcode);
-          feature.color = '#fff';
-          feature.alpha = 0;
+          feature.state.color = '#fff';
+          feature.state.alpha = 0;
+          feature.state.active = false;
+          feature.state.boundary_width = BOUNDARY_NON_ACTIVE_WIDTH;
           update.push(feature);
         }
       });
@@ -105,13 +209,13 @@ define(['exports', 'module', 'config', 'd3', 'leaflet'], function (exports, modu
       var s = svg.selectAll('path').data(update, function (d) {
         return d.properties.Zip_Code;
       }).transition().duration(DURATION).style('fill-opacity', function (d) {
-        return d.alpha;
+        return d.state.alpha;
       }).style('fill', function (d) {
-        return d.color;
+        return d.state.color;
       }).style('stroke', function (d) {
-        return d.alpha > 0 ? '#333' : '#ccc';
+        return d.state.boundary_color;
       }).style('stroke-width', function (d) {
-        return d.alpha > 0 ? '1px' : 0;
+        return d.state.boundary_width;
       });
 
       active = current;
