@@ -1,4 +1,4 @@
-define(['exports', 'module', 'services/data', 'components/table', 'components/chart', 'postal'], function (exports, module, _servicesData, _componentsTable, _componentsChart, _postal) {
+define(['exports', 'module', 'services/data', 'components/table', 'components/chart', 'postal', 'jquery', 'multiselect'], function (exports, module, _servicesData, _componentsTable, _componentsChart, _postal, _jquery, _multiselect) {
   /**
    * Created by yarden on 7/21/15.
    */
@@ -23,12 +23,23 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
 
     var summaryChart = (0, _componentsChart)().el('#summary-chart');
     var selectedChart = (0, _componentsChart)().el('#selected-chart');
-    var currentChart = (0, _componentsChart)().el('#current-chart');
 
-    var charts = new Map([['#summary-chart', summaryChart], ['#selected-chart', selectedChart], ['#current-chart', currentChart]]);
+    var charts = new Map([['#summary-chart', summaryChart], ['#selected-chart', selectedChart]]);
 
     function init() {
       _postal.subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
+
+      (0, _jquery)('#pathogens').multiselect();
+
+      d3.select('#pathogens').on('change', selectPathogen);
+
+      d3.select('#pathogens').selectAll('option').data(_servicesData.pathogens).enter().append('option').text(function (d) {
+        return d.name;
+      });
+    }
+
+    function selectPathogen() {
+      console.log('pathogen ' + this.options[this.selectedIndex]);
     }
 
     function dataChanged() {

@@ -6,6 +6,8 @@ import * as data from 'services/data'
 import * as table from 'components/table'
 import * as chart from 'components/chart'
 import * as postal from 'postal'
+import * as $ from 'jquery'
+import 'multiselect'
 
 export default function(opt) {
   const MIN_Y = 5;
@@ -27,16 +29,28 @@ export default function(opt) {
 
   let summaryChart = chart().el('#summary-chart');
   let selectedChart = chart().el('#selected-chart');
-  let currentChart = chart().el('#current-chart');
 
   let charts = new Map([
     ['#summary-chart', summaryChart],
     ['#selected-chart', selectedChart],
-    ['#current-chart', currentChart]
   ]);
 
   function init() {
-    postal.subscribe({channel:'data', topic:'changed', callback: dataChanged});
+    postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
+
+    $('#pathogens').multiselect();
+
+    d3.select('#pathogens').on('change', selectPathogen);
+
+    d3.select('#pathogens').selectAll('option')
+      .data(data.pathogens)
+      .enter()
+        .append('option')
+          .text(d => d.name);
+  }
+
+  function selectPathogen() {
+    console.log('pathogen '+this.options[this.selectedIndex]);
   }
 
   function dataChanged() {

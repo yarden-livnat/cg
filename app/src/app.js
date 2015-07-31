@@ -15,7 +15,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
   var info = (0, _info)();
 
   _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
-      selection.domain = _servicesData.domain; //map(function(d) { return d.id;});
+      selection.domain = _servicesData.domain;
     } });
 
   _postal.subscribe({ channel: 'data', topic: 'ready', callback: function callback() {

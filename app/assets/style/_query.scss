@@ -12,6 +12,12 @@ input[type=date]::-webkit-inner-spin-button {
   width: 4em;
 }
 
+#submit-spinner {
+  visibility: hidden;
+  margin: 10px;
+  font-size: 14px;
+}
+
 input[type=button] {
   //background: #f0f;
 //  -webkit-border-radius: 15px;

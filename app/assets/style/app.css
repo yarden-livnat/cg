@@ -34,6 +34,11 @@ input[type=date]::-webkit-inner-spin-button {
 #duration {
   width: 4em; }
 
+#submit-spinner {
+  visibility: hidden;
+  margin: 10px;
+  font-size: 14px; }
+
 .overlay {
   fill: none;
   pointer-events: all; }
@@ -121,9 +126,26 @@ body {
   position: fixed;
   left: 21em;
   top: 0;
-  right: 195px;
+  right: 395px;
   height: 150px;
   padding: 0 20px 0 10px; }
+
+#info-area {
+  position: fixed;
+  right: 10px;
+  top: 10px;
+  width: 400px; }
+
+#charts {
+  display: inline-block;
+  width: 195px;
+  height: auto; }
+
+#pathogens {
+  display: inline-block;
+  width: 195px;
+  height: auto;
+  vertical-align: top; }
 
 table {
   display: inline-block;
@@ -167,13 +189,6 @@ table {
   padding: 5px;
   margin: 5px; }
 
-#info-area {
-  position: fixed;
-  right: 10px;
-  top: 10px;
-  bottom: 10px;
-  width: 200px; }
-
 /* query-area */
 #tags {
   width: auto;
@@ -181,20 +196,12 @@ table {
 
 #cg {
   position: fixed;
-  left: 16em;
-  right: 200px;
-  top: 150px;
+  left: 10px;
+  right: 420px;
+  top: 170px;
   bottom: 10px; }
 
 /* info */
-#detectors {
-  width: 100%;
-  min-height: 100px; }
-
-#charts {
-  width: 400px;
-  min-height: 100px; }
-
 #map-area {
   position: fixed;
   right: 10px;

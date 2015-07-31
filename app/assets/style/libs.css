@@ -1,3 +1,4 @@
 @import '../../lib/fontawesome/css/font-awesome.min.css';
 @import '../../lib/leaflet/dist/leaflet.css';
-/*@import '../../lib/c3/c3.min.css';*/
+@import '../../lib/bootstrap/dist/css/bootstrap.min.css';
+@import '../../lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css';

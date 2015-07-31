@@ -24,6 +24,8 @@
     "leaflet": "~0.7.3",
     "formatter": "~0.1.5",
     "pure": "~0.6.0",
-    "queue-async": "~1.0.7"
+    "queue-async": "~1.0.7",
+    "bootstrap": "~3.3.5",
+    "bootstrap-multiselect": "~0.9.13"
   }
 }

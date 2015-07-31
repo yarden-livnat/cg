@@ -39,6 +39,27 @@ body {
   //ul li { display: inline-block; padding: 0 10px; vertical-align: top;}
 }
 
+#info-area {
+  position: fixed;
+  right: 10px;
+  top: 10px;
+  width: $info-width;
+}
+
+#charts {
+  display: inline-block;
+  width: $info-width/2-5;
+  height: auto;
+}
+
+#pathogens {
+  display: inline-block;
+  width: $info-width/2-5;
+  height: auto;
+  vertical-align: top;
+}
+
+
 table {
   display: inline-block;
   max-height: $table-max-height;
@@ -96,13 +117,6 @@ table {
   @extend .chart;
 }
 
-#info-area {
-  position: fixed;
-  right: 10px;
-  top: 10px;
-  bottom: 10px;
-  width: $info-width;
-}
 
 /* query-area */
 
@@ -118,22 +132,13 @@ table {
 
 #cg {
   position: fixed;
-  left: $query-width;
-  right: $info-width;
-  top: $details-height;
+  left: 10px;
+  right: $map-width + 20px;
+  top: $details-height + 20px;
   bottom: 10px;
 }
 
 /* info */
-#detectors {
-  width: 100%;
-  min-height: 100px;
-}
-
-#charts {
-  width: 400px;
-  min-height: 100px;
-}
 
 #map-area {
   position: fixed;

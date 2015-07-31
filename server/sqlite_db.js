@@ -28,6 +28,51 @@ function kb(req, res, next) {
   });
 }
 
+function info(req, res, next) {
+  var query;
+  if (req.params.topic == 'pathogens') query = 'select name from pathogen_info';
+  else if (req.params.topic == 'detectors') query = 'select name from detector_info';
+  else next(new Error('unknown table ['+req.params.topic+']'));
+
+  db.all(query, function(err, rows) {
+    if (err) next(err);
+    res.send(JSON.stringify(rows));
+  });
+}
+
+function pathogens(req, res, next) {
+  var list = req.query.pathogens;
+  var from = req.query.from;
+  var to = req.query.to;
+
+  var data = {};
+  var n = 0;
+
+  var stmt = db.prepare(
+    'select enc_id, positive from pathogens, encounter ' +
+    ' where path.id = (select id from pathogen_info where name = ?) ' +
+    ' and enc_id = encounter.id ' +
+    ' and encounter.date between ? and ?');
+
+  db.parallelize(function() {
+    console.log('start parallel');
+    list.forEach(function(pathogen) {
+      stmt.all(pathogen, from, to,
+        function(err, rows) {
+          if (err) next(err);
+          data[pathogen] = rows;
+          n++;
+          console.log('n='+n);
+          if (n == list.length) {
+            console.log('done');
+            res.send(JSON.stringify(data));
+          }
+      });
+    });
+    console.log('end parallel');
+  });
+}
+
 function query(req, res, next) {
   var query = req.query;
 
@@ -59,3 +104,5 @@ function query(req, res, next) {
 exports.kb = kb;
 exports.query = query;
 exports.population = population;
+exports.info = info;
+exports.pathogens = pathogens;

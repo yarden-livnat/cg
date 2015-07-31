@@ -19,6 +19,7 @@ app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride());
+app.use(logErrors);
 
 app.use(express.static(app_dir));
 app.use(express.static(app_dir+'/lib'));
@@ -30,6 +31,8 @@ app.get(function(req, res) {
 
 app.get('/data/kb', db.kb);
 app.get('/data/population', db.population);
+app.get('/info/:topic', db.info);
+app.get('/pathogens', db.pathogens);
 app.get('/query', db.query);
 
 app.get('/', function(req, res) {
@@ -45,4 +48,10 @@ app.use(function(err, req, res, next) {
 app.listen(app.get('port'), function() {
   console.log('CG server listening on port '+app.get('port'));
 });
+
+function logErrors(err, req, res, next) {
+  console.error(err.stack);
+  next(err);
+}
+
 

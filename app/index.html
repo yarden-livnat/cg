@@ -17,7 +17,6 @@
             <br><br>
             <input type="text" id="keywords" name="keywords" placeholder="keywords">
             <br><br>
-            <input type="button" value="Search" id="submit">
         </form>
     </div>
 </div>
@@ -31,16 +30,20 @@
 <div id="cg"></div>
 
 <div id="info-area">
-    <!--<div id="charts">-->
-    <div id="summary-chart"></div>
-    <div id="selected-chart"></div>
-    <div id="current-chart"></div>
-    <!--</div>-->
-    <!--<div id="detectors">-->
-        <div class="chart">placeholder</div>
-        <div class="chart">placeholder</div>
-        <div class="chart">placeholder</div>
-    <!--</div>-->
+    <div id="charts">
+        <div id="summary-chart"></div>
+        <div id="selected-chart"></div>
+
+        <label>Detectors</label>
+
+        <div class="chart">Detector</div>
+    </div>
+
+    <div id="pathogens-area">
+        <select name='s' id="pathogens" multiple="multiple"></select>
+        <div class="chart">RSV</div>
+        <div class="chart">Influenza</div>
+    </div>
 </div>
 
 <div id="map-area">

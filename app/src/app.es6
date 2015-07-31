@@ -20,9 +20,7 @@ let selection = model.selection();
 let cg = CG();
 let info = Info();
 
-postal.subscribe({channel:'data', topic:'changed', callback: () => {
-  selection.domain = data.domain; //map(function(d) { return d.id;});
-}});
+postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});
 
 postal.subscribe({channel:'data', topic:'ready', callback: () => {initModules()}});
 

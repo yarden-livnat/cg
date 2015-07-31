@@ -14,7 +14,7 @@ ENC_DIR = 'encounters'
 
 CG_DB = 'cg.sqlite'
 
-con = None
+conn = None
 root = None
 tags_map = {}
 
@@ -49,8 +49,8 @@ def parse_file(d, filename):
                         enc_tags.append((enc_id, tag_id))
                 # else:
                 #     print name, ': ignored'
-    with con:
-        con.executemany('insert into enc_tag values (?, ?)', enc_tags)
+    with conn:
+        conn.executemany('insert into enc_tag values (?, ?)', enc_tags)
 
 
 def parse_all():
@@ -60,16 +60,45 @@ def parse_all():
 
 
 def load_meta():
-    with con:
+    pathogens = None
+    enc_pat = []
+    with conn:
         with open(root+'/'+META_FILENAME) as meta:
-            f = csv.DictReader(meta , delimiter='\t')
+            f = csv.reader(meta, delimiter='\t')
+            header = f.next()
+            pathogens = header[5:-1]
+            id_idx = header.index('MIN(D.DOCUMENT_ID)')
+            date_idx = header.index('ADMIT_DTS')
+            age_idx = header.index('AGE_IN_YEARS')
+            zipcode_idx = header.index('PATIENT_ZIPCODE_CD')
             for row in f:
-                con.execute('insert into encounter values (?, ?, ?, ?)',
-                            (row['MIN(D.DOCUMENT_ID)'], row['ADMIT_DTS'], row['AGE_IN_YEARS'], row['PATIENT_ZIPCODE_CD']))
+                conn.execute('insert into encounter values (?, ?, ?, ?)',
+                            (row[id_idx], row[date_idx][:10], row[age_idx], row[zipcode_idx]))
+
+                for i, p in enumerate(row[5:-1]):
+                    if p == '0':
+                        enc_pat.append((row[id_idx], i, False))
+                    elif p == '1':
+                        enc_pat.append((row[id_idx], i, True))
+
+    conn.executemany('insert into pathogen_info values (?, ?)', enumerate(pathogens))
+    conn.executemany('insert into pathogens values (?, ?, ?)', enc_pat)
+
+
+def load_detectors():
+    conn.execute('insert into detector_info values (?, ?)', (1, 'Influenza'))
+
+    with conn:
+        detectors = []
+        with open(root + '/influenza.csv') as d:
+            f = csv.DictReader(d)
+            for row in f:
+                detectors.append((1, row['encounter'], row['posterior_prob_influenza'], row['posterior_prob_nili']))
+        conn.executemany('insert into detectors values (?, ?, ?, ?)', detectors)
 
 
 def init():
-    with con:
+    with conn:
         # kb
         tags = []
         with open(root+'/'+KB_FILENAME) as kb:
@@ -84,28 +113,68 @@ def init():
                     tags_map[row[1]] = n
                     n += 1
 
-        con.execute('drop table if exists kb')
-        con.execute("""
+        conn.execute('drop table if exists kb')
+        conn.execute("""
             create table kb (
-            id integer primary key,
-            category text,
-            name text,
-            details text,
-            system text
+                id integer primary key,
+                category text,
+                name text,
+                details text,
+                system text
             )
            """)
 
-        con.executemany('insert into kb (id, category, name, details, system) values(?, ?, ?, ?, ?)', tags)
+        conn.executemany('insert into kb (id, category, name, details, system) values(?, ?, ?, ?, ?)', tags)
+
+        # pathogens
+        conn.execute('drop table if exists pathogen_info')
+        conn.execute("""
+            create table pathogen_info (
+                id integer primary key,
+                name text
+            )
+            """)
+
+        conn.execute('drop table if exists pathogens')
+        conn.execute("""
+            create table pathogens (
+                enc_id integer,
+                path_id integer,
+                positive boolean
+            )
+            """)
+
+        # detectors
+        conn.execute('drop table if exists detector_info')
+        conn.execute("""
+            create table detector_info (
+                id integer primary key,
+                name text
+            )
+            """)
+
+        conn.execute('drop table if exists detectors')
+        conn.execute("""
+            create table detectors (
+                did integer,
+                eid integer,
+                prob real,
+                similar real
+            )
+            """)
 
         # tagging
-        con.execute('drop table if exists enc_tag')
-        con.execute('create table enc_tag ('
-                    ' enc_id integer,'
-                    ' tag_id integer)')
+        conn.execute('drop table if exists enc_tag')
+        conn.execute("""
+            create table enc_tag (
+                enc_id integer,
+                tag_id integer
+                )
+            """)
 
         # encounters
-        con.execute('drop table if exists encounter')
-        con.execute('create table encounter ('
+        conn.execute('drop table if exists encounter')
+        conn.execute('create table encounter ('
                     ' id integer primary key,'
                     ' date date,'
                     ' age integer,'
@@ -117,7 +186,8 @@ if len(argv) == 1:
     exit(0)
 
 root = argv[1]
-con = sql.connect(root+'/'+CG_DB)
+conn = sql.connect(root+'/'+CG_DB)
 init()
 load_meta()
+load_detectors()
 parse_all()
