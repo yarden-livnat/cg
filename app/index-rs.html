@@ -40,10 +40,7 @@
     </div>
 
     <div id="pathogens-area">
-        <select id="pathogens" multiple>
-            <option>a</option>
-            <option>b</option>
-        </select>
+        <select name='s' id="pathogens" multiple="multiple"></select>
         <div class="chart">RSV</div>
         <div class="chart">Influenza</div>
     </div>
@@ -54,11 +51,6 @@
     <div id="map"></div>
 </div>
 
-<!--<script data-main="src/init" src="lib/requirejs/require.js"></script>-->
-<script src="jspm_packages/system.js"></script>
-<script src="config.js"></script>
-<script>
-    System.import('src/app')
-</script>
+<script data-main="src/init" src="lib/requirejs/require.js"></script>
 </body>
 </html>

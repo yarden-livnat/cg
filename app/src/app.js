@@ -1,4 +1,4 @@
-define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './services/data', 'query', 'map/map', 'cg/cg', 'info', 'model/models'], function (exports, _componentsXpanel, _formatter, _d3, _postal, _servicesData, _query, _mapMap, _cgCg, _info, _modelModels) {
+define(['exports', './components/xpanel', 'd3', 'postal', './services/data', './query', './map', './cg/cg', './info', './model/models'], function (exports, _componentsXpanel, _d3, _postal, _servicesData, _query, _map, _cgCg, _info, _modelModels) {
   /**
    * Created by yarden on 6/30/15.
    */
@@ -9,7 +9,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
 
   var _CG = _interopRequireDefault(_cgCg);
 
-  var map = (0, _mapMap)();
+  var map = (0, _map)();
   var selection = _modelModels.selection();
   var cg = (0, _CG['default'])();
   var info = (0, _info)();
@@ -43,12 +43,12 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
   function initHTML() {
     _componentsXpanel.init();
 
-    var duration_input = document.getElementById('duration-input');
-    if (duration_input) {
-      new _formatter(duration_input, {
-        pattern: '{{99}}'
-      });
-    }
+    //let duration_input = document.getElementById('duration-input');
+    //if (duration_input) {
+    //  new Formater(duration_input, {
+    //    pattern: "{{99}}"
+    //  });
+    //}
 
     window.addEventListener('resize', resize);
   }
@@ -65,5 +65,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
     resize();
   }
 });
+
+//import * as Formater from 'formatter.js'
 
 //# sourceMappingURL=app.js.map

@@ -2,9 +2,9 @@
  * Created by yarden on 7/3/15.
  */
 
-import {MAP_DEFAULTS} from 'config';
-import * as d3 from 'd3';
-import * as L from 'leaflet';
+import {MAP_DEFAULTS} from './config';
+import * as d3 from '../lib/d3/d3.min';
+import * as L from '../lib/leaflet/dist/leaflet';
 
 export default function (opt) {
 

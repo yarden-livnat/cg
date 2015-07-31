@@ -4,9 +4,10 @@
 
 import * as d3 from 'd3'
 import * as postal from 'postal';
+import * as _ from 'lodash'
 
-import * as data from 'services/data'
-import {cg as opt} from 'config'
+import * as data from '../services/data'
+import {cg as opt} from '../config'
 import * as Graph from './graph'
 
 

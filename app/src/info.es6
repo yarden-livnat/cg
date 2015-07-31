@@ -2,12 +2,12 @@
  * Created by yarden on 7/21/15.
  */
 
-import * as data from 'services/data'
-import * as table from 'components/table'
-import * as chart from 'components/chart'
+import * as data from './services/data'
+import * as table from './components/table'
+import * as chart from './components/chart'
 import * as postal from 'postal'
 import * as $ from 'jquery'
-import 'multiselect'
+import 'bootstrap-multiselect'
 
 export default function(opt) {
   const MIN_Y = 5;
@@ -38,15 +38,16 @@ export default function(opt) {
   function init() {
     postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
 
-    $('#pathogens').multiselect();
-
     d3.select('#pathogens').on('change', selectPathogen);
 
-    d3.select('#pathogens').selectAll('option')
-      .data(data.pathogens)
-      .enter()
-        .append('option')
-          .text(d => d.name);
+    //d3.select('#pathogens').selectAll('option')
+    //  .data(data.pathogens)
+    //  .enter()
+    //    .append('option')
+    //      .attr('value', d => d.name)
+    //      .text(d => d.name);
+
+    $('#pathogens').multiselect();
   }
 
   function selectPathogen() {

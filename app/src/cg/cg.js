@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph'], function (exports, module, _d3, _postal, _servicesData, _config, _graph) {
+define(['exports', 'module', 'd3', 'postal', 'lodash', '../services/data', '../config', './graph'], function (exports, module, _d3, _postal, _lodash, _servicesData, _config, _graph) {
   /**
    * Created by yarden on 12/17/14.
    */
@@ -154,7 +154,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
       _d3.select(this).classed('selected', d.selected);
 
       if (!d.selected && partialLayout['delete'](d.tag)) {
-        prevVisible = _.filter(graph.nodes, function (node) {
+        prevVisible = _lodash.filter(graph.nodes, function (node) {
           return node.visible;
         });
       } else {
@@ -270,17 +270,17 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
       clock.mark('force done');
       clock.print();
 
-      _.forEach(graph.nodes, function (n) {
+      _lodash.forEach(graph.nodes, function (n) {
         n.px = x;n.py = y;
       });
     }
 
     function adjustLayout() {
       console.log('adjust layout');
-      var notFixed = _.filter(prevVisible, function (node) {
+      var notFixed = _lodash.filter(prevVisible, function (node) {
         return !(node.fixed & 1);
       });
-      _.forEach(notFixed, function (node) {
+      _lodash.forEach(notFixed, function (node) {
         node.fixed |= 1;
       });
 
@@ -291,10 +291,10 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
         }
       });
 
-      var nodes = _.filter(graph.nodes, function (node) {
+      var nodes = _lodash.filter(graph.nodes, function (node) {
         return node.visible;
       });
-      var edges = _.filter(graph.edges, function (edge) {
+      var edges = _lodash.filter(graph.edges, function (edge) {
         return edge.source.visible && edge.target.visible;
       });
 
@@ -304,10 +304,10 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
 
       force.stop();
 
-      _.forEach(notFixed, function (node) {
+      _lodash.forEach(notFixed, function (node) {
         node.fixed &= ~1;
       });
-      _.forEach(graph.nodes, function (n) {
+      _lodash.forEach(graph.nodes, function (n) {
         n.px = x;n.py = y;
       });
       updatePosition();
@@ -322,7 +322,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
       //console.log('update pos');
 
       if (_config.cg.layout.clampToWindow) {
-        _.forEach(activeNodes, function (node) {
+        _lodash.forEach(activeNodes, function (node) {
           node.x = clamp(node.x, 0, width - node.w);
           node.y = clamp(node.y, 0, height - node.h);
         });
@@ -340,7 +340,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
           sum = 0,
           zero = 0,
           one = 0;
-      _.each(activeNodes, function (node) {
+      _lodash.each(activeNodes, function (node) {
         var dx = Math.abs(node.x - node.px);
         var dy = Math.abs(node.y - node.py);
         var speed = Math.sqrt(dx * dx + dy + dy);
@@ -490,7 +490,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
         name = name.splice(1);
         pos = false;
       }
-      return _.find(bboxes, function (n) {
+      return _lodash.find(bboxes, function (n) {
         return n.label == name && n.tag.positive == pos;
       });
     }
@@ -685,7 +685,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
           graph.update(nodes);
 
           // random initial pos instead of the default (0,0)
-          _.forEach(graph.nodes, function (node) {
+          _lodash.forEach(graph.nodes, function (node) {
             if (!node.hasOwnProperty('x')) {
               node.x = Math.random() * width;
               node.y = Math.random() * height;

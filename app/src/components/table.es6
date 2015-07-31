@@ -3,7 +3,7 @@
  */
 
 import * as d3 from 'd3'
-import {capitalize} from 'utils'
+import {capitalize} from '../utils'
 
 export default function() {
   var SORT_OP = [

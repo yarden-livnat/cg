@@ -1,4 +1,4 @@
-define(['exports', 'module', 'services/data', 'components/table', 'components/chart', 'postal', 'jquery', 'multiselect'], function (exports, module, _servicesData, _componentsTable, _componentsChart, _postal, _jquery, _multiselect) {
+define(['exports', 'module', './services/data', './components/table', './components/chart', 'postal', 'jquery', 'bootstrap-multiselect'], function (exports, module, _servicesData, _componentsTable, _componentsChart, _postal, _jquery, _bootstrapMultiselect) {
   /**
    * Created by yarden on 7/21/15.
    */
@@ -29,13 +29,16 @@ define(['exports', 'module', 'services/data', 'components/table', 'components/ch
     function init() {
       _postal.subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
 
-      (0, _jquery)('#pathogens').multiselect();
-
       d3.select('#pathogens').on('change', selectPathogen);
 
-      d3.select('#pathogens').selectAll('option').data(_servicesData.pathogens).enter().append('option').text(function (d) {
-        return d.name;
-      });
+      //d3.select('#pathogens').selectAll('option')
+      //  .data(data.pathogens)
+      //  .enter()
+      //    .append('option')
+      //      .attr('value', d => d.name)
+      //      .text(d => d.name);
+
+      (0, _jquery)('#pathogens').multiselect();
     }
 
     function selectPathogen() {

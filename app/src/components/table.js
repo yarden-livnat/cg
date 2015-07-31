@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'utils'], function (exports, module, _d3, _utils) {
+define(['exports', 'module', 'd3', '../utils'], function (exports, module, _d3, _utils) {
   /**
    * Created by yarden on 12/29/14.
    */

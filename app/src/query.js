@@ -1,4 +1,4 @@
-define(['exports', 'd3', 'services/data'], function (exports, _d3, _servicesData) {
+define(['exports', 'd3', './services/data'], function (exports, _d3, _servicesData) {
   /**
    * Created by yarden on 7/13/15.
    */

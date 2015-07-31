@@ -3,7 +3,7 @@
  */
 
 import * as d3 from 'd3'
-import * as data from 'services/data'
+import * as data from './services/data'
 
 let dateFormat = d3.time.format('%Y-%m-%d');
 

@@ -1,0 +1,24 @@
+{
+  "jspm": {
+    "directories": {
+      "lib": "src"
+    },
+    "dependencies": {
+      "bootstrap": "github:twbs/bootstrap@^3.3.5",
+      "d3": "github:mbostock/d3@^3.5.6",
+      "davidstutz/bootstrap-multiselect": "github:davidstutz/bootstrap-multiselect@^0.9.13",
+      "firstopinion/formatter.js": "github:firstopinion/formatter.js@^0.1.5",
+      "font-awesome": "npm:font-awesome@^4.4.0",
+      "jquery": "github:components/jquery@^2.1.4",
+      "leaflet": "github:Leaflet/Leaflet@^0.7.3",
+      "lodash": "npm:lodash@^3.10.0",
+      "mbostock/queue": "github:mbostock/queue@^1.0.7",
+      "postal": "npm:postal@^1.0.6"
+    },
+    "devDependencies": {
+      "babel": "npm:babel-core@^5.1.13",
+      "babel-runtime": "npm:babel-runtime@^5.1.13",
+      "core-js": "npm:core-js@^0.9.4"
+    }
+  }
+}
