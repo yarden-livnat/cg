@@ -6,8 +6,8 @@ import * as data from './services/data'
 import * as table from './components/table'
 import * as chart from './components/chart'
 import * as postal from 'postal'
-import * as $ from 'jquery'
-import 'bootstrap-multiselect'
+//import * as $ from 'jquery'
+//import 'bootstrap-multiselect'
 
 export default function(opt) {
   const MIN_Y = 5;
@@ -40,14 +40,14 @@ export default function(opt) {
 
     d3.select('#pathogens').on('change', selectPathogen);
 
-    //d3.select('#pathogens').selectAll('option')
-    //  .data(data.pathogens)
-    //  .enter()
-    //    .append('option')
-    //      .attr('value', d => d.name)
-    //      .text(d => d.name);
+    d3.select('#pathogens').selectAll('option')
+      .data(data.pathogens)
+      .enter()
+        .append('option')
+          .attr('value', d => d.name)
+          .text(d => d.name);
 
-    $('#pathogens').multiselect();
+    //$('#pathogens').multiselect();
   }
 
   function selectPathogen() {

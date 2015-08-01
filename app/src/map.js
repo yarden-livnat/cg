@@ -1,4 +1,4 @@
-define(['exports', 'module', './config', '../lib/d3/d3.min', '../lib/leaflet/dist/leaflet'], function (exports, module, _config, _libD3D3Min, _libLeafletDistLeaflet) {
+define(['exports', 'module', './config', 'd3', 'leaflet'], function (exports, module, _config, _d3, _leaflet) {
   /**
    * Created by yarden on 7/3/15.
    */
@@ -19,9 +19,9 @@ define(['exports', 'module', './config', '../lib/d3/d3.min', '../lib/leaflet/dis
     var BOUNDARY_ACTIVE_COLOR = '#333';
     var BOUNDARY_NON_ACTIVE_COLOR = '#333';
 
-    var format = _libD3D3Min.format('4.2f');
+    var format = _d3.format('4.2f');
 
-    var colorScale = _libD3D3Min.interpolateLab('#fff', '#f00');
+    var colorScale = _d3.interpolateLab('#fff', '#f00');
     var width = undefined,
         height = undefined;
     var population = new Map();
@@ -35,19 +35,19 @@ define(['exports', 'module', './config', '../lib/d3/d3.min', '../lib/leaflet/dis
 
     // options = Object.assign({}, MAP_DEFAULTS, opt);
     var options = _config.MAP_DEFAULTS;
-    var map = new _libLeafletDistLeaflet.Map('map').addLayer(_libLeafletDistLeaflet.tileLayer(options.mapbox.url, options.mapbox.opt)).setView(options.center, options.zoom);
+    var map = new _leaflet.Map('map').addLayer(_leaflet.tileLayer(options.mapbox.url, options.mapbox.opt)).setView(options.center, options.zoom);
 
-    var transform = _libD3D3Min.geo.transform({ point: projectPoint });
-    var path = _libD3D3Min.geo.path().projection(transform);
+    var transform = _d3.geo.transform({ point: projectPoint });
+    var path = _d3.geo.path().projection(transform);
 
     /* Initialize the SVG layer */
     map._initPathRoot();
 
-    svgContainer = _libD3D3Min.select('#map').select('svg');
+    svgContainer = _d3.select('#map').select('svg');
     svg = svgContainer.append('g');
 
     function init() {
-      _libD3D3Min.json(options.zipcodes_file, function (error, collection) {
+      _d3.json(options.zipcodes_file, function (error, collection) {
         if (error) {
           // Todo: better error handling
           console.error(error);
@@ -66,7 +66,7 @@ define(['exports', 'module', './config', '../lib/d3/d3.min', '../lib/leaflet/dis
         }).on('mouseout', function (d) {
           showInfo(d.properties.Zip_Code, false);
         }).on('click', function (d) {
-          selectZipcode(d.properties.Zip_Code, _libD3D3Min.event.metaKey);
+          selectZipcode(d.properties.Zip_Code, _d3.event.metaKey);
         });
 
         function update() {
@@ -82,9 +82,9 @@ define(['exports', 'module', './config', '../lib/d3/d3.min', '../lib/leaflet/dis
       var cases = current.get(zipcode);
       if (show && cases) {
         var rate = format(cases * POPULATION_FACTOR / population.get(zipcode));
-        _libD3D3Min.select('#map-info').text('Zipcode: ' + zipcode + ' cases:' + cases + '  rate:' + rate);
+        _d3.select('#map-info').text('Zipcode: ' + zipcode + ' cases:' + cases + '  rate:' + rate);
       } else {
-        _libD3D3Min.select('#map-info').text('');
+        _d3.select('#map-info').text('');
       }
 
       var feature = zipcodes.get(zipcode);
@@ -97,7 +97,7 @@ define(['exports', 'module', './config', '../lib/d3/d3.min', '../lib/leaflet/dis
     }
 
     function selectZipcode(zipcode, append) {
-      _libD3D3Min.event.preventDefault();
+      _d3.event.preventDefault();
       var update = [];
       if (!append) {
         if (selectedZipcodes.length == 1 && selectedZipcodes[0] == zipcode) {
@@ -165,7 +165,7 @@ define(['exports', 'module', './config', '../lib/d3/d3.min', '../lib/leaflet/dis
     }
 
     function projectPoint(x, y) {
-      var point = map.latLngToLayerPoint(new _libLeafletDistLeaflet.LatLng(y, x));
+      var point = map.latLngToLayerPoint(new _leaflet.LatLng(y, x));
       this.stream.point(point.x, point.y);
     }
 

@@ -30,11 +30,6 @@ data.init();
 
 function getSize(el) {
   let d3el = d3.select(el);
-  let w = parseInt(d3el.style('width'));
-  let h = parseInt(d3el.style('height'));
-
-  console.log('resize '+el+': '+parseInt(d3el.style('width')) +'x'+ parseInt(d3el.style('height')));
-
   return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
 }
 
