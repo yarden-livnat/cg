@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', 'lodash', '../services/data', '../config', './graph'], function (exports, module, _d3, _postal, _lodash, _servicesData, _config, _graph) {
+define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', './graph'], function (exports, module, _d3, _postal, _lodash, _data, _config, _graph) {
   /**
    * Created by yarden on 12/17/14.
    */
@@ -674,7 +674,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../services/data', '../c
 
       _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
           force.stop();
-          var nodes = _servicesData.tags.map(function (d) {
+          var nodes = _data.tags.map(function (d) {
             return {
               id: d.id,
               label: d.concept.label,

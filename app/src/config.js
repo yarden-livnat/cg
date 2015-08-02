@@ -22,6 +22,9 @@ define(['exports', 'd3'], function (exports, _d3) {
   };
 
   exports.MAP_DEFAULTS = MAP_DEFAULTS;
+  var pathogens_duration = 4;
+
+  exports.pathogens_duration = pathogens_duration;
   var cg = {
     canvas: {
       colors: {},

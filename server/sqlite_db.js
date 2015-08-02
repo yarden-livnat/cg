@@ -41,18 +41,19 @@ function info(req, res, next) {
 }
 
 function pathogens(req, res, next) {
-  var list = req.query.pathogens;
-  var from = req.query.from;
-  var to = req.query.to;
+  var list = req.body.pathogens;
+  var from = req.body.from;
+  var to = req.body.to;
 
-  var data = {};
+  var data = [];
   var n = 0;
 
   var stmt = db.prepare(
-    'select enc_id, positive from pathogens, encounter ' +
-    ' where path.id = (select id from pathogen_info where name = ?) ' +
+    'select enc_id, date, positive from pathogens, encounter ' +
+    ' where pathogens.path_id = (select id from pathogen_info where name = ?) ' +
     ' and enc_id = encounter.id ' +
-    ' and encounter.date between ? and ?');
+    ' and encounter.date between ? and ?' +
+    ' order by date');
 
   db.parallelize(function() {
     console.log('start parallel');
@@ -60,11 +61,11 @@ function pathogens(req, res, next) {
       stmt.all(pathogen, from, to,
         function(err, rows) {
           if (err) next(err);
-          data[pathogen] = rows;
+          data.push({name: pathogen, rows: rows});
           n++;
           console.log('n='+n);
           if (n == list.length) {
-            console.log('done');
+            console.log('done '+ data);
             res.send(JSON.stringify(data));
           }
       });

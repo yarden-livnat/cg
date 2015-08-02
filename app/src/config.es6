@@ -17,6 +17,8 @@ export const MAP_DEFAULTS =  {
     zipcodes_file: "assets/maps/ut-zipcodes.json"
   }
 
+export let pathogens_duration = 4
+
 export let cg = {
   canvas: {
     colors: {},

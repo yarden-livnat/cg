@@ -11,6 +11,8 @@ export default function() {
   let width = 350 - margin.left - margin.right,
       height = 150 - margin.top - margin.bottom;
 
+  let title;
+
   let svg, svgContainer;
 
   let x = d3.time.scale()
@@ -24,8 +26,8 @@ export default function() {
     .scale(x)
     .orient('bottom')
     .tickSize(3, 0)
-    .tickPadding(6)
-    .ticks(4);
+    .tickPadding(4)
+    .ticks(2);
 
   let yAxis = d3.svg.axis()
     .scale(y)
@@ -35,8 +37,6 @@ export default function() {
     .ticks(4);
 
   let line = d3.svg.line()
-    //.interpolate('step-after')
-    .interpolate('cardinal')
     .x( d => { return x(d.date); })
     .y( d => { return y(d.value); });
 
@@ -79,8 +79,18 @@ export default function() {
   }
 
   function init() {
+    x.range([0, width]);
+    y.range([height, 0]);
+
     let xr = x.range();
     let yr = y.range();
+
+    svg.append('text')
+      .attr('class', 'title')
+      .attr('x', 5)
+      .attr('y', 5)
+      .text(title);
+
     svg.append('clipPath')
         .attr('id', 'clip')
       .append('rect')
@@ -117,17 +127,28 @@ export default function() {
         .data(data)
         .attr('stroke', d => { return d.color; })
         .attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
-        .attr('d', d => { return line(d.values); });
+        .attr('d', d => { return line.interpolate(d.interpolate || 'cardinal')(d.values); });
 
       lines.exit().remove();
     }
   }
 
-  function api() {}
+  let api = {
+    title(name) {
+      title = name;
+      if (svg) {
+        svg.select('.title').text(title);
+      }
+      return this;
+    }
+  };
 
   api.el = function(el, opt) {
     let selection = typeof el =='string' ? d3.select(el) : el;
     selection.attr('class', 'chart');
+
+    width= parseInt(selection.style('width')) - margin.left - margin.right;
+    height = parseInt(selection.style('height')) - margin.top - margin.bottom;
 
     svgContainer = selection.append('svg')
       .attr('width', width + margin.left + margin.right)
@@ -143,6 +164,7 @@ export default function() {
   api.resize = function(w, h) {
     resize(w, h);
     if (data) draw();
+    return this;
   };
 
   api.data = function(series) {

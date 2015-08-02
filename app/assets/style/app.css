@@ -79,26 +79,26 @@ input[type=date]::-webkit-inner-spin-button {
       stroke: red;
       stroke-opacity: 1; }
 
-.chart svg, #summary-chart svg, #selected-chart svg {
+.chart svg {
   font: 10px sans-serif; }
-.chart .axis, #summary-chart .axis, #selected-chart .axis {
+.chart .axis {
   shape-rendering: crispEdges; }
-.chart .axis path, #summary-chart .axis path, #selected-chart .axis path, .chart .axis line, #summary-chart .axis line, #selected-chart .axis line {
+.chart .axis path, .chart .axis line {
   fill: none;
   stroke-width: .5px; }
-.chart .x.axis path, #summary-chart .x.axis path, #selected-chart .x.axis path {
+.chart .x.axis path {
   stroke: #000; }
-.chart .x.axis line, #summary-chart .x.axis line, #selected-chart .x.axis line {
+.chart .x.axis line {
   stroke: #aaa;
   stroke-opacity: .5;
   stroke-width: 1px; }
-.chart .y.axis line, #summary-chart .y.axis line, #selected-chart .y.axis line {
+.chart .y.axis line {
   stroke: none;
   stroke-opacity: 0.5; }
-.chart path.line, #summary-chart path.line, #selected-chart path.line {
+.chart path.line {
   fill: none;
   stroke-width: .5px; }
-.chart rect.pane, #summary-chart rect.pane, #selected-chart rect.pane {
+.chart rect.pane {
   cursor: move;
   fill: none;
   pointer-events: all; }
@@ -136,12 +136,12 @@ body {
   top: 10px;
   width: 400px; }
 
-#charts {
+#charts-area {
   display: inline-block;
   width: 195px;
   height: auto; }
 
-#pathogens {
+#pathogens-area {
   display: inline-block;
   width: 195px;
   height: auto;
@@ -182,12 +182,14 @@ table {
     height: 100%;
     font: 9pt sans-serif; }
 
-.chart, #summary-chart, #selected-chart {
+.chart {
   width: auto;
   height: 100px;
   border: 1px solid lightgrey;
   padding: 5px;
   margin: 5px; }
+  .chart .title {
+    font-size: pt; }
 
 /* query-area */
 #tags {

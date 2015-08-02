@@ -1,4 +1,4 @@
-define(['exports', 'module'], function (exports, module) {
+define(['exports', 'module', 'lodash'], function (exports, module, _lodash) {
   /**
    * Created by yarden on 12/11/14.
    */
@@ -50,24 +50,24 @@ define(['exports', 'module'], function (exports, module) {
   }
 
   function caseScaling(nodes) {
-    var max = _.reduce(nodes, function (max, d) {
+    var max = _lodash._.reduce(nodes, function (max, d) {
       return Math.max(max, d.items.length);
     }, 0);
 
-    _.each(nodes, function (node) {
+    _lodash._.each(nodes, function (node) {
       node.scale = node.items.length / max;
     });
   }
 
   function probScaling(nodes, prob, N) {
     var max = 0;
-    _.each(nodes, function (node) {
+    _lodash._.each(nodes, function (node) {
       var n = node.items.length;
       if (n == 0) {
         node.scale = 0;
         node['var'] = 0;
       } else {
-        var sum = _.reduce(node.items, function (sum, i) {
+        var sum = _lodash._.reduce(node.items, function (sum, i) {
           return sum + prob[i].prob;
         }, 0);
         max = Math.max(max, sum);
@@ -79,7 +79,7 @@ define(['exports', 'module'], function (exports, module) {
       }
     });
 
-    _.each(nodes, function (node) {
+    _lodash._.each(nodes, function (node) {
       node.scale /= max;
     });
   }

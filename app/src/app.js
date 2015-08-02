@@ -1,4 +1,4 @@
-define(['exports', './components/xpanel', 'd3', 'postal', './services/data', './query', './map', './cg/cg', './info', './model/models'], function (exports, _componentsXpanel, _d3, _postal, _servicesData, _query, _map, _cgCg, _info, _modelModels) {
+define(['exports', './components/xpanel', 'd3', 'postal', './data', './query', './map', './cg/cg', './info', './model/models'], function (exports, _componentsXpanel, _d3, _postal, _data, _query, _map, _cgCg, _info, _modelModels) {
   /**
    * Created by yarden on 6/30/15.
    */
@@ -15,7 +15,7 @@ define(['exports', './components/xpanel', 'd3', 'postal', './services/data', './
   var info = (0, _info)();
 
   _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
-      selection.domain = _servicesData.domain;
+      selection.domain = _data.domain;
     } });
 
   _postal.subscribe({ channel: 'data', topic: 'ready', callback: function callback() {
@@ -23,7 +23,7 @@ define(['exports', './components/xpanel', 'd3', 'postal', './services/data', './
     } });
 
   initHTML();
-  _servicesData.init();
+  _data.init();
 
   function getSize(el) {
     var d3el = _d3.select(el);
@@ -51,7 +51,7 @@ define(['exports', './components/xpanel', 'd3', 'postal', './services/data', './
   function initModules() {
     _query.init();
 
-    map.population(_servicesData.population).selection(selection).init();
+    map.population(_data.population).selection(selection).init();
 
     cg.init('#cg').selection(selection);
 

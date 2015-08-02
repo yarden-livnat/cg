@@ -32,13 +32,9 @@ app.get(function(req, res) {
 app.get('/data/kb', db.kb);
 app.get('/data/population', db.population);
 app.get('/info/:topic', db.info);
-app.get('/pathogens', db.pathogens);
 app.get('/query', db.query);
 
-app.get('/', function(req, res) {
-  console.log('in get /');
-  res.sendFile('index.html', {root: app_dir});
-});
+app.post('/pathogens', db.pathogens);
 
 app.use(function(err, req, res, next) {
   console.error(err.stack);

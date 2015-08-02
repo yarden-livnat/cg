@@ -7,7 +7,7 @@ import * as xpanel from './components/xpanel'
 import * as d3 from 'd3'
 import * as postal from 'postal'
 
-import * as data from './services/data';
+import * as data from './data';
 import * as query from './query';
 import * as Map from './map'
 import CG from './cg/cg';

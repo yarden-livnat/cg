@@ -46,13 +46,13 @@ body {
   width: $info-width;
 }
 
-#charts {
+#charts-area {
   display: inline-block;
   width: $info-width/2-5;
   height: auto;
 }
 
-#pathogens {
+#pathogens-area {
   display: inline-block;
   width: $info-width/2-5;
   height: auto;
@@ -107,16 +107,11 @@ table {
   border: 1px solid lightgrey ;
   padding: 5px;
   margin: 5px;
-}
 
-#summary-chart {
-  @extend .chart;
+  .title {
+    font-size: 8pt;
+  }
 }
-
-#selected-chart {
-  @extend .chart;
-}
-
 
 /* query-area */
 

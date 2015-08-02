@@ -2,16 +2,22 @@
  * Created by yarden on 7/21/15.
  */
 
-import * as data from './services/data'
+import * as d3 from 'd3'
+import * as postal from 'postal'
+
+import {pathogens_duration} from './config'
+import * as data from './data'
 import * as table from './components/table'
 import * as chart from './components/chart'
-import * as postal from 'postal'
+
 //import * as $ from 'jquery'
 //import 'bootstrap-multiselect'
 
 export default function(opt) {
   const MIN_Y = 5;
   const CHART_MAX_WIDTH = 500;
+
+  let dateFormat = d3.time.format('%Y-%m-%d');
 
   let selection;
 
@@ -35,6 +41,8 @@ export default function(opt) {
     ['#selected-chart', selectedChart],
   ]);
 
+  let pathogens = new Map();
+
   function init() {
     postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
 
@@ -51,7 +59,62 @@ export default function(opt) {
   }
 
   function selectPathogen() {
-    console.log('pathogen '+this.options[this.selectedIndex]);
+    let id = 'chart-'+this.value;
+    if (pathogens.has(this.value)) {
+      pathogens.delete(this.value);
+      d3.select('#pathogens-area').select('#chart-'+this.value).remove();
+    } else {
+      let div = d3.select('#pathogens-area').append('div')
+        .attr('id', 'chart-'+this.value);
+      let c = chart().el(div).title(this.value);
+      pathogens.set(this.value, c);
+      updatePathogens(this.value);
+    }
+  }
+
+  function updatePathogens(names) {
+    let from = d3.time.day.offset(d3.time.month.offset(data.toDate, -pathogens_duration), 1);
+    let to = data.toDate;
+    let range = d3.time.day.range(from, to);
+    let scale = d3.time.scale()
+      .domain([from, to])
+      .rangeRound([0, range.length-1]);
+
+    data.fetchPathogens([names], from, data.toDate)
+      .then(function(d) {
+        for (let entry of d) {
+          let positive = range.map(function (d) { return {date: d, value: 0, items: []}; });
+          let negative = range.map(function (d) { return {date: d, value: 0, items: []}; });
+
+          for (let item of entry.rows) {
+            item.date = dateFormat.parse(item.date);
+            let i = scale(item.date);
+            let bins = item.positive ? positive : negative;
+            bins[i].value++;
+            bins[i].items.push(item);
+          }
+
+          let series = [
+            {
+              label: 'positive',
+              color: 'red',
+              type: 'line',
+              marker: 'solid',
+              values: positive
+            //}
+            //{
+            //  label: 'negative',
+            //  color: 'green',
+            //  type: 'line',
+            //  marker: 'solid',
+            //  values: negative
+            }];
+          pathogens.get(entry.name).data(series);
+        }
+      })
+      .catch(function(reason) {
+        console.error('error: ', reason);
+      });
   }
 
   function dataChanged() {
@@ -158,7 +221,7 @@ export default function(opt) {
     return a;
   }
   function histogram(items, range, scale) {
-    let bins = range.map(function (day) { return {date: day, value: 0, items: []}; });
+    let bins = range.map(function (d) { return {date: d, value: 0, items: []}; });
     for (let item of items) {
       let i = scale(item.date);
       bins[i].value++;
@@ -167,7 +230,8 @@ export default function(opt) {
     return bins;
   }
 
-  let api = {};
+  let api = {
+  };
 
   api.init = function() {
     init();
@@ -181,7 +245,13 @@ export default function(opt) {
   };
 
   api.resize = function() {
-    for (var [name, chart] of charts) {
+    for (let [name, chart] of charts) {
+      let w = parseInt(d3.select(name).style('width'));
+      let h = parseInt(d3.select(name).style('height'));
+      chart.resize([w, h]);
+    }
+
+    for (let [name, chart] of pathogens) {
       let w = parseInt(d3.select(name).style('width'));
       let h = parseInt(d3.select(name).style('height'));
       chart.resize([w, h]);

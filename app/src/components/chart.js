@@ -12,6 +12,8 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     var width = 350 - margin.left - margin.right,
         height = 150 - margin.top - margin.bottom;
 
+    var _title = undefined;
+
     var svg = undefined,
         svgContainer = undefined;
 
@@ -19,13 +21,11 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var y = _d3.scale.linear().range([height, 0]);
 
-    var xAxis = _d3.svg.axis().scale(x).orient('bottom').tickSize(3, 0).tickPadding(6).ticks(4);
+    var xAxis = _d3.svg.axis().scale(x).orient('bottom').tickSize(3, 0).tickPadding(4).ticks(2);
 
     var yAxis = _d3.svg.axis().scale(y).orient('right').tickSize(3).tickPadding(6).ticks(4);
 
-    var line = _d3.svg.line()
-    //.interpolate('step-after')
-    .interpolate('cardinal').x(function (d) {
+    var line = _d3.svg.line().x(function (d) {
       return x(d.date);
     }).y(function (d) {
       return y(d.value);
@@ -58,8 +58,14 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     }
 
     function init() {
+      x.range([0, width]);
+      y.range([height, 0]);
+
       var xr = x.range();
       var yr = y.range();
+
+      svg.append('text').attr('class', 'title').attr('x', 5).attr('y', 5).text(_title);
+
       svg.append('clipPath').attr('id', 'clip').append('rect').attr('x', xr[0]).attr('y', yr[1]).attr('width', xr[1] - xr[0]).attr('height', yr[0] - yr[1]);
 
       svg.append('g').attr('class', 'y axis').attr('transform', 'translate(' + width + ',0)');
@@ -81,18 +87,29 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         }).attr('stroke-dasharray', function (d) {
           return d.marker == 'dash' ? '3' : '0';
         }).attr('d', function (d) {
-          return line(d.values);
+          return line.interpolate(d.interpolate || 'cardinal')(d.values);
         });
 
         lines.exit().remove();
       }
     }
 
-    function api() {}
+    var api = {
+      title: function title(name) {
+        _title = name;
+        if (svg) {
+          svg.select('.title').text(_title);
+        }
+        return this;
+      }
+    };
 
     api.el = function (el, opt) {
       var selection = typeof el == 'string' ? _d3.select(el) : el;
       selection.attr('class', 'chart');
+
+      width = parseInt(selection.style('width')) - margin.left - margin.right;
+      height = parseInt(selection.style('height')) - margin.top - margin.bottom;
 
       svgContainer = selection.append('svg').attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
 
@@ -105,6 +122,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     api.resize = function (w, h) {
       resize(w, h);
       if (data) draw();
+      return this;
     };
 
     api.data = function (series) {

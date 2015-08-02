@@ -1,4 +1,4 @@
-define(['exports', 'd3', './services/data'], function (exports, _d3, _servicesData) {
+define(['exports', 'd3', './data'], function (exports, _d3, _data) {
   /**
    * Created by yarden on 7/13/15.
    */
@@ -16,7 +16,7 @@ define(['exports', 'd3', './services/data'], function (exports, _d3, _servicesDa
     var date = _d3.select('#date').property('value');
     var duration = _d3.select('#duration').property('value');
 
-    _servicesData.fetchAssociations({
+    _data.fetchAssociations({
       from: dateFormat(_d3.time.day.offset(_d3.time.week.offset(dateFormat.parse(date), -duration), 1)),
       to: date
     });
