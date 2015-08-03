@@ -1,3 +1,64 @@
+/* chart */
+.chart svg {
+  font: 8pt sans-serif; }
+.chart .axis {
+  shape-rendering: crispEdges; }
+.chart .axis path, .chart .axis line {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #aaa; }
+.chart .x.axis line {
+  stroke: #aaa;
+  stroke-opacity: .5;
+  stroke-width: 1px; }
+.chart .y.axis line {
+  stroke: #aaa;
+  stroke-opacity: 0.5; }
+.chart path.line {
+  fill: none;
+  stroke-width: .5px; }
+.chart rect.pane {
+  cursor: move;
+  fill: none;
+  pointer-events: all; }
+
+/* checkbox drop down menu */
+.dropdown-check-list {
+  display: inline-block;
+  outline: none; }
+  .dropdown-check-list .anchor {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px 25px 5px 10px; }
+  .dropdown-check-list .anchor:after {
+    position: absolute;
+    content: "";
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    padding: 3px;
+    right: 10px;
+    top: 30%;
+    -moz-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    -o-transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+    transform: rotate(-135deg); }
+  .dropdown-check-list ul.items {
+    padding: 2px;
+    display: none;
+    background-color: white;
+    margin: 0;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    right: 5px;
+    box-shadow: 5px 5px 3px gray; }
+  .dropdown-check-list ul.items li {
+    list-style: none;
+    font: 7pt Arial; }
+
 .x-panel {
   width: auto;
   position: relative;
@@ -79,30 +140,6 @@ input[type=date]::-webkit-inner-spin-button {
       stroke: red;
       stroke-opacity: 1; }
 
-.chart svg {
-  font: 10px sans-serif; }
-.chart .axis {
-  shape-rendering: crispEdges; }
-.chart .axis path, .chart .axis line {
-  fill: none;
-  stroke-width: .5px; }
-.chart .x.axis path {
-  stroke: #000; }
-.chart .x.axis line {
-  stroke: #aaa;
-  stroke-opacity: .5;
-  stroke-width: 1px; }
-.chart .y.axis line {
-  stroke: none;
-  stroke-opacity: 0.5; }
-.chart path.line {
-  fill: none;
-  stroke-width: .5px; }
-.chart rect.pane {
-  cursor: move;
-  fill: none;
-  pointer-events: all; }
-
 body {
   position: fixed;
   top: 0;
@@ -110,14 +147,14 @@ body {
   left: 0;
   right: 0;
   padding: 5px;
-  font: 9pt Verdana; }
+  font: 9pt Arial; }
 
 #title {
-  font: bold 16pt Arial;
+  font: bold 20pt Georgia;
+  /* Arial; */
   margin: 10px 0 10px 0; }
 
 #query-area {
-  display: inline-block;
   width: 16em;
   height: auto;
   padding: 10px; }
@@ -125,7 +162,7 @@ body {
 #details-area {
   position: fixed;
   left: 21em;
-  top: 0;
+  top: 10px;
   right: 395px;
   height: 150px;
   padding: 0 20px 0 10px; }
@@ -134,18 +171,24 @@ body {
   position: fixed;
   right: 10px;
   top: 10px;
+  bottom: 420px;
   width: 400px; }
 
 #charts-area {
   display: inline-block;
   width: 195px;
-  height: auto; }
+  height: auto;
+  margin-top: 18px; }
 
 #pathogens-area {
   display: inline-block;
   width: 195px;
   height: auto;
   vertical-align: top; }
+  #pathogens-area #pathogens-charts {
+    width: auto;
+    overflow-x: hidden;
+    overflow-y: auto; }
 
 table {
   display: inline-block;
@@ -189,7 +232,7 @@ table {
   padding: 5px;
   margin: 5px; }
   .chart .title {
-    font-size: pt; }
+    font-size: 8pt; }
 
 /* query-area */
 #tags {

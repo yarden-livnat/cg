@@ -1,8 +1,8 @@
 @import "base";
+@import "components";
 @import "xpanel";
 @import "query";
 @import "cg";
-@import "info";
 
 body {
   position: fixed;
@@ -15,22 +15,20 @@ body {
 }
 
 #title {
-  font: bold 16pt Arial;
+  font: bold 20pt Georgia; /* Arial; */
   margin: 10px 0 10px 0;
 }
 
 #query-area {
-  display: inline-block;
   width: $query-width;
   height: auto;
   padding: 10px;
-  //background-color: antiquewhite;
 }
 
 #details-area {
   position: fixed;
   left: $query-width + 5;
-  top: 0;
+  top: 10px;
   right: $info-width - 5;
   height: $details-height;
   padding: 0 20px 0 10px;
@@ -43,6 +41,7 @@ body {
   position: fixed;
   right: 10px;
   top: 10px;
+  bottom: $map-height + 20;
   width: $info-width;
 }
 
@@ -50,6 +49,7 @@ body {
   display: inline-block;
   width: $info-width/2-5;
   height: auto;
+  margin-top: 18px;
 }
 
 #pathogens-area {
@@ -57,8 +57,20 @@ body {
   width: $info-width/2-5;
   height: auto;
   vertical-align: top;
+
+  #pathogens-charts {
+    width: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 }
 
+//#detectors-charts {
+//  display: inline-block;
+//  width: auto;
+//  overflow-x: hidden;
+//  overflow-y: auto;
+//}
 
 table {
   display: inline-block;

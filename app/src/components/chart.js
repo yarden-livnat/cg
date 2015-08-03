@@ -26,7 +26,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     var yAxis = _d3.svg.axis().scale(y).orient('right').tickSize(3).tickPadding(6).ticks(4);
 
     var line = _d3.svg.line().x(function (d) {
-      return x(d.date);
+      return x(d.x);
     }).y(function (d) {
       return y(d.value);
     });
@@ -129,8 +129,8 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       data = series;
       if (data.length > 0) {
         var n = series.length;
-        var x_min = series[0].values[0].date;
-        var x_max = series[0].values[series[0].values.length - 1].date;
+        var x_min = series[0].values[0].x;
+        var x_max = series[0].values[series[0].values.length - 1].x;
         var y_max = 0;
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
@@ -173,6 +173,14 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     api.resize = function (size) {
       resize(size[0], size[1]);
       draw();
+      return this;
+    };
+
+    api.scale = function (s) {
+      x = s;
+      x.range([0, width]).nice(5);
+
+      xAxis.scale(x);
       return this;
     };
 

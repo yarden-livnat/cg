@@ -33,30 +33,79 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
 
     var pathogens = new Map();
 
+    var detectors = [];
+
     function init() {
       _postal.subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
 
-      _d3.select('#pathogens').on('change', selectPathogen);
+      /* pathogens */
+      var items = _d3.select('#pathogens').select('ul').selectAll('li').data(_data.pathogens).enter().append('li');
 
-      _d3.select('#pathogens').selectAll('option').data(_data.pathogens).enter().append('option').attr('value', function (d) {
+      items.append('input').attr('type', 'checkbox').attr('value', function (d) {
         return d.name;
-      }).text(function (d) {
+      }).on('change', function () {
+        selectPathogen(this.value, this.checked);
+      });
+
+      items.append('span').text(function (d) {
         return d.name;
       });
 
-      //$('#pathogens').multiselect();
+      var menu = _d3.select('#pathogens .items');
+      _d3.select('#pathogens').select('.anchor').on('click', function () {
+        if (menu.classed('visible')) {
+          menu.classed('visible', false).style('display', 'none');
+        } else {
+          menu.classed('visible', true).style('display', 'block');
+        }
+      });
+
+      menu.on('blur', function () {
+        menu.classed('visible', false).style('display', 'none');
+      });
+
+      /* detectors */
+      _d3.select('#detectors-charts').selectAll('div').data(_data.detectors).enter().append('div').attr('id', function (d) {
+        return 'detector-' + d.name;
+      });
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = _data.detectors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var d = _step.value;
+
+          var c = (0, _componentsChart)().el('#detector-' + d.name).title(d.name).scale(_d3.scale.linear());
+          var detector = { name: d.name, chart: c, data: [] };
+          detectors.push(detector);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
     }
 
-    function selectPathogen() {
-      var id = 'chart-' + this.value;
-      if (pathogens.has(this.value)) {
-        pathogens['delete'](this.value);
-        _d3.select('#pathogens-area').select('#chart-' + this.value).remove();
+    function selectPathogen(name, show) {
+      if (show) {
+        var div = _d3.select('#pathogens-charts').append('div').attr('id', 'chart-' + name);
+        var c = (0, _componentsChart)().el(div).title(name);
+        pathogens.set(name, c);
+        updatePathogens(name);
       } else {
-        var div = _d3.select('#pathogens-area').append('div').attr('id', 'chart-' + this.value);
-        var c = (0, _componentsChart)().el(div).title(this.value);
-        pathogens.set(this.value, c);
-        updatePathogens(this.value);
+        _d3.select('#pathogens-charts').select('#chart-' + name).remove();
+        pathogens['delete'](name);
       }
     }
 
@@ -66,29 +115,29 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       var range = _d3.time.day.range(from, to);
       var scale = _d3.time.scale().domain([from, to]).rangeRound([0, range.length - 1]);
 
-      _data.fetchPathogens([names], from, _data.toDate).then(function (d) {
-        var _iteratorNormalCompletion = true;
-        var _didIteratorError = false;
-        var _iteratorError = undefined;
+      _data.fetch('pathogens', [names], from, _data.toDate).then(function (d) {
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
 
         try {
-          for (var _iterator = d[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-            var entry = _step.value;
+          for (var _iterator2 = d[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var entry = _step2.value;
 
             var positive = range.map(function (d) {
-              return { date: d, value: 0, items: [] };
+              return { x: d, value: 0, items: [] };
             });
             var negative = range.map(function (d) {
-              return { date: d, value: 0, items: [] };
+              return { x: d, value: 0, items: [] };
             });
 
-            var _iteratorNormalCompletion2 = true;
-            var _didIteratorError2 = false;
-            var _iteratorError2 = undefined;
+            var _iteratorNormalCompletion3 = true;
+            var _didIteratorError3 = false;
+            var _iteratorError3 = undefined;
 
             try {
-              for (var _iterator2 = entry.rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-                var item = _step2.value;
+              for (var _iterator3 = entry.rows[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+                var item = _step3.value;
 
                 item.date = dateFormat.parse(item.date);
                 var i = scale(item.date);
@@ -97,16 +146,16 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
                 bins[i].items.push(item);
               }
             } catch (err) {
-              _didIteratorError2 = true;
-              _iteratorError2 = err;
+              _didIteratorError3 = true;
+              _iteratorError3 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-                  _iterator2['return']();
+                if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+                  _iterator3['return']();
                 }
               } finally {
-                if (_didIteratorError2) {
-                  throw _iteratorError2;
+                if (_didIteratorError3) {
+                  throw _iteratorError3;
                 }
               }
             }
@@ -128,16 +177,16 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
             pathogens.get(entry.name).data(series);
           }
         } catch (err) {
-          _didIteratorError = true;
-          _iteratorError = err;
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion && _iterator['return']) {
-              _iterator['return']();
+            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+              _iterator2['return']();
             }
           } finally {
-            if (_didIteratorError) {
-              throw _iteratorError;
+            if (_didIteratorError2) {
+              throw _iteratorError2;
             }
           }
         }
@@ -155,71 +204,15 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       }));
 
       summaryChart.data(binData(_data.domain));
-    }
-
-    function binData(items) {
-      var f = _d3.time.day.ceil(_data.fromDate),
-          t = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
-          range = _d3.time.day.range(f, t),
-          scale = _d3.time.scale().domain([f, t]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
-
-      var bins = range.map(function (day) {
-        return { date: day, value: 0, items: [] };
-      });
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
-
-      try {
-        for (var _iterator3 = items[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var item = _step3.value;
-
-          var i = scale(item.date);
-          bins[i].value++;
-          bins[i].items.push(item);
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-            _iterator3['return']();
-          }
-        } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
-          }
-        }
-      }
-
-      return [{ label: 'data', color: 'black', values: bins }];
-    }
-
-    function selectionChanged() {
-      var from = _d3.time.day.ceil(_data.fromDate),
-          to = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
-          range = _d3.time.day.range(from, to),
-          scale = _d3.time.scale().domain([from, to]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
-
-      var selectedSeries = [];
 
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
       var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator4 = selection.tags()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var tag = _step4.value;
-
-          var bins = histogram(tag.items, range, scale);
-          selectedSeries.push({
-            label: tag.concept.label,
-            color: tag.color,
-            type: 'line',
-            marker: 'solid',
-            values: bins
-          });
+        for (var _iterator4 = pathogens.keys()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var _name = _step4.value;
+          updatePathogens(_name);
         }
       } catch (err) {
         _didIteratorError4 = true;
@@ -236,13 +229,153 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
         }
       }
 
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
+      _data.fetch('detectors', detectors.map(function (d) {
+        return d.name;
+      }), _data.fromDate, _data.toDate).then(function (d) {
+        var _iteratorNormalCompletion5 = true;
+        var _didIteratorError5 = false;
+        var _iteratorError5 = undefined;
+
+        try {
+          for (var _iterator5 = d[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+            var entry = _step5.value;
+
+            var detector = undefined;
+            var _iteratorNormalCompletion6 = true;
+            var _didIteratorError6 = false;
+            var _iteratorError6 = undefined;
+
+            try {
+              for (var _iterator6 = detectors[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                detector = _step6.value;
+
+                if (detector.name == entry.name) break;
+              }
+            } catch (err) {
+              _didIteratorError6 = true;
+              _iteratorError6 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+                  _iterator6['return']();
+                }
+              } finally {
+                if (_didIteratorError6) {
+                  throw _iteratorError6;
+                }
+              }
+            }
+
+            detector.data = entry.rows;
+            //detector.data.sort( d => d.id );
+          }
+        } catch (err) {
+          _didIteratorError5 = true;
+          _iteratorError5 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+              _iterator5['return']();
+            }
+          } finally {
+            if (_didIteratorError5) {
+              throw _iteratorError5;
+            }
+          }
+        }
+
+        updateDetectors();
+      })['catch'](function (e) {
+        console.error('Detectors error:', e);
+      });
+    }
+
+    function binData(items) {
+      var f = _d3.time.day.ceil(_data.fromDate),
+          t = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
+          range = _d3.time.day.range(f, t),
+          scale = _d3.time.scale().domain([f, t]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
+
+      var bins = range.map(function (day) {
+        return { x: day, value: 0, items: [] };
+      });
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
 
       try {
-        for (var _iterator5 = selection.excluded()[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var tag = _step5.value;
+        for (var _iterator7 = items[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          var item = _step7.value;
+
+          var i = scale(item.date);
+          bins[i].value++;
+          bins[i].items.push(item);
+        }
+      } catch (err) {
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion7 && _iterator7['return']) {
+            _iterator7['return']();
+          }
+        } finally {
+          if (_didIteratorError7) {
+            throw _iteratorError7;
+          }
+        }
+      }
+
+      return [{ label: 'data', color: 'black', values: bins }];
+    }
+
+    function selectionChanged() {
+      var from = _d3.time.day.ceil(_data.fromDate),
+          to = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
+          range = _d3.time.day.range(from, to),
+          scale = _d3.time.scale().domain([from, to]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
+
+      var selectedSeries = [];
+
+      var _iteratorNormalCompletion8 = true;
+      var _didIteratorError8 = false;
+      var _iteratorError8 = undefined;
+
+      try {
+        for (var _iterator8 = selection.tags()[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var tag = _step8.value;
+
+          var bins = histogram(tag.items, range, scale);
+          selectedSeries.push({
+            label: tag.concept.label,
+            color: tag.color,
+            type: 'line',
+            marker: 'solid',
+            values: bins
+          });
+        }
+      } catch (err) {
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion8 && _iterator8['return']) {
+            _iterator8['return']();
+          }
+        } finally {
+          if (_didIteratorError8) {
+            throw _iteratorError8;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
+
+      try {
+        for (var _iterator9 = selection.excluded()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var tag = _step9.value;
 
           var bins = histogram(tag.items, range, scale);
           selectedSeries.push({
@@ -254,16 +387,16 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
           });
         }
       } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-            _iterator5['return']();
+          if (!_iteratorNormalCompletion9 && _iterator9['return']) {
+            _iterator9['return']();
           }
         } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
+          if (_didIteratorError9) {
+            throw _iteratorError9;
           }
         }
       }
@@ -280,13 +413,13 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       var selected = [];
       var categories = new Map();
       var systems = new Map();
-      var _iteratorNormalCompletion6 = true;
-      var _didIteratorError6 = false;
-      var _iteratorError6 = undefined;
+      var _iteratorNormalCompletion10 = true;
+      var _didIteratorError10 = false;
+      var _iteratorError10 = undefined;
 
       try {
-        for (var _iterator6 = selection.tags()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-          var tag = _step6.value;
+        for (var _iterator10 = selection.tags()[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+          var tag = _step10.value;
 
           selected.push({ name: tag.concept.label, n: tag.items.length, tag: tag });
 
@@ -305,16 +438,16 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
           entry.n++;
         }
       } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
+        _didIteratorError10 = true;
+        _iteratorError10 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
-            _iterator6['return']();
+          if (!_iteratorNormalCompletion10 && _iterator10['return']) {
+            _iterator10['return']();
           }
         } finally {
-          if (_didIteratorError6) {
-            throw _iteratorError6;
+          if (_didIteratorError10) {
+            throw _iteratorError10;
           }
         }
       }
@@ -324,29 +457,130 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       systemTable.data(toArray(systems.values()));
     }
 
-    function toArray(iter) {
-      var a = [];
-      var _iteratorNormalCompletion7 = true;
-      var _didIteratorError7 = false;
-      var _iteratorError7 = undefined;
+    function updateDetectors() {
+      var domain = selection.domain; // check that it is sorted by id
+      var n = domain.length;
+
+      var _iteratorNormalCompletion11 = true;
+      var _didIteratorError11 = false;
+      var _iteratorError11 = undefined;
 
       try {
-        for (var _iterator7 = iter[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-          var entry = _step7.value;
+        for (var _iterator11 = detectors[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+          var detector = _step11.value;
+
+          var prob = [],
+              similar = [];
+          var i = 0;
+          for (var j = 0; j < 100; j++) {
+            prob.push({ x: j / 100, value: 0, items: [] });
+            similar.push({ x: j / 100, value: 0, items: [] });
+          }
+
+          for (var l = 1; l < detector.data.length; l++) {
+            if (detector.data[l].id < detector.data[l - 1].id) {
+              console.log('order:', l, detector.data[l - 1].id, detector.data[l].id);
+            }
+          }
+          var found = 0;
+          var _iteratorNormalCompletion12 = true;
+          var _didIteratorError12 = false;
+          var _iteratorError12 = undefined;
+
+          try {
+            for (var _iterator12 = detector.data[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+              var entry = _step12.value;
+
+              while (i < n && domain[i].id < entry.id) i++;
+              if (i == n) break;
+              if (domain[i].id == entry.id) {
+                found++;
+                var p = prob[Math.min(Math.floor(entry.prob * 100), 99)];
+                p.value++;
+                p.items.push(entry);
+
+                var s = similar[Math.min(Math.floor(entry.similar * 100), 99)];
+                s.value++;
+                s.items.push(entry);
+
+                i++;
+              }
+            }
+          } catch (err) {
+            _didIteratorError12 = true;
+            _iteratorError12 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion12 && _iterator12['return']) {
+                _iterator12['return']();
+              }
+            } finally {
+              if (_didIteratorError12) {
+                throw _iteratorError12;
+              }
+            }
+          }
+
+          console.log(detector.name, detector.data.length, found);
+          for (var k = 0; k < 100; k++) {
+            console.log(k, prob[k].value, similar[k].value);
+          }
+          prob[0].value = 0;
+          similar[0].value = 0;
+          var series = [{
+            label: 'prob',
+            color: 'black',
+            type: 'line',
+            marker: 'solid',
+            values: prob
+          }, {
+            label: 'similar',
+            color: 'gray',
+            type: 'line',
+            marker: 'dash',
+            values: similar
+          }];
+          detector.chart.data(series);
+        }
+      } catch (err) {
+        _didIteratorError11 = true;
+        _iteratorError11 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion11 && _iterator11['return']) {
+            _iterator11['return']();
+          }
+        } finally {
+          if (_didIteratorError11) {
+            throw _iteratorError11;
+          }
+        }
+      }
+    }
+
+    function toArray(iter) {
+      var a = [];
+      var _iteratorNormalCompletion13 = true;
+      var _didIteratorError13 = false;
+      var _iteratorError13 = undefined;
+
+      try {
+        for (var _iterator13 = iter[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+          var entry = _step13.value;
 
           a.push(entry);
         }
       } catch (err) {
-        _didIteratorError7 = true;
-        _iteratorError7 = err;
+        _didIteratorError13 = true;
+        _iteratorError13 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion7 && _iterator7['return']) {
-            _iterator7['return']();
+          if (!_iteratorNormalCompletion13 && _iterator13['return']) {
+            _iterator13['return']();
           }
         } finally {
-          if (_didIteratorError7) {
-            throw _iteratorError7;
+          if (_didIteratorError13) {
+            throw _iteratorError13;
           }
         }
       }
@@ -355,31 +589,31 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
     }
     function histogram(items, range, scale) {
       var bins = range.map(function (d) {
-        return { date: d, value: 0, items: [] };
+        return { x: d, value: 0, items: [] };
       });
-      var _iteratorNormalCompletion8 = true;
-      var _didIteratorError8 = false;
-      var _iteratorError8 = undefined;
+      var _iteratorNormalCompletion14 = true;
+      var _didIteratorError14 = false;
+      var _iteratorError14 = undefined;
 
       try {
-        for (var _iterator8 = items[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var item = _step8.value;
+        for (var _iterator14 = items[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+          var item = _step14.value;
 
           var i = scale(item.date);
           bins[i].value++;
           bins[i].items.push(item);
         }
       } catch (err) {
-        _didIteratorError8 = true;
-        _iteratorError8 = err;
+        _didIteratorError14 = true;
+        _iteratorError14 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion8 && _iterator8['return']) {
-            _iterator8['return']();
+          if (!_iteratorNormalCompletion14 && _iterator14['return']) {
+            _iterator14['return']();
           }
         } finally {
-          if (_didIteratorError8) {
-            throw _iteratorError8;
+          if (_didIteratorError14) {
+            throw _iteratorError14;
           }
         }
       }
@@ -401,66 +635,72 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
     };
 
     api.resize = function () {
-      var _iteratorNormalCompletion9 = true;
-      var _didIteratorError9 = false;
-      var _iteratorError9 = undefined;
+      var name = undefined,
+          c = undefined;
+      var _iteratorNormalCompletion15 = true;
+      var _didIteratorError15 = false;
+      var _iteratorError15 = undefined;
 
       try {
-        for (var _iterator9 = charts[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-          var _step9$value = _slicedToArray(_step9.value, 2);
+        for (var _iterator15 = charts[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+          var _step15$value = _slicedToArray(_step15.value, 2);
 
-          var _name = _step9$value[0];
-          var _chart = _step9$value[1];
+          name = _step15$value[0];
+          c = _step15$value[1];
 
-          var w = parseInt(_d3.select(_name).style('width'));
-          var h = parseInt(_d3.select(_name).style('height'));
-          _chart.resize([w, h]);
+          var w = parseInt(_d3.select(name).style('width'));
+          var _h = parseInt(_d3.select(name).style('height'));
+          c.resize([w, _h]);
         }
       } catch (err) {
-        _didIteratorError9 = true;
-        _iteratorError9 = err;
+        _didIteratorError15 = true;
+        _iteratorError15 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion9 && _iterator9['return']) {
-            _iterator9['return']();
+          if (!_iteratorNormalCompletion15 && _iterator15['return']) {
+            _iterator15['return']();
           }
         } finally {
-          if (_didIteratorError9) {
-            throw _iteratorError9;
+          if (_didIteratorError15) {
+            throw _iteratorError15;
           }
         }
       }
 
-      var _iteratorNormalCompletion10 = true;
-      var _didIteratorError10 = false;
-      var _iteratorError10 = undefined;
+      var _iteratorNormalCompletion16 = true;
+      var _didIteratorError16 = false;
+      var _iteratorError16 = undefined;
 
       try {
-        for (var _iterator10 = pathogens[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-          var _step10$value = _slicedToArray(_step10.value, 2);
+        for (var _iterator16 = pathogens[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+          var _step16$value = _slicedToArray(_step16.value, 2);
 
-          var _name2 = _step10$value[0];
-          var _chart2 = _step10$value[1];
+          name = _step16$value[0];
+          c = _step16$value[1];
 
-          var w = parseInt(_d3.select(_name2).style('width'));
-          var h = parseInt(_d3.select(_name2).style('height'));
-          _chart2.resize([w, h]);
+          var w = parseInt(_d3.select('#chart-' + name).style('width'));
+          var _h2 = parseInt(_d3.select('#chart-' + name).style('height'));
+          c.resize([w, _h2]);
         }
       } catch (err) {
-        _didIteratorError10 = true;
-        _iteratorError10 = err;
+        _didIteratorError16 = true;
+        _iteratorError16 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion10 && _iterator10['return']) {
-            _iterator10['return']();
+          if (!_iteratorNormalCompletion16 && _iterator16['return']) {
+            _iterator16['return']();
           }
         } finally {
-          if (_didIteratorError10) {
-            throw _iteratorError10;
+          if (_didIteratorError16) {
+            throw _iteratorError16;
           }
         }
       }
 
+      var h = parseInt(_d3.select('#info-area').style('height')) - parseInt(_d3.select('#pathogens').style('height'));
+      console.log('h = ', h);
+      console.log('max = ', _d3.select('#pathogens-charts').style('max-height'));
+      _d3.select('#pathogens-charts').style('max-height', h + 'px');
       return this;
     };
 

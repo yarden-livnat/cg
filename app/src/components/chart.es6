@@ -37,7 +37,7 @@ export default function() {
     .ticks(4);
 
   let line = d3.svg.line()
-    .x( d => { return x(d.date); })
+    .x( d => { return x(d.x); })
     .y( d => { return y(d.value); });
 
   let zoom = d3.behavior.zoom()
@@ -171,8 +171,8 @@ export default function() {
     data = series;
     if (data.length > 0) {
       let n = series.length;
-      let x_min = series[0].values[0].date;
-      let x_max = series[0].values[series[0].values.length-1].date;
+      let x_min = series[0].values[0].x;
+      let x_max = series[0].values[series[0].values.length-1].x;
       let y_max = 0;
       for (let s of series) {
         y_max = Math.max(y_max, d3.max(s.values, d => { return d.value; }));
@@ -196,6 +196,15 @@ export default function() {
   api.resize = function(size) {
     resize(size[0], size[1]);
     draw();
+    return this;
+  };
+
+  api.scale = function(s) {
+    x = s;
+    x.range([0, width])
+    .nice(5);
+
+    xAxis.scale(x);
     return this;
   };
 

@@ -43,32 +43,66 @@ export default function(opt) {
 
   let pathogens = new Map();
 
+  let detectors = [];
+
   function init() {
     postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
 
-    d3.select('#pathogens').on('change', selectPathogen);
-
-    d3.select('#pathogens').selectAll('option')
+    /* pathogens */
+    let items = d3.select('#pathogens').select("ul").selectAll('li')
       .data(data.pathogens)
       .enter()
-        .append('option')
-          .attr('value', d => d.name)
-          .text(d => d.name);
+      .append('li');
 
-    //$('#pathogens').multiselect();
+    items.append('input')
+      .attr('type', 'checkbox')
+      .attr('value', d => d.name)
+      .on("change", function() {
+        selectPathogen(this.value, this.checked);
+      });
+
+    items.append('span')
+      .text(d => d.name);
+
+
+    let menu = d3.select('#pathogens .items');
+    d3.select('#pathogens').select('.anchor').on('click', function() {
+      if (menu.classed('visible')) {
+        menu.classed('visible', false).style('display', 'none');
+      } else {
+        menu.classed('visible', true).style('display', 'block');
+      }
+    });
+
+    menu.on('blur', function() {
+      menu.classed('visible', false).style('display', 'none');
+    });
+
+    /* detectors */
+    d3.select('#detectors-charts').selectAll('div')
+      .data(data.detectors)
+      .enter()
+        .append('div')
+        .attr('id', d => 'detector-'+d.name);
+
+    for (let d of data.detectors) {
+      let c = chart().el('#detector-'+d.name).title(d.name).scale(d3.scale.linear());
+      let detector = { name: d.name, chart: c, data:[] };
+      detectors.push(detector);
+    }
   }
 
-  function selectPathogen() {
-    let id = 'chart-'+this.value;
-    if (pathogens.has(this.value)) {
-      pathogens.delete(this.value);
-      d3.select('#pathogens-area').select('#chart-'+this.value).remove();
-    } else {
-      let div = d3.select('#pathogens-area').append('div')
-        .attr('id', 'chart-'+this.value);
-      let c = chart().el(div).title(this.value);
-      pathogens.set(this.value, c);
-      updatePathogens(this.value);
+  function selectPathogen(name, show) {
+    if (show) {
+      let div = d3.select('#pathogens-charts').append('div')
+        .attr('id', 'chart-'+name);
+      let c = chart().el(div).title(name);
+      pathogens.set(name, c);
+      updatePathogens(name);
+    }
+    else {
+      d3.select('#pathogens-charts').select('#chart-'+name).remove();
+      pathogens.delete(name);
     }
   }
 
@@ -80,11 +114,11 @@ export default function(opt) {
       .domain([from, to])
       .rangeRound([0, range.length-1]);
 
-    data.fetchPathogens([names], from, data.toDate)
+    data.fetch('pathogens', [names], from, data.toDate)
       .then(function(d) {
         for (let entry of d) {
-          let positive = range.map(function (d) { return {date: d, value: 0, items: []}; });
-          let negative = range.map(function (d) { return {date: d, value: 0, items: []}; });
+          let positive = range.map(function (d) { return {x: d, value: 0, items: []}; });
+          let negative = range.map(function (d) { return {x: d, value: 0, items: []}; });
 
           for (let item of entry.rows) {
             item.date = dateFormat.parse(item.date);
@@ -126,6 +160,22 @@ export default function(opt) {
     }));
 
     summaryChart.data(binData(data.domain));
+
+    for (let name of pathogens.keys()) { updatePathogens(name); }
+
+    data.fetch('detectors', detectors.map(d => d.name), data.fromDate, data.toDate)
+      .then( d => {
+        for (let entry of d) {
+          let detector;
+          for (detector of detectors) {
+            if (detector.name == entry.name) break;
+          }
+          detector.data = entry.rows;
+          //detector.data.sort( d => d.id );
+        }
+        updateDetectors();
+      })
+      .catch( e => { console.error('Detectors error:', e); });
   }
 
   function binData(items) {
@@ -136,7 +186,7 @@ export default function(opt) {
           .domain([f, t])
           .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
 
-    let bins = range.map(function (day) { return {date: day, value: 0, items: []}; });
+    let bins = range.map(function (day) { return {x: day, value: 0, items: []}; });
     for (let item of items) {
       let i = scale(item.date);
       bins[i].value++;
@@ -213,6 +263,65 @@ export default function(opt) {
     systemTable.data(toArray(systems.values()));
   }
 
+  function updateDetectors() {
+    let domain = selection.domain; // check that it is sorted by id
+    let n = domain.length;
+
+    for (let detector of detectors) {
+      let prob = [], similar = [];
+      let i = 0;
+      for (let j=0; j<100; j++) {
+        prob.push({x: j/100, value: 0, items:[]});
+        similar.push({x: j/100, value: 0, items: []});
+      }
+
+      for (let l=1; l<detector.data.length; l++) {
+        if (detector.data[l].id < detector.data[l-1].id) {
+          console.log('order:', l, detector.data[l-1].id, detector.data[l].id);
+        }
+      }
+      let found = 0;
+      for (let entry of detector.data) {
+        while (i < n && domain[i].id < entry.id) i++;
+        if (i == n) break;
+        if (domain[i].id == entry.id) {
+          found++;
+          let p = prob[Math.min(Math.floor(entry.prob*100), 99)];
+          p.value++;
+          p.items.push(entry);
+
+          let s = similar[Math.min(Math.floor(entry.similar*100), 99)];
+          s.value ++;
+          s.items.push(entry);
+
+          i++;
+        }
+      }
+
+      console.log(detector.name,detector.data.length, found);
+      for (let k=0; k<100; k++) {
+        console.log(k,prob[k].value, similar[k].value);
+      }
+      prob[0].value = 0;
+      similar[0].value = 0;
+      let series = [{
+          label: 'prob',
+          color: 'black',
+          type: 'line',
+          marker: 'solid',
+          values: prob
+        },
+        {
+          label: 'similar',
+          color: 'gray',
+          type: 'line',
+          marker: 'dash',
+          values: similar
+        }];
+      detector.chart.data(series);
+    }
+  }
+
   function toArray(iter) {
     let a = [];
     for (let entry of iter) {
@@ -221,7 +330,7 @@ export default function(opt) {
     return a;
   }
   function histogram(items, range, scale) {
-    let bins = range.map(function (d) { return {date: d, value: 0, items: []}; });
+    let bins = range.map(function (d) { return {x: d, value: 0, items: []}; });
     for (let item of items) {
       let i = scale(item.date);
       bins[i].value++;
@@ -245,18 +354,23 @@ export default function(opt) {
   };
 
   api.resize = function() {
-    for (let [name, chart] of charts) {
+    let name, c;
+    for ([name, c] of charts) {
       let w = parseInt(d3.select(name).style('width'));
       let h = parseInt(d3.select(name).style('height'));
-      chart.resize([w, h]);
+      c.resize([w, h]);
     }
 
-    for (let [name, chart] of pathogens) {
-      let w = parseInt(d3.select(name).style('width'));
-      let h = parseInt(d3.select(name).style('height'));
-      chart.resize([w, h]);
+    for ([name, c] of pathogens) {
+      let w = parseInt(d3.select('#chart-'+name).style('width'));
+      let h = parseInt(d3.select('#chart-'+name).style('height'));
+      c.resize([w, h]);
     }
 
+    let h = parseInt(d3.select('#info-area').style('height')) - parseInt(d3.select('#pathogens').style('height'));
+    console.log('h = ',h);
+    console.log('max = ', d3.select('#pathogens-charts').style('max-height'));
+    d3.select('#pathogens-charts').style('max-height', h+'px');
     return this;
   };
 

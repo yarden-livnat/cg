@@ -1,0 +1,91 @@
+/* chart */
+.chart {
+  svg {
+    font: 8pt sans-serif;
+  }
+
+  .axis {
+    shape-rendering: crispEdges;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke-width: 1px;
+    stroke: #aaa;
+  }
+
+  .x.axis line {
+    stroke: #aaa;
+    stroke-opacity: .5;
+    stroke-width: 1px;
+  }
+
+  .y.axis line {
+    stroke: #aaa;
+    stroke-opacity: 0.5;
+  }
+
+  path.line {
+    fill: none;
+    //stroke: #000;
+    stroke-width: .5px;
+  }
+
+  rect.pane {
+    cursor: move;
+    fill: none;
+    pointer-events: all;
+  }
+}
+
+
+/* checkbox drop down menu */
+
+.dropdown-check-list {
+  display: inline-block;
+  outline: none;
+
+  .anchor {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px 25px 5px 10px;
+    //border: 1px solid #ccc;
+  }
+
+  .anchor:after {
+    position: absolute;
+    content: "";
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    padding: 3px;
+    right: 10px;
+    top: 30%;
+    -moz-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    -o-transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+  }
+
+  ul.items {
+    padding: 2px;
+    display: none;
+    background-color: white;
+    margin: 0;
+    border: 1px solid #ccc;
+    //border-top: none;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    right: 5px;
+    box-shadow: 5px 5px 3px gray;
+  }
+
+  ul.items li {
+    list-style: none;
+    font: 7pt Arial;
+  }
+}
+
+

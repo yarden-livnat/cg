@@ -35,6 +35,7 @@ app.get('/info/:topic', db.info);
 app.get('/query', db.query);
 
 app.post('/pathogens', db.pathogens);
+app.post('/detectors', db.detectors);
 
 app.use(function(err, req, res, next) {
   console.error(err.stack);

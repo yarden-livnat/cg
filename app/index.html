@@ -8,18 +8,17 @@
 </head>
 <body>
 
+<label id="title">CommonGround</label>
+
 <div id="query-area">
-    <label id="title">CommonGround</label>
-    <div id="query" >
-        <form >
-            <input type="date" id="date" required="required" placeholder="from date">
-            <input type="text" class="input" id="duration" maxlength="3" persistent="true" placeholder="duration"> wks
-            <br><br>
-            <input type="text" id="keywords" name="keywords" placeholder="keywords">
-            <br><br>
-            <input type="button" value="Search" id="submit">
-        </form>
-    </div>
+    <form >
+        <input type="date" id="date" required="required" placeholder="from date">
+        <input type="text" class="input" id="duration" maxlength="3" persistent="true" placeholder="duration"> wks
+        <br><br>
+        <input type="text" id="keywords" name="keywords" placeholder="keywords">
+        <br><br>
+        <input type="button" value="Search" id="submit">
+    </form>
 </div>
 
 <div id="details-area">
@@ -35,16 +34,16 @@
         <div id="summary-chart"></div>
         <div id="selected-chart"></div>
 
-        <label>Detectors</label>
-
-        <div class="chart">Detector</div>
+        <div id="detectors-charts">
+            <label>Detectors</label>
+        </div>
     </div>
-
     <div id="pathogens-area">
-        <select id="pathogens"> <!-- multiple="multiple"> -->
-        </select>
-        <!--<div class="chart">RSV</div>-->
-        <!--<div class="chart">Influenza</div>-->
+        <div id="pathogens" class="dropdown-check-list" tabindex="100">
+          <span class="anchor">Pathogens</span>
+          <ul id="items" class="items"></ul>
+        </div>
+      <div id="pathogens-charts"></div>
     </div>
 </div>
 
