@@ -113,6 +113,10 @@ table {
   //}
 }
 
+#tags-table {
+  width: 240px;
+}
+
 .chart {
   width: $chart-width;
   height: $chart-height;
@@ -143,6 +147,7 @@ table {
   right: $map-width + 20px;
   top: $details-height + 20px;
   bottom: 10px;
+  border: lightgray 1px solid;
 }
 
 /* info */

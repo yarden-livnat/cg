@@ -6,18 +6,18 @@ import * as d3 from 'd3'
 import {capitalize} from '../utils'
 
 export default function() {
-  var SORT_OP = [
+  let SORT_OP = [
     { func: d3.ascending, symbol: "fa-sort-asc"},
     { func: d3.descending, symbol: "fa-sort-desc"}
     ];
 
-  var d3el, header, data;
-  var width, height;
-  var valid = false;
-  var columns = [];
-  var sortCol;
-  var table, thead, tbody;
-  var dispatch = d3.dispatch('click');
+  let d3el, header, data;
+  let width, height;
+  let valid = false;
+  let columns = [];
+  let sortCol;
+  let table, thead, tbody;
+  let dispatch = d3.dispatch('click');
 
   function identity() {
     return this;
@@ -28,7 +28,7 @@ export default function() {
   }
 
   function showSort(name, opt) {
-    var node = header.select('#'+name).select('.fa');
+    let node = header.select('#'+name).select('.fa');
     if (opt !== false) {
       node.classed(SORT_OP[1 - opt].symbol, false);
       node.classed(SORT_OP[opt].symbol, true);
@@ -40,8 +40,8 @@ export default function() {
     sortCol = col;
     showSort(col.name,  col.sortOrder);
 
-    var compare = SORT_OP[col.sortOrder].func;
-    var field = sortCol.name;
+    let compare = SORT_OP[col.sortOrder].func;
+    let field = sortCol.name;
     data.sort(function(a, b) { return compare(a[field], b[field]); });
 
     update();
@@ -60,7 +60,7 @@ export default function() {
 
     header = thead.selectAll('th').data(columns);
 
-    var colHeader = header.enter()
+    let colHeader = header.enter()
       .append('th')
       .attr('class', function(d) { return d.class; })
       .append('g')
@@ -77,7 +77,7 @@ export default function() {
 
     header.exit().remove();
 
-    var rows = tbody.selectAll('tr')
+    let rows = tbody.selectAll('tr')
       .data(data);
 
     rows.enter().append('tr')
@@ -87,10 +87,10 @@ export default function() {
     rows.exit().remove();
 
     // update
-    var cells = rows.selectAll('td')
+    let cells = rows.selectAll('td')
       .data(function(row) {
         return columns.map(function(col) {
-          return {col: col.name, value: row[col.name], class: col.class, row:row};
+          return {col: col.name, value: col.value(row) /*[col.name]*/, klass: col.class, row:row};
         })
       });
 
@@ -101,7 +101,7 @@ export default function() {
 
     cells
       .text(function(d) { return d.value; })
-      .attr('class', function(d) { return d.class;});
+      .attr('class', function(d) { return d.klass;});
 
     cells.exit().remove();
   }
@@ -114,74 +114,77 @@ export default function() {
 
       col.title = col.title || capitalize(col.name);
       col.sortOrder = col.sortOrder || 0;
+      col.value = col.value || function(d) { return d[col.name]; };
+      col.attr = col.attr || function(d) { return d['attr'] && d['attr'][col.name]; }
       return col;
     });
   }
 
-  function api() {}
+  return {
 
-  api.el = function(el) {
-    if (!arguments.length) return d3el;
-    d3el = typeof el == 'string' ? d3.select(el) : el;
-    //table = d3el.append('table')
-    //  .classed('table', true);
-    table = d3el;
+    el(el) {
+      if (!arguments.length) return d3el;
+      d3el = typeof el == 'string' ? d3.select(el) : el;
+      table = d3el;
 
-    if (width) table.attr('width', width);
-    if (height) table.attr('height', height);
+      if (width) table.attr('width', width);
+      if (height) table.attr('height', height);
 
-    thead = table.append('thead').append('tr');
-    tbody = table.append('tbody');
+      thead = table.append('thead').append('tr');
+      tbody = table.append('tbody');
 
-    validate();
-    update();
-    return this;
-  };
+      validate();
+      update();
+      return this;
+    },
 
-  api.width = function(value) {
-    if (!arguments.length) return width;
-    width = value;
-    if (table) {
-      table.attr('width', width);
+    width(value) {
+      if (!arguments.length) return width;
+      width = value;
+      if (table) {
+        table.attr('width', width);
+      }
+      return this;
+    },
+
+    height(value) {
+      if (!arguments.length) return height;
+      height = value;
+      if (table) {
+        table.attr('height', height);
+      }
+      return this;
+    },
+
+    data(value) {
+      if (!arguments.length) return data;
+      data = value;
+      if (sortCol) sort(sortCol);
+      validate();
+      update();
+      return this;
+    },
+
+    columns(value) {
+      if (!arguments.length) return columns;
+      columns = convert(value);
+      validate();
+      update();
+      return this;
+    },
+
+    on(type, listener) {
+      dispatch.on(type, listener);
+      return this;
+    },
+
+    update() {
+      update();
+      return this;
+    },
+
+    row(f) {
+      return tbody.selectAll('tr').filter(f);
     }
-    return this;
   };
-
-  api.height = function(value) {
-    if (!arguments.length) return height;
-    height = value;
-    if (table) {
-      table.attr('height', height);
-    }
-    return this;
-  };
-
-  api.data = function(value) {
-    if (!arguments.length) return data;
-    data = value;
-    if (sortCol) sort(sortCol);
-    validate();
-    update();
-    return this;
-  };
-
-  api.columns = function(value) {
-    if (!arguments.length) return columns;
-    columns = convert(value);
-    validate();
-    update();
-    return this;
-  };
-
-  api.on = function(type, listener) {
-    dispatch.on(type, listener);
-    return this;
-  };
-
-  api.update = function() {
-    update();
-    return this;
-  };
-
-  return api;
 }

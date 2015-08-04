@@ -225,6 +225,9 @@ table {
     height: 100%;
     font: 9pt sans-serif; }
 
+#tags-table {
+  width: 240px; }
+
 .chart {
   width: auto;
   height: 100px;
@@ -244,7 +247,8 @@ table {
   left: 10px;
   right: 420px;
   top: 170px;
-  bottom: 10px; }
+  bottom: 10px;
+  border: lightgray 1px solid; }
 
 /* info */
 #map-area {

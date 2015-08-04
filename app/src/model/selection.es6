@@ -173,68 +173,72 @@ function release_color(tag) {
       set domain(list) {
         initialDomain = list;
         clear(false);
+      },
+
+      countActive(items) {
+        return intersect(domain, items).length;
+      },
+
+      selectedItems() {
+        return tags.size || excluded.size ? domain : [];
+      },
+
+      clear(silent) {
+        clear(false);
+      },
+
+      exclude(tag, add) {
+        if (add) {
+          if (excluded.has(tag)) return;
+          assign_color(tag);
+          excluded.add(tag);
+          tags.delete(tag);
+        } else {
+          if (!excluded.delete(tag)) return;
+          release_color(tag);
+        }
+        recompute();
+      },
+
+      addFilter(filter, key) {
+        filters.set(key, filter);
+        filter.on('change', () => filterDomain());
+        filterDomain();
+      },
+
+      removeFilter(key) {
+        let filter = filters.get(key);
+        if (!filter) return;
+        filter.off('change');
+        filters.delete(key);
+        filterDomain();
+      },
+
+      select(tag, op) {
+        op = op || op == undefined;
+        if (op) add(tag);
+        else remove(tag)
+      },
+
+      tags() {
+        return tags;
+      },
+
+      excluded() {
+        return excluded;
+      },
+
+      isAnySelected() {
+        return _.some(arguments, function (tag) {
+            if (tags.has(tag)) return true;
+          }, this
+        );
+      },
+
+      on(type, listener) {
+        dispatch.on(type, listener);
+        return this;
       }
-    };
-
-    selection.selectedItems = function() {
-      return tags.size || excluded.size ? domain : [];
-    };
-
-    selection.clear = function(silent) {
-      clear(false);
-    };
-
-    selection.exclude = function (tag, add) {
-      if (add) {
-        if (excluded.has(tag)) return;
-        assign_color(tag);
-        excluded.add(tag);
-        tags.delete(tag);
-      } else {
-        if (!excluded.delete(tag)) return;
-        release_color(tag);
-      }
-      recompute();
-    };
-
-    selection.addFilter = function (filter, key) {
-      filters.set(key, filter);
-      filter.on('change', () => filterDomain());
-      filterDomain();
-    };
-
-    selection.removeFilter = function (key) {
-      let filter = filters.get(key);
-      if (!filter) return;
-      filter.off('change');
-      filters.delete(key);
-      filterDomain();
-    };
-
-    selection.select = function (tag, op) {
-      op = op || op == undefined;
-      if (op) add(tag);
-      else remove(tag)
-    };
-
-    selection.tags = function() {
-      return tags;
-    };
-
-    selection.excluded = function() {
-      return excluded;
-    };
-
-    selection.isAnySelected = function () {
-      return _.some(arguments, function (tag) {
-        if (tags.has(tag)) return true;
-      }, this
-      );
-    };
-
-    selection.on = function(type, listener) {
-      dispatch.on(type, listener);
-      return this;
     };
 
     return selection;

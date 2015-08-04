@@ -22,10 +22,10 @@ export default function(opt) {
   let selection;
 
   let tagsTable = table().el('#tags-table')
-    .columns([{title: 'Tag', name: 'name'}, 'n']);
+    .columns([{title: 'Tag', name: 'name'}, 's', 'n']);
 
-  let selectedTable = table().el('#selected-table')
-    .columns([{title: 'Selected', name: 'name'}, 'n']);
+  //let selectedTable = table().el('#selected-table')
+  //  .columns([{title: 'Selected', name: 'name'}, 'n']);
 
   let categoryTable = table().el('#category-table')
     .columns(['category', 'n']);
@@ -155,6 +155,7 @@ export default function(opt) {
     tagsTable.data(data.tags.map(tag => {
       return {
         name: tag.concept.label,
+        s:  tag.items.length,
         n: tag.items.length
       }
     }));
@@ -237,12 +238,9 @@ export default function(opt) {
 
     selectedChart.data(selectedSeries);
 
-    let selected  = [];
     let categories = new Map();
     let systems = new Map();
     for (let tag of selection.tags()) {
-      selected.push({name:tag.concept.label, n: tag.items.length, tag:tag});
-
       let entry = categories.get(tag.concept.category);
       if (!entry) {
         entry = {category: tag.concept.category, n: 0};
@@ -258,7 +256,19 @@ export default function(opt) {
       entry.n++;
     }
 
-    selectedTable.data(selected);
+    tagsTable.data(data.tags.map(tag => {
+      return {
+        name: tag.concept.label,
+        s:  selection.countActive(tag.items),
+        n: tag.items.length
+      }
+    }));
+
+    let s = new Set();
+    for (let tag of selection.tags()) { s.add(tag.concept.label); }
+    let rows = tagsTable.row( d => s.has(d.name) );
+    rows.classed('selected', true);
+
     categoryTable.data(toArray(categories.values()));
     systemTable.data(toArray(systems.values()));
   }
@@ -275,11 +285,6 @@ export default function(opt) {
         similar.push({x: j/100, value: 0, items: []});
       }
 
-      for (let l=1; l<detector.data.length; l++) {
-        if (detector.data[l].id < detector.data[l-1].id) {
-          console.log('order:', l, detector.data[l-1].id, detector.data[l].id);
-        }
-      }
       let found = 0;
       for (let entry of detector.data) {
         while (i < n && domain[i].id < entry.id) i++;
@@ -298,10 +303,6 @@ export default function(opt) {
         }
       }
 
-      console.log(detector.name,detector.data.length, found);
-      for (let k=0; k<100; k++) {
-        console.log(k,prob[k].value, similar[k].value);
-      }
       prob[0].value = 0;
       similar[0].value = 0;
       let series = [{

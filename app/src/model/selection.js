@@ -124,38 +124,38 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     var filteredDomain = undefined;
     var domain = [];
 
-    var excluded = new Set();
+    var _excluded = new Set();
     var filters = new Map();
 
-    var tags = new Set();
+    var _tags = new Set();
 
     var dispatch = _d3.dispatch('changed');
 
-    clear(true);
+    _clear(true);
 
     function add(tag) {
-      if (tags.has(tag)) return;
+      if (_tags.has(tag)) return;
 
       assign_color(tag);
 
-      tags.add(tag);
-      excluded['delete'](tag);
+      _tags.add(tag);
+      _excluded['delete'](tag);
       recompute();
     }
 
     function remove(tag) {
-      if (!tags['delete'](tag)) return;
+      if (!_tags['delete'](tag)) return;
       release_color(tag);
       recompute();
     }
 
-    function clear(silent) {
+    function _clear(silent) {
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = tags[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = _tags[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var tag = _step.value;
 
           release_color(tag);
@@ -180,7 +180,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = excluded[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (var _iterator2 = _excluded[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var tag = _step2.value;
 
           release_color(tag);
@@ -200,8 +200,8 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         }
       }
 
-      tags = new Set();
-      excluded = new Set();
+      _tags = new Set();
+      _excluded = new Set();
       filteredDomain = initialDomain;
       domain = initialDomain;
       if (!silent) {
@@ -222,10 +222,10 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     function recompute() {
       domain = filteredDomain;
-      tags.forEach(function (tag) {
+      _tags.forEach(function (tag) {
         domain = intersect(domain, tag.items);
       });
-      excluded.forEach(function (tag) {
+      _excluded.forEach(function (tag) {
         domain = excludeItems(domain, tag.items);
       });
 
@@ -241,80 +241,85 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     /*
      * API
      */
-    var selection = Object.defineProperties({}, {
+    var selection = Object.defineProperties({
+
+      countActive: function countActive(items) {
+        return intersect(domain, items).length;
+      },
+
+      selectedItems: function selectedItems() {
+        return _tags.size || _excluded.size ? domain : [];
+      },
+
+      clear: function clear(silent) {
+        _clear(false);
+      },
+
+      exclude: function exclude(tag, add) {
+        if (add) {
+          if (_excluded.has(tag)) return;
+          assign_color(tag);
+          _excluded.add(tag);
+          _tags['delete'](tag);
+        } else {
+          if (!_excluded['delete'](tag)) return;
+          release_color(tag);
+        }
+        recompute();
+      },
+
+      addFilter: function addFilter(filter, key) {
+        filters.set(key, filter);
+        filter.on('change', function () {
+          return filterDomain();
+        });
+        filterDomain();
+      },
+
+      removeFilter: function removeFilter(key) {
+        var filter = filters.get(key);
+        if (!filter) return;
+        filter.off('change');
+        filters['delete'](key);
+        filterDomain();
+      },
+
+      select: function select(tag, op) {
+        op = op || op == undefined;
+        if (op) add(tag);else remove(tag);
+      },
+
+      tags: function tags() {
+        return _tags;
+      },
+
+      excluded: function excluded() {
+        return _excluded;
+      },
+
+      isAnySelected: function isAnySelected() {
+        return _.some(arguments, function (tag) {
+          if (_tags.has(tag)) return true;
+        }, this);
+      },
+
+      on: function on(type, listener) {
+        dispatch.on(type, listener);
+        return this;
+      }
+    }, {
       domain: {
         get: function () {
           return domain;
         },
         set: function (list) {
           initialDomain = list;
-          clear(false);
+          _clear(false);
         },
         configurable: true,
         enumerable: true
       }
     });
-
-    selection.selectedItems = function () {
-      return tags.size || excluded.size ? domain : [];
-    };
-
-    selection.clear = function (silent) {
-      clear(false);
-    };
-
-    selection.exclude = function (tag, add) {
-      if (add) {
-        if (excluded.has(tag)) return;
-        assign_color(tag);
-        excluded.add(tag);
-        tags['delete'](tag);
-      } else {
-        if (!excluded['delete'](tag)) return;
-        release_color(tag);
-      }
-      recompute();
-    };
-
-    selection.addFilter = function (filter, key) {
-      filters.set(key, filter);
-      filter.on('change', function () {
-        return filterDomain();
-      });
-      filterDomain();
-    };
-
-    selection.removeFilter = function (key) {
-      var filter = filters.get(key);
-      if (!filter) return;
-      filter.off('change');
-      filters['delete'](key);
-      filterDomain();
-    };
-
-    selection.select = function (tag, op) {
-      op = op || op == undefined;
-      if (op) add(tag);else remove(tag);
-    };
-
-    selection.tags = function () {
-      return tags;
-    };
-
-    selection.excluded = function () {
-      return excluded;
-    };
-
-    selection.isAnySelected = function () {
-      return _.some(arguments, function (tag) {
-        if (tags.has(tag)) return true;
-      }, this);
-    };
-
-    selection.on = function (type, listener) {
-      dispatch.on(type, listener);
-      return this;
-    };
 
     return selection;
   };
