@@ -8,10 +8,9 @@ import * as postal from 'postal'
 import {pathogens_duration} from './config'
 import * as data from './data'
 import * as table from './components/table'
+import * as ntable from './components/n-table'
 import * as chart from './components/chart'
 
-//import * as $ from 'jquery'
-//import 'bootstrap-multiselect'
 
 export default function(opt) {
   const MIN_Y = 5;
@@ -21,17 +20,22 @@ export default function(opt) {
 
   let selection;
 
-  let tagsTable = table().el('#tags-table')
-    .columns([{title: 'Tag', name: 'name'}, 's', 'n']);
+  let tagsTable = ntable('#details-area', 'tags-table').header([
+    {name: 'name', title: 'Tag'},
+    {name: 'act', attr: 'numeric'},
+    {name: 'num', attr: 'numeric'}
+  ]);
 
-  //let selectedTable = table().el('#selected-table')
-  //  .columns([{title: 'Selected', name: 'name'}, 'n']);
+  let categoryTable = ntable('#details-area', 'category-table').header([
+    {name: 'category'},
+    {name: 'n'}
+  ]);
 
-  let categoryTable = table().el('#category-table')
-    .columns(['category', 'n']);
+  let systemTable = ntable('#details-area', 'system-table').header([
+    {name: 'system'},
+    {name: 'n'}
+  ]);
 
-  let systemTable = table().el('#system-table')
-    .columns(['system', 'n']);
 
   let summaryChart = chart().el('#summary-chart');
   let selectedChart = chart().el('#selected-chart');
@@ -90,6 +94,135 @@ export default function(opt) {
       let detector = { name: d.name, chart: c, data:[] };
       detectors.push(detector);
     }
+  }
+
+  function dataChanged() {
+    tagsTable.data(data.tags.map(tag => {
+      return {
+        name: tag.concept.label,
+        act:  tag.items.length,
+        num: tag.items.length
+      }
+    }));
+
+    summaryChart.data(binData(data.domain));
+
+    for (let name of pathogens.keys()) { updatePathogens(name); }
+
+    data.fetch('detectors', detectors.map(d => d.name), data.fromDate, data.toDate)
+      .then( d => {
+        for (let entry of d) {
+          let detector;
+          for (detector of detectors) {
+            if (detector.name == entry.name) break;
+          }
+          detector.data = entry.rows;
+          //detector.data.sort( d => d.id );
+        }
+        updateDetectors();
+      })
+      .catch( e => { console.error('Detectors error:', e); });
+  }
+
+  function binData(items) {
+    let f = d3.time.day.ceil(data.fromDate),
+      t = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
+      range = d3.time.day.range(f, t),
+      scale = d3.time.scale()
+        .domain([f, t])
+        .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
+
+    let bins = range.map(function (day) { return {x: day, value: 0, items: []}; });
+    for (let item of items) {
+      let i = scale(item.date);
+      bins[i].value++;
+      bins[i].items.push(item);
+    }
+
+    return [{label: 'data', color: 'black', values: bins}];
+  }
+
+  function selectionChanged() {
+    let from = d3.time.day.ceil(data.fromDate),
+      to = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
+      range = d3.time.day.range(from, to),
+      scale = d3.time.scale()
+        .domain([from, to])
+        .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
+
+    let selectedSeries = [];
+
+    for (let tag of selection.tags()) {
+      let bins = histogram(tag.items, range, scale);
+      selectedSeries.push({
+        label: tag.concept.label,
+        color: tag.color,
+        type: 'line',
+        marker: 'solid',
+        values: bins
+      });
+    }
+
+    for (let tag of selection.excluded()) {
+      let bins = histogram(tag.items, range, scale);
+      selectedSeries.push({
+        label: tag.concept.label,
+        color: tag.color,
+        type: 'line',
+        marker: 'dash',
+        values: bins
+      });
+    }
+
+    //selectedSeries.push({
+    //  label: tag.concept.label,
+    //  color: tag.color,
+    //  type: 'line',
+    //  values: histogram(selection.selectedItems(), range)
+    //});
+
+    selectedChart.data(selectedSeries);
+
+    let categories = new Map();
+    let systems = new Map();
+    for (let tag of selection.tags()) {
+      let entry = categories.get(tag.concept.category);
+      if (!entry) {
+        entry = {category: tag.concept.category, n: 0};
+        categories.set(tag.concept.category, entry);
+      }
+      entry.n++;
+
+      entry = systems.get(tag.concept.system);
+      if (!entry) {
+        entry = {system: tag.concept.system, n: 0};
+        systems.set(tag.concept.system, entry);
+      }
+      entry.n++;
+    }
+
+    tagsTable.data(data.tags.map(tag => {
+      return {
+        name: tag.concept.label,
+        act:  selection.countActive(tag.items),
+        num: tag.items.length
+      }
+    }));
+
+    mark(selection.tags(), 'selected');
+    mark(selection.excluded(), 'excluded');
+
+    categoryTable.data(toArray(categories.values()));
+    systemTable.data(toArray(systems.values()));
+  }
+
+  function mark(list, marker) {
+    let s = new Set();
+    for (let tag of list) { s.add(tag.concept.label); }
+    let rows = tagsTable.row(
+        d => s.has(d.name)
+    );
+    rows.classed(marker, true);
   }
 
   function selectPathogen(name, show) {
@@ -151,127 +284,7 @@ export default function(opt) {
       });
   }
 
-  function dataChanged() {
-    tagsTable.data(data.tags.map(tag => {
-      return {
-        name: tag.concept.label,
-        s:  tag.items.length,
-        n: tag.items.length
-      }
-    }));
 
-    summaryChart.data(binData(data.domain));
-
-    for (let name of pathogens.keys()) { updatePathogens(name); }
-
-    data.fetch('detectors', detectors.map(d => d.name), data.fromDate, data.toDate)
-      .then( d => {
-        for (let entry of d) {
-          let detector;
-          for (detector of detectors) {
-            if (detector.name == entry.name) break;
-          }
-          detector.data = entry.rows;
-          //detector.data.sort( d => d.id );
-        }
-        updateDetectors();
-      })
-      .catch( e => { console.error('Detectors error:', e); });
-  }
-
-  function binData(items) {
-    let f = d3.time.day.ceil(data.fromDate),
-        t = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
-        range = d3.time.day.range(f, t),
-        scale = d3.time.scale()
-          .domain([f, t])
-          .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
-
-    let bins = range.map(function (day) { return {x: day, value: 0, items: []}; });
-    for (let item of items) {
-      let i = scale(item.date);
-      bins[i].value++;
-      bins[i].items.push(item);
-    }
-
-    return [{label: 'data', color: 'black', values: bins}];
-  }
-
-  function selectionChanged() {
-    let from = d3.time.day.ceil(data.fromDate),
-        to = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
-        range = d3.time.day.range(from, to),
-        scale = d3.time.scale()
-          .domain([from, to])
-          .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
-
-    let selectedSeries = [];
-
-    for (let tag of selection.tags()) {
-      let bins = histogram(tag.items, range, scale);
-      selectedSeries.push({
-        label: tag.concept.label,
-        color: tag.color,
-        type: 'line',
-        marker: 'solid',
-        values: bins
-      });
-    }
-
-    for (let tag of selection.excluded()) {
-      let bins = histogram(tag.items, range, scale);
-      selectedSeries.push({
-        label: tag.concept.label,
-        color: tag.color,
-        type: 'line',
-        marker: 'dash',
-        values: bins
-      });
-    }
-
-    //selectedSeries.push({
-    //  label: tag.concept.label,
-    //  color: tag.color,
-    //  type: 'line',
-    //  values: histogram(selection.selectedItems(), range)
-    //});
-
-    selectedChart.data(selectedSeries);
-
-    let categories = new Map();
-    let systems = new Map();
-    for (let tag of selection.tags()) {
-      let entry = categories.get(tag.concept.category);
-      if (!entry) {
-        entry = {category: tag.concept.category, n: 0};
-        categories.set(tag.concept.category, entry);
-      }
-      entry.n++;
-
-      entry = systems.get(tag.concept.system);
-      if (!entry) {
-        entry = {system: tag.concept.system, n: 0};
-        systems.set(tag.concept.system, entry);
-      }
-      entry.n++;
-    }
-
-    tagsTable.data(data.tags.map(tag => {
-      return {
-        name: tag.concept.label,
-        s:  selection.countActive(tag.items),
-        n: tag.items.length
-      }
-    }));
-
-    let s = new Set();
-    for (let tag of selection.tags()) { s.add(tag.concept.label); }
-    let rows = tagsTable.row( d => s.has(d.name) );
-    rows.classed('selected', true);
-
-    categoryTable.data(toArray(categories.values()));
-    systemTable.data(toArray(systems.values()));
-  }
 
   function updateDetectors() {
     let domain = selection.domain; // check that it is sorted by id

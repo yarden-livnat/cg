@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', './config', './data', './components/table', './components/chart'], function (exports, module, _d3, _postal, _config, _data, _componentsTable, _componentsChart) {
+define(['exports', 'module', 'd3', 'postal', './config', './data', './components/table', './components/n-table', './components/chart'], function (exports, module, _d3, _postal, _config, _data, _componentsTable, _componentsNTable, _componentsChart) {
   /**
    * Created by yarden on 7/21/15.
    */
@@ -6,9 +6,6 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
   'use strict';
 
   function _slicedToArray(arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }
-
-  //import * as $ from 'jquery'
-  //import 'bootstrap-multiselect'
 
   module.exports = function (opt) {
     var MIN_Y = 5;
@@ -18,14 +15,11 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
 
     var selection = undefined;
 
-    var tagsTable = (0, _componentsTable)().el('#tags-table').columns([{ title: 'Tag', name: 'name' }, 's', 'n']);
+    var tagsTable = (0, _componentsNTable)('#details-area', 'tags-table').header([{ name: 'name', title: 'Tag' }, { name: 'act', attr: 'numeric' }, { name: 'num', attr: 'numeric' }]);
 
-    //let selectedTable = table().el('#selected-table')
-    //  .columns([{title: 'Selected', name: 'name'}, 'n']);
+    var categoryTable = (0, _componentsNTable)('#details-area', 'category-table').header([{ name: 'category' }, { name: 'n' }]);
 
-    var categoryTable = (0, _componentsTable)().el('#category-table').columns(['category', 'n']);
-
-    var systemTable = (0, _componentsTable)().el('#system-table').columns(['system', 'n']);
+    var systemTable = (0, _componentsNTable)('#details-area', 'system-table').header([{ name: 'system' }, { name: 'n' }]);
 
     var summaryChart = (0, _componentsChart)().el('#summary-chart');
     var selectedChart = (0, _componentsChart)().el('#selected-chart');
@@ -98,6 +92,308 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       }
     }
 
+    function dataChanged() {
+      tagsTable.data(_data.tags.map(function (tag) {
+        return {
+          name: tag.concept.label,
+          act: tag.items.length,
+          num: tag.items.length
+        };
+      }));
+
+      summaryChart.data(binData(_data.domain));
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = pathogens.keys()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _name = _step2.value;
+          updatePathogens(_name);
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      _data.fetch('detectors', detectors.map(function (d) {
+        return d.name;
+      }), _data.fromDate, _data.toDate).then(function (d) {
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = d[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var entry = _step3.value;
+
+            var detector = undefined;
+            var _iteratorNormalCompletion4 = true;
+            var _didIteratorError4 = false;
+            var _iteratorError4 = undefined;
+
+            try {
+              for (var _iterator4 = detectors[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+                detector = _step4.value;
+
+                if (detector.name == entry.name) break;
+              }
+            } catch (err) {
+              _didIteratorError4 = true;
+              _iteratorError4 = err;
+            } finally {
+              try {
+                if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+                  _iterator4['return']();
+                }
+              } finally {
+                if (_didIteratorError4) {
+                  throw _iteratorError4;
+                }
+              }
+            }
+
+            detector.data = entry.rows;
+            //detector.data.sort( d => d.id );
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+              _iterator3['return']();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+
+        updateDetectors();
+      })['catch'](function (e) {
+        console.error('Detectors error:', e);
+      });
+    }
+
+    function binData(items) {
+      var f = _d3.time.day.ceil(_data.fromDate),
+          t = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
+          range = _d3.time.day.range(f, t),
+          scale = _d3.time.scale().domain([f, t]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
+
+      var bins = range.map(function (day) {
+        return { x: day, value: 0, items: [] };
+      });
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = items[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var item = _step5.value;
+
+          var i = scale(item.date);
+          bins[i].value++;
+          bins[i].items.push(item);
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+            _iterator5['return']();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+
+      return [{ label: 'data', color: 'black', values: bins }];
+    }
+
+    function selectionChanged() {
+      var from = _d3.time.day.ceil(_data.fromDate),
+          to = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
+          range = _d3.time.day.range(from, to),
+          scale = _d3.time.scale().domain([from, to]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
+
+      var selectedSeries = [];
+
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = selection.tags()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var tag = _step6.value;
+
+          var bins = histogram(tag.items, range, scale);
+          selectedSeries.push({
+            label: tag.concept.label,
+            color: tag.color,
+            type: 'line',
+            marker: 'solid',
+            values: bins
+          });
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+            _iterator6['return']();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
+
+      try {
+        for (var _iterator7 = selection.excluded()[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          var tag = _step7.value;
+
+          var bins = histogram(tag.items, range, scale);
+          selectedSeries.push({
+            label: tag.concept.label,
+            color: tag.color,
+            type: 'line',
+            marker: 'dash',
+            values: bins
+          });
+        }
+      } catch (err) {
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion7 && _iterator7['return']) {
+            _iterator7['return']();
+          }
+        } finally {
+          if (_didIteratorError7) {
+            throw _iteratorError7;
+          }
+        }
+      }
+
+      //selectedSeries.push({
+      //  label: tag.concept.label,
+      //  color: tag.color,
+      //  type: 'line',
+      //  values: histogram(selection.selectedItems(), range)
+      //});
+
+      selectedChart.data(selectedSeries);
+
+      var categories = new Map();
+      var systems = new Map();
+      var _iteratorNormalCompletion8 = true;
+      var _didIteratorError8 = false;
+      var _iteratorError8 = undefined;
+
+      try {
+        for (var _iterator8 = selection.tags()[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var tag = _step8.value;
+
+          var entry = categories.get(tag.concept.category);
+          if (!entry) {
+            entry = { category: tag.concept.category, n: 0 };
+            categories.set(tag.concept.category, entry);
+          }
+          entry.n++;
+
+          entry = systems.get(tag.concept.system);
+          if (!entry) {
+            entry = { system: tag.concept.system, n: 0 };
+            systems.set(tag.concept.system, entry);
+          }
+          entry.n++;
+        }
+      } catch (err) {
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion8 && _iterator8['return']) {
+            _iterator8['return']();
+          }
+        } finally {
+          if (_didIteratorError8) {
+            throw _iteratorError8;
+          }
+        }
+      }
+
+      tagsTable.data(_data.tags.map(function (tag) {
+        return {
+          name: tag.concept.label,
+          act: selection.countActive(tag.items),
+          num: tag.items.length
+        };
+      }));
+
+      mark(selection.tags(), 'selected');
+      mark(selection.excluded(), 'excluded');
+
+      categoryTable.data(toArray(categories.values()));
+      systemTable.data(toArray(systems.values()));
+    }
+
+    function mark(list, marker) {
+      var s = new Set();
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
+
+      try {
+        for (var _iterator9 = list[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var tag = _step9.value;
+          s.add(tag.concept.label);
+        }
+      } catch (err) {
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion9 && _iterator9['return']) {
+            _iterator9['return']();
+          }
+        } finally {
+          if (_didIteratorError9) {
+            throw _iteratorError9;
+          }
+        }
+      }
+
+      var rows = tagsTable.row(function (d) {
+        return s.has(d.name);
+      });
+      rows.classed(marker, true);
+    }
+
     function selectPathogen(name, show) {
       if (show) {
         var div = _d3.select('#pathogens-charts').append('div').attr('id', 'chart-' + name);
@@ -117,13 +413,13 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       var scale = _d3.time.scale().domain([from, to]).rangeRound([0, range.length - 1]);
 
       _data.fetch('pathogens', [names], from, _data.toDate).then(function (d) {
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+        var _iteratorNormalCompletion10 = true;
+        var _didIteratorError10 = false;
+        var _iteratorError10 = undefined;
 
         try {
-          for (var _iterator2 = d[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var entry = _step2.value;
+          for (var _iterator10 = d[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+            var entry = _step10.value;
 
             var positive = range.map(function (d) {
               return { x: d, value: 0, items: [] };
@@ -132,13 +428,13 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
               return { x: d, value: 0, items: [] };
             });
 
-            var _iteratorNormalCompletion3 = true;
-            var _didIteratorError3 = false;
-            var _iteratorError3 = undefined;
+            var _iteratorNormalCompletion11 = true;
+            var _didIteratorError11 = false;
+            var _iteratorError11 = undefined;
 
             try {
-              for (var _iterator3 = entry.rows[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-                var item = _step3.value;
+              for (var _iterator11 = entry.rows[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+                var item = _step11.value;
 
                 item.date = dateFormat.parse(item.date);
                 var i = scale(item.date);
@@ -147,16 +443,16 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
                 bins[i].items.push(item);
               }
             } catch (err) {
-              _didIteratorError3 = true;
-              _iteratorError3 = err;
+              _didIteratorError11 = true;
+              _iteratorError11 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-                  _iterator3['return']();
+                if (!_iteratorNormalCompletion11 && _iterator11['return']) {
+                  _iterator11['return']();
                 }
               } finally {
-                if (_didIteratorError3) {
-                  throw _iteratorError3;
+                if (_didIteratorError11) {
+                  throw _iteratorError11;
                 }
               }
             }
@@ -178,319 +474,22 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
             pathogens.get(entry.name).data(series);
           }
         } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
+          _didIteratorError10 = true;
+          _iteratorError10 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-              _iterator2['return']();
+            if (!_iteratorNormalCompletion10 && _iterator10['return']) {
+              _iterator10['return']();
             }
           } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
+            if (_didIteratorError10) {
+              throw _iteratorError10;
             }
           }
         }
       })['catch'](function (reason) {
         console.error('error: ', reason);
       });
-    }
-
-    function dataChanged() {
-      tagsTable.data(_data.tags.map(function (tag) {
-        return {
-          name: tag.concept.label,
-          s: tag.items.length,
-          n: tag.items.length
-        };
-      }));
-
-      summaryChart.data(binData(_data.domain));
-
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = pathogens.keys()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var _name = _step4.value;
-          updatePathogens(_name);
-        }
-      } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-            _iterator4['return']();
-          }
-        } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
-          }
-        }
-      }
-
-      _data.fetch('detectors', detectors.map(function (d) {
-        return d.name;
-      }), _data.fromDate, _data.toDate).then(function (d) {
-        var _iteratorNormalCompletion5 = true;
-        var _didIteratorError5 = false;
-        var _iteratorError5 = undefined;
-
-        try {
-          for (var _iterator5 = d[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-            var entry = _step5.value;
-
-            var detector = undefined;
-            var _iteratorNormalCompletion6 = true;
-            var _didIteratorError6 = false;
-            var _iteratorError6 = undefined;
-
-            try {
-              for (var _iterator6 = detectors[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-                detector = _step6.value;
-
-                if (detector.name == entry.name) break;
-              }
-            } catch (err) {
-              _didIteratorError6 = true;
-              _iteratorError6 = err;
-            } finally {
-              try {
-                if (!_iteratorNormalCompletion6 && _iterator6['return']) {
-                  _iterator6['return']();
-                }
-              } finally {
-                if (_didIteratorError6) {
-                  throw _iteratorError6;
-                }
-              }
-            }
-
-            detector.data = entry.rows;
-            //detector.data.sort( d => d.id );
-          }
-        } catch (err) {
-          _didIteratorError5 = true;
-          _iteratorError5 = err;
-        } finally {
-          try {
-            if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-              _iterator5['return']();
-            }
-          } finally {
-            if (_didIteratorError5) {
-              throw _iteratorError5;
-            }
-          }
-        }
-
-        updateDetectors();
-      })['catch'](function (e) {
-        console.error('Detectors error:', e);
-      });
-    }
-
-    function binData(items) {
-      var f = _d3.time.day.ceil(_data.fromDate),
-          t = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
-          range = _d3.time.day.range(f, t),
-          scale = _d3.time.scale().domain([f, t]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
-
-      var bins = range.map(function (day) {
-        return { x: day, value: 0, items: [] };
-      });
-      var _iteratorNormalCompletion7 = true;
-      var _didIteratorError7 = false;
-      var _iteratorError7 = undefined;
-
-      try {
-        for (var _iterator7 = items[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-          var item = _step7.value;
-
-          var i = scale(item.date);
-          bins[i].value++;
-          bins[i].items.push(item);
-        }
-      } catch (err) {
-        _didIteratorError7 = true;
-        _iteratorError7 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion7 && _iterator7['return']) {
-            _iterator7['return']();
-          }
-        } finally {
-          if (_didIteratorError7) {
-            throw _iteratorError7;
-          }
-        }
-      }
-
-      return [{ label: 'data', color: 'black', values: bins }];
-    }
-
-    function selectionChanged() {
-      var from = _d3.time.day.ceil(_data.fromDate),
-          to = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
-          range = _d3.time.day.range(from, to),
-          scale = _d3.time.scale().domain([from, to]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
-
-      var selectedSeries = [];
-
-      var _iteratorNormalCompletion8 = true;
-      var _didIteratorError8 = false;
-      var _iteratorError8 = undefined;
-
-      try {
-        for (var _iterator8 = selection.tags()[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var tag = _step8.value;
-
-          var bins = histogram(tag.items, range, scale);
-          selectedSeries.push({
-            label: tag.concept.label,
-            color: tag.color,
-            type: 'line',
-            marker: 'solid',
-            values: bins
-          });
-        }
-      } catch (err) {
-        _didIteratorError8 = true;
-        _iteratorError8 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion8 && _iterator8['return']) {
-            _iterator8['return']();
-          }
-        } finally {
-          if (_didIteratorError8) {
-            throw _iteratorError8;
-          }
-        }
-      }
-
-      var _iteratorNormalCompletion9 = true;
-      var _didIteratorError9 = false;
-      var _iteratorError9 = undefined;
-
-      try {
-        for (var _iterator9 = selection.excluded()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-          var tag = _step9.value;
-
-          var bins = histogram(tag.items, range, scale);
-          selectedSeries.push({
-            label: tag.concept.label,
-            color: tag.color,
-            type: 'line',
-            marker: 'dash',
-            values: bins
-          });
-        }
-      } catch (err) {
-        _didIteratorError9 = true;
-        _iteratorError9 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion9 && _iterator9['return']) {
-            _iterator9['return']();
-          }
-        } finally {
-          if (_didIteratorError9) {
-            throw _iteratorError9;
-          }
-        }
-      }
-
-      //selectedSeries.push({
-      //  label: tag.concept.label,
-      //  color: tag.color,
-      //  type: 'line',
-      //  values: histogram(selection.selectedItems(), range)
-      //});
-
-      selectedChart.data(selectedSeries);
-
-      var categories = new Map();
-      var systems = new Map();
-      var _iteratorNormalCompletion10 = true;
-      var _didIteratorError10 = false;
-      var _iteratorError10 = undefined;
-
-      try {
-        for (var _iterator10 = selection.tags()[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-          var tag = _step10.value;
-
-          var entry = categories.get(tag.concept.category);
-          if (!entry) {
-            entry = { category: tag.concept.category, n: 0 };
-            categories.set(tag.concept.category, entry);
-          }
-          entry.n++;
-
-          entry = systems.get(tag.concept.system);
-          if (!entry) {
-            entry = { system: tag.concept.system, n: 0 };
-            systems.set(tag.concept.system, entry);
-          }
-          entry.n++;
-        }
-      } catch (err) {
-        _didIteratorError10 = true;
-        _iteratorError10 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion10 && _iterator10['return']) {
-            _iterator10['return']();
-          }
-        } finally {
-          if (_didIteratorError10) {
-            throw _iteratorError10;
-          }
-        }
-      }
-
-      tagsTable.data(_data.tags.map(function (tag) {
-        return {
-          name: tag.concept.label,
-          s: selection.countActive(tag.items),
-          n: tag.items.length
-        };
-      }));
-
-      var s = new Set();
-      var _iteratorNormalCompletion11 = true;
-      var _didIteratorError11 = false;
-      var _iteratorError11 = undefined;
-
-      try {
-        for (var _iterator11 = selection.tags()[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-          var tag = _step11.value;
-          s.add(tag.concept.label);
-        }
-      } catch (err) {
-        _didIteratorError11 = true;
-        _iteratorError11 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion11 && _iterator11['return']) {
-            _iterator11['return']();
-          }
-        } finally {
-          if (_didIteratorError11) {
-            throw _iteratorError11;
-          }
-        }
-      }
-
-      var rows = tagsTable.row(function (d) {
-        return s.has(d.name);
-      });
-      rows.classed('selected', true);
-
-      categoryTable.data(toArray(categories.values()));
-      systemTable.data(toArray(systems.values()));
     }
 
     function updateDetectors() {
