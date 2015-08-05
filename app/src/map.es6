@@ -5,7 +5,9 @@
 import * as d3 from 'd3';
 import * as L from 'leaflet';
 import * as postal from 'postal';
+
 import {MAP_DEFAULTS} from './config';
+
 export default function (opt) {
 
   const AREA_ALPHA = 0.6;
@@ -30,10 +32,11 @@ export default function (opt) {
   let active = new Map();
   let current = new Map();
   let svg, svgContainer;
-  let selectedZipcodes = [];
+  let selectedZipcodes = new Set();
+  let selectionFilter = Filter();
 
-  let options = Object.assign({}, MAP_DEFAULTS, opt);
-  //let options = MAP_DEFAULTS;
+  //let options = Object.assign({}, MAP_DEFAULTS, opt);
+  let options = MAP_DEFAULTS;
   let map = new L.Map('map')
     .addLayer(L.tileLayer(options.mapbox.url, options.mapbox.opt))
     .setView(options.center, options.zoom);
@@ -46,6 +49,7 @@ export default function (opt) {
 
   svgContainer = d3.select('#map').select('svg');
   svg = svgContainer.append('g');
+
 
 
   function init() {
@@ -97,48 +101,39 @@ export default function (opt) {
 
   function selectZipcode(zipcode, append) {
     d3.event.preventDefault();
-    let update = [];
-    if (!append) {
-      if (selectedZipcodes.length == 1 && selectedZipcodes[0] == zipcode) {
-        select(zipcode, false);
-        update = [zipcode];
-        selectedZipcodes = [];
-      }
-      else {
-        select(selectedZipcodes, false);
-        select(zipcode, true);
-        update = selectedZipcodes;
-        selectedZipcodes = [zipcode];
-        if (update.indexOf(zipcode) == -1) update.push(zipcode);
-      }
+
+    let updated = new Set();
+    let active = selectedZipcodes.has(zipcode);
+    if (append) {
+      if (active) selectedZipcodes.delete(zipcode);
+      else  selectedZipcodes.add(zipcode);
+
+      update(zipcode, !active);
     } else {
-      let i = selectedZipcodes.indexOf(zipcode);
-      if (i == -1) {
-        select(zipcode, true);
-        selectedZipcodes.push(zipcode);
+      for (let z of selectedZipcodes) {
+        update(z, false);
       }
-      else {
-        select(zipcode, false);
-        selectedZipcodes.splice(i, 1);
+      selectedZipcodes.clear();
+      if (!active) {
+        selectedZipcodes.add(zipcode);
+        update(zipcode, true);
       }
-      update = [zipcode];
     }
 
     console.log('selected: '+selectedZipcodes);
-    svg.selectAll('path').filter( d => update.indexOf(d.properties.Zip_Code) != -1 )
+    svg.selectAll('path').filter( d => updated.has(d.properties.Zip_Code) )
       .each(d => { console.log(d+': '+d.state.boundary_color);})
       .style('stroke', d => d.state.boundary_color );
 
-    //postal.publish({channel: ''});
-  }
+    selectionFilter.domain(selectedZipcodes);
 
-  function select(zipcode, on) {
-    if (!zipcode) return;
-    let list = zipcode instanceof Array && zipcode || [zipcode];
-    for (let z of list) {
-      let feature = zipcodes.get(z);
+    function update(zipcode, on) {
+      let feature = zipcodes.get(zipcode);
       feature.state.selected = on;
-      feature.state.boundary_color = on ? BOUNDARY_SELECTED_COLOR : feature.n > 0 ? BOUNDARY_ACTIVE_COLOR : BOUNDARY_NON_ACTIVE_COLOR;
+      feature.state.boundary_color = on ? BOUNDARY_SELECTED_COLOR :
+        feature.n > 0 ? BOUNDARY_ACTIVE_COLOR :
+          BOUNDARY_NON_ACTIVE_COLOR;
+      updated.add(zipcode);
     }
   }
 
@@ -196,27 +191,46 @@ export default function (opt) {
     active = current;
   }
 
-  var api = {};
+  function Filter() {
+    let dispatch = d3.dispatch('change');
+    let items;
 
-  api.init = function() { init(); };
+    let f = function(list) {
+      return !items || items.size == 0 ? list: list.filter( item => items.has(item.zipcode));
+    };
 
-  api.population = function(map) {
-    population = map;
-    return this;
+    f.domain = function(d) {
+      items = d;
+      dispatch.change();
+    };
+
+    f.on = function(type, cb) {
+      dispatch.on(type, cb);
+    };
+
+    return f;
+  }
+
+  return {
+    init() { init(); },
+
+    population (map) {
+      population = map;
+      return this;
+    },
+
+    selection(s) {
+      selection = s;
+      selection.addFilter(selectionFilter, 'map.filter');
+      selection.on('changed.map', selectionChanged);
+     return this;
+    },
+
+    resize(w, h) {
+      width = w;
+      height = h;
+      svgContainer.attr("width", w).attr("height", h);
+      return this;
+    }
   };
-
-  api.selection = function(s) {
-    selection = s;
-    selection.on('changed.map', selectionChanged);
-    return this;
-  };
-
-  api.resize = function(w, h) {
-    width = w;
-    height = h;
-    svgContainer.attr("width", w).attr("height", h);
-    return this;
-  };
-
-  return api;
 }

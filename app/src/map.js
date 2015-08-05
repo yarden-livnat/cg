@@ -24,17 +24,18 @@ define(['exports', 'module', 'd3', 'leaflet', 'postal', './config'], function (e
     var colorScale = _d3.interpolateLab('#fff', '#f00');
     var width = undefined,
         height = undefined;
-    var population = new Map();
-    var selection = undefined;
+    var _population = new Map();
+    var _selection = undefined;
     var zipcodes = new Map();
     var active = new Map();
     var current = new Map();
     var svg = undefined,
         svgContainer = undefined;
-    var selectedZipcodes = [];
+    var selectedZipcodes = new Set();
+    var selectionFilter = Filter();
 
-    var options = Object.assign({}, _config.MAP_DEFAULTS, opt);
-    //let options = MAP_DEFAULTS;
+    //let options = Object.assign({}, MAP_DEFAULTS, opt);
+    var options = _config.MAP_DEFAULTS;
     var map = new _leaflet.Map('map').addLayer(_leaflet.tileLayer(options.mapbox.url, options.mapbox.opt)).setView(options.center, options.zoom);
 
     var transform = _d3.geo.transform({ point: projectPoint });
@@ -46,7 +47,7 @@ define(['exports', 'module', 'd3', 'leaflet', 'postal', './config'], function (e
     svgContainer = _d3.select('#map').select('svg');
     svg = svgContainer.append('g');
 
-    function init() {
+    function _init() {
       _d3.json(options.zipcodes_file, function (error, collection) {
         if (error) {
           // Todo: better error handling
@@ -81,7 +82,7 @@ define(['exports', 'module', 'd3', 'leaflet', 'postal', './config'], function (e
     function showInfo(zipcode, show) {
       var cases = current.get(zipcode);
       if (show && cases) {
-        var rate = format(cases * POPULATION_FACTOR / population.get(zipcode));
+        var rate = format(cases * POPULATION_FACTOR / _population.get(zipcode));
         _d3.select('#map-info').text('Zipcode: ' + zipcode + ' cases:' + cases + '  rate:' + rate);
       } else {
         _d3.select('#map-info').text('');
@@ -98,71 +99,62 @@ define(['exports', 'module', 'd3', 'leaflet', 'postal', './config'], function (e
 
     function selectZipcode(zipcode, append) {
       _d3.event.preventDefault();
-      var update = [];
-      if (!append) {
-        if (selectedZipcodes.length == 1 && selectedZipcodes[0] == zipcode) {
-          select(zipcode, false);
-          update = [zipcode];
-          selectedZipcodes = [];
-        } else {
-          select(selectedZipcodes, false);
-          select(zipcode, true);
-          update = selectedZipcodes;
-          selectedZipcodes = [zipcode];
-          if (update.indexOf(zipcode) == -1) update.push(zipcode);
-        }
+
+      var updated = new Set();
+      var active = selectedZipcodes.has(zipcode);
+      if (append) {
+        if (active) selectedZipcodes['delete'](zipcode);else selectedZipcodes.add(zipcode);
+
+        update(zipcode, !active);
       } else {
-        var i = selectedZipcodes.indexOf(zipcode);
-        if (i == -1) {
-          select(zipcode, true);
-          selectedZipcodes.push(zipcode);
-        } else {
-          select(zipcode, false);
-          selectedZipcodes.splice(i, 1);
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          for (var _iterator = selectedZipcodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var z = _step.value;
+
+            update(z, false);
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator['return']) {
+              _iterator['return']();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
         }
-        update = [zipcode];
+
+        selectedZipcodes.clear();
+        if (!active) {
+          selectedZipcodes.add(zipcode);
+          update(zipcode, true);
+        }
       }
 
       console.log('selected: ' + selectedZipcodes);
       svg.selectAll('path').filter(function (d) {
-        return update.indexOf(d.properties.Zip_Code) != -1;
+        return updated.has(d.properties.Zip_Code);
       }).each(function (d) {
         console.log(d + ': ' + d.state.boundary_color);
       }).style('stroke', function (d) {
         return d.state.boundary_color;
       });
 
-      //postal.publish({channel: ''});
-    }
+      selectionFilter.domain(selectedZipcodes);
 
-    function select(zipcode, on) {
-      if (!zipcode) return;
-      var list = zipcode instanceof Array && zipcode || [zipcode];
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = list[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var z = _step.value;
-
-          var feature = zipcodes.get(z);
-          feature.state.selected = on;
-          feature.state.boundary_color = on ? BOUNDARY_SELECTED_COLOR : feature.n > 0 ? BOUNDARY_ACTIVE_COLOR : BOUNDARY_NON_ACTIVE_COLOR;
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator['return']) {
-            _iterator['return']();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
+      function update(zipcode, on) {
+        var feature = zipcodes.get(zipcode);
+        feature.state.selected = on;
+        feature.state.boundary_color = on ? BOUNDARY_SELECTED_COLOR : feature.n > 0 ? BOUNDARY_ACTIVE_COLOR : BOUNDARY_NON_ACTIVE_COLOR;
+        updated.add(zipcode);
       }
     }
 
@@ -172,14 +164,14 @@ define(['exports', 'module', 'd3', 'leaflet', 'postal', './config'], function (e
     }
 
     function assignColor(zipcode, n) {
-      var f = Math.min(n * POPULATION_FACTOR / population.get(zipcode), 1);
+      var f = Math.min(n * POPULATION_FACTOR / _population.get(zipcode), 1);
       return colorScale(f);
     }
 
     function selectionChanged() {
       current = new Map();
-      selection.domain.forEach(function (enc) {
-        if (population.has(enc.zipcode)) {
+      _selection.domain.forEach(function (enc) {
+        if (_population.has(enc.zipcode)) {
           var count = current.get(enc.zipcode) || 0;
           current.set(enc.zipcode, count + 1);
         }
@@ -223,31 +215,52 @@ define(['exports', 'module', 'd3', 'leaflet', 'postal', './config'], function (e
       active = current;
     }
 
-    var api = {};
+    function Filter() {
+      var dispatch = _d3.dispatch('change');
+      var items = undefined;
 
-    api.init = function () {
-      init();
+      var f = function f(list) {
+        return !items || items.size == 0 ? list : list.filter(function (item) {
+          return items.has(item.zipcode);
+        });
+      };
+
+      f.domain = function (d) {
+        items = d;
+        dispatch.change();
+      };
+
+      f.on = function (type, cb) {
+        dispatch.on(type, cb);
+      };
+
+      return f;
+    }
+
+    return {
+      init: function init() {
+        _init();
+      },
+
+      population: function population(map) {
+        _population = map;
+        return this;
+      },
+
+      selection: function selection(s) {
+        _selection = s;
+        _selection.addFilter(selectionFilter, 'map.filter');
+        _selection.on('changed.map', selectionChanged);
+        return this;
+      },
+
+      resize: function resize(w, h) {
+        width = w;
+        height = h;
+        svgContainer.attr('width', w).attr('height', h);
+        return this;
+      }
     };
-
-    api.population = function (map) {
-      population = map;
-      return this;
-    };
-
-    api.selection = function (s) {
-      selection = s;
-      selection.on('changed.map', selectionChanged);
-      return this;
-    };
-
-    api.resize = function (w, h) {
-      width = w;
-      height = h;
-      svgContainer.attr('width', w).attr('height', h);
-      return this;
-    };
-
-    return api;
   };
 });
 
