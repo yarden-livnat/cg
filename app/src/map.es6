@@ -2,10 +2,10 @@
  * Created by yarden on 7/3/15.
  */
 
-import {MAP_DEFAULTS} from './config';
 import * as d3 from 'd3';
 import * as L from 'leaflet';
-
+import * as postal from 'postal';
+import {MAP_DEFAULTS} from './config';
 export default function (opt) {
 
   const AREA_ALPHA = 0.6;
@@ -32,8 +32,8 @@ export default function (opt) {
   let svg, svgContainer;
   let selectedZipcodes = [];
 
-  // options = Object.assign({}, MAP_DEFAULTS, opt);
-  let options = MAP_DEFAULTS;
+  let options = Object.assign({}, MAP_DEFAULTS, opt);
+  //let options = MAP_DEFAULTS;
   let map = new L.Map('map')
     .addLayer(L.tileLayer(options.mapbox.url, options.mapbox.opt))
     .setView(options.center, options.zoom);
@@ -128,6 +128,8 @@ export default function (opt) {
     svg.selectAll('path').filter( d => update.indexOf(d.properties.Zip_Code) != -1 )
       .each(d => { console.log(d+': '+d.state.boundary_color);})
       .style('stroke', d => d.state.boundary_color );
+
+    //postal.publish({channel: ''});
   }
 
   function select(zipcode, on) {

@@ -1,4 +1,4 @@
-define(['exports', 'module', './config', 'd3', 'leaflet'], function (exports, module, _config, _d3, _leaflet) {
+define(['exports', 'module', 'd3', 'leaflet', 'postal', './config'], function (exports, module, _d3, _leaflet, _postal, _config) {
   /**
    * Created by yarden on 7/3/15.
    */
@@ -33,8 +33,8 @@ define(['exports', 'module', './config', 'd3', 'leaflet'], function (exports, mo
         svgContainer = undefined;
     var selectedZipcodes = [];
 
-    // options = Object.assign({}, MAP_DEFAULTS, opt);
-    var options = _config.MAP_DEFAULTS;
+    var options = Object.assign({}, _config.MAP_DEFAULTS, opt);
+    //let options = MAP_DEFAULTS;
     var map = new _leaflet.Map('map').addLayer(_leaflet.tileLayer(options.mapbox.url, options.mapbox.opt)).setView(options.center, options.zoom);
 
     var transform = _d3.geo.transform({ point: projectPoint });
@@ -131,6 +131,8 @@ define(['exports', 'module', './config', 'd3', 'leaflet'], function (exports, mo
       }).style('stroke', function (d) {
         return d.state.boundary_color;
       });
+
+      //postal.publish({channel: ''});
     }
 
     function select(zipcode, on) {
