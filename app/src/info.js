@@ -15,11 +15,11 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
 
     var selection = undefined;
 
-    var tagsTable = (0, _componentsNTable)('#details-area', 'tags-table').header([{ name: 'name', title: 'Tag' }, { name: 'act', attr: 'numeric' }, { name: 'num', attr: 'numeric' }]);
+    var tagsTable = (0, _componentsNTable)('#details-tables', 'tags-table').header([{ name: 'name', title: 'Tag' }, { name: 'act', attr: 'numeric' }, { name: 'num', attr: 'numeric' }]);
 
-    var categoryTable = (0, _componentsNTable)('#details-area', 'category-table').header([{ name: 'category' }, { name: 'n' }]);
+    var categoryTable = (0, _componentsNTable)('#details-tables', 'category-table').header([{ name: 'category' }, { name: 'num', attr: 'numeric' }]);
 
-    var systemTable = (0, _componentsNTable)('#details-area', 'system-table').header([{ name: 'system' }, { name: 'n' }]);
+    var systemTable = (0, _componentsNTable)('#details-tables', 'system-table').header([{ name: 'system' }, { name: 'num', attr: 'numeric' }]);
 
     var summaryChart = (0, _componentsChart)().el('#summary-chart');
     var selectedChart = (0, _componentsChart)().el('#selected-chart');
@@ -228,6 +228,12 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
     }
 
     function selectionChanged() {
+      updateCharts();
+      updateTables();
+      updateSelectionList();
+    }
+
+    function updateCharts() {
       var from = _d3.time.day.ceil(_data.fromDate),
           to = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
           range = _d3.time.day.range(from, to),
@@ -307,7 +313,9 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       //});
 
       selectedChart.data(selectedSeries);
+    }
 
+    function updateTables() {
       var categories = new Map();
       var systems = new Map();
       var _iteratorNormalCompletion8 = true;
@@ -355,23 +363,25 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
         };
       }));
 
-      mark(selection.tags(), 'selected');
-      mark(selection.excluded(), 'excluded');
+      mark(selection.tags(), { selected: true, excluded: false });
+      mark(selection.excluded(), { selected: false, excluded: true });
 
       categoryTable.data(toArray(categories.values()));
       systemTable.data(toArray(systems.values()));
     }
 
-    function mark(list, marker) {
-      var s = new Set();
+    function updateSelectionList() {
+      var tag = undefined,
+          list = [];
       var _iteratorNormalCompletion9 = true;
       var _didIteratorError9 = false;
       var _iteratorError9 = undefined;
 
       try {
-        for (var _iterator9 = list[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-          var tag = _step9.value;
-          s.add(tag.concept.label);
+        for (var _iterator9 = selection.tags()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          tag = _step9.value;
+
+          list.push({ name: tag.concept.label, attr: 'selected' });
         }
       } catch (err) {
         _didIteratorError9 = true;
@@ -388,10 +398,71 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
         }
       }
 
-      var rows = tagsTable.row(function (d) {
-        return s.has(d.name);
+      var _iteratorNormalCompletion10 = true;
+      var _didIteratorError10 = false;
+      var _iteratorError10 = undefined;
+
+      try {
+        for (var _iterator10 = selection.excluded()[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+          tag = _step10.value;
+
+          list.push({ name: tag.concept.label, attr: 'excluded' });
+        }
+      } catch (err) {
+        _didIteratorError10 = true;
+        _iteratorError10 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion10 && _iterator10['return']) {
+            _iterator10['return']();
+          }
+        } finally {
+          if (_didIteratorError10) {
+            throw _iteratorError10;
+          }
+        }
+      }
+
+      var s = _d3.select('#selection-list').selectAll('li').data(list);
+
+      s.enter().append('li');
+      s.text(function (d) {
+        return d.name;
+      }).attr('class', function (d) {
+        return d.attr;
       });
-      rows.classed(marker, true);
+      s.exit().remove();
+    }
+
+    function mark(list, markers) {
+      var s = new Set();
+      var _iteratorNormalCompletion11 = true;
+      var _didIteratorError11 = false;
+      var _iteratorError11 = undefined;
+
+      try {
+        for (var _iterator11 = list[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+          var tag = _step11.value;
+          s.add(tag.concept.label);
+        }
+      } catch (err) {
+        _didIteratorError11 = true;
+        _iteratorError11 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion11 && _iterator11['return']) {
+            _iterator11['return']();
+          }
+        } finally {
+          if (_didIteratorError11) {
+            throw _iteratorError11;
+          }
+        }
+      }
+
+      tagsTable.row(function (d) {
+        return s.has(d.name);
+      }).selectAll(':first-child').classed(markers);
     }
 
     function selectPathogen(name, show) {
@@ -413,13 +484,13 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       var scale = _d3.time.scale().domain([from, to]).rangeRound([0, range.length - 1]);
 
       _data.fetch('pathogens', [names], from, _data.toDate).then(function (d) {
-        var _iteratorNormalCompletion10 = true;
-        var _didIteratorError10 = false;
-        var _iteratorError10 = undefined;
+        var _iteratorNormalCompletion12 = true;
+        var _didIteratorError12 = false;
+        var _iteratorError12 = undefined;
 
         try {
-          for (var _iterator10 = d[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
-            var entry = _step10.value;
+          for (var _iterator12 = d[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
+            var entry = _step12.value;
 
             var positive = range.map(function (d) {
               return { x: d, value: 0, items: [] };
@@ -428,13 +499,13 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
               return { x: d, value: 0, items: [] };
             });
 
-            var _iteratorNormalCompletion11 = true;
-            var _didIteratorError11 = false;
-            var _iteratorError11 = undefined;
+            var _iteratorNormalCompletion13 = true;
+            var _didIteratorError13 = false;
+            var _iteratorError13 = undefined;
 
             try {
-              for (var _iterator11 = entry.rows[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
-                var item = _step11.value;
+              for (var _iterator13 = entry.rows[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
+                var item = _step13.value;
 
                 item.date = dateFormat.parse(item.date);
                 var i = scale(item.date);
@@ -443,16 +514,16 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
                 bins[i].items.push(item);
               }
             } catch (err) {
-              _didIteratorError11 = true;
-              _iteratorError11 = err;
+              _didIteratorError13 = true;
+              _iteratorError13 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion11 && _iterator11['return']) {
-                  _iterator11['return']();
+                if (!_iteratorNormalCompletion13 && _iterator13['return']) {
+                  _iterator13['return']();
                 }
               } finally {
-                if (_didIteratorError11) {
-                  throw _iteratorError11;
+                if (_didIteratorError13) {
+                  throw _iteratorError13;
                 }
               }
             }
@@ -474,16 +545,16 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
             pathogens.get(entry.name).data(series);
           }
         } catch (err) {
-          _didIteratorError10 = true;
-          _iteratorError10 = err;
+          _didIteratorError12 = true;
+          _iteratorError12 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion10 && _iterator10['return']) {
-              _iterator10['return']();
+            if (!_iteratorNormalCompletion12 && _iterator12['return']) {
+              _iterator12['return']();
             }
           } finally {
-            if (_didIteratorError10) {
-              throw _iteratorError10;
+            if (_didIteratorError12) {
+              throw _iteratorError12;
             }
           }
         }
@@ -496,13 +567,13 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       var domain = selection.domain; // check that it is sorted by id
       var n = domain.length;
 
-      var _iteratorNormalCompletion12 = true;
-      var _didIteratorError12 = false;
-      var _iteratorError12 = undefined;
+      var _iteratorNormalCompletion14 = true;
+      var _didIteratorError14 = false;
+      var _iteratorError14 = undefined;
 
       try {
-        for (var _iterator12 = detectors[Symbol.iterator](), _step12; !(_iteratorNormalCompletion12 = (_step12 = _iterator12.next()).done); _iteratorNormalCompletion12 = true) {
-          var detector = _step12.value;
+        for (var _iterator14 = detectors[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
+          var detector = _step14.value;
 
           var prob = [],
               similar = [];
@@ -513,13 +584,13 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
           }
 
           var found = 0;
-          var _iteratorNormalCompletion13 = true;
-          var _didIteratorError13 = false;
-          var _iteratorError13 = undefined;
+          var _iteratorNormalCompletion15 = true;
+          var _didIteratorError15 = false;
+          var _iteratorError15 = undefined;
 
           try {
-            for (var _iterator13 = detector.data[Symbol.iterator](), _step13; !(_iteratorNormalCompletion13 = (_step13 = _iterator13.next()).done); _iteratorNormalCompletion13 = true) {
-              var entry = _step13.value;
+            for (var _iterator15 = detector.data[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
+              var entry = _step15.value;
 
               while (i < n && domain[i].id < entry.id) i++;
               if (i == n) break;
@@ -537,16 +608,16 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
               }
             }
           } catch (err) {
-            _didIteratorError13 = true;
-            _iteratorError13 = err;
+            _didIteratorError15 = true;
+            _iteratorError15 = err;
           } finally {
             try {
-              if (!_iteratorNormalCompletion13 && _iterator13['return']) {
-                _iterator13['return']();
+              if (!_iteratorNormalCompletion15 && _iterator15['return']) {
+                _iterator15['return']();
               }
             } finally {
-              if (_didIteratorError13) {
-                throw _iteratorError13;
+              if (_didIteratorError15) {
+                throw _iteratorError15;
               }
             }
           }
@@ -569,34 +640,6 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
           detector.chart.data(series);
         }
       } catch (err) {
-        _didIteratorError12 = true;
-        _iteratorError12 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion12 && _iterator12['return']) {
-            _iterator12['return']();
-          }
-        } finally {
-          if (_didIteratorError12) {
-            throw _iteratorError12;
-          }
-        }
-      }
-    }
-
-    function toArray(iter) {
-      var a = [];
-      var _iteratorNormalCompletion14 = true;
-      var _didIteratorError14 = false;
-      var _iteratorError14 = undefined;
-
-      try {
-        for (var _iterator14 = iter[Symbol.iterator](), _step14; !(_iteratorNormalCompletion14 = (_step14 = _iterator14.next()).done); _iteratorNormalCompletion14 = true) {
-          var entry = _step14.value;
-
-          a.push(entry);
-        }
-      } catch (err) {
         _didIteratorError14 = true;
         _iteratorError14 = err;
       } finally {
@@ -610,6 +653,34 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
           }
         }
       }
+    }
+
+    function toArray(iter) {
+      var a = [];
+      var _iteratorNormalCompletion16 = true;
+      var _didIteratorError16 = false;
+      var _iteratorError16 = undefined;
+
+      try {
+        for (var _iterator16 = iter[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
+          var entry = _step16.value;
+
+          a.push(entry);
+        }
+      } catch (err) {
+        _didIteratorError16 = true;
+        _iteratorError16 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion16 && _iterator16['return']) {
+            _iterator16['return']();
+          }
+        } finally {
+          if (_didIteratorError16) {
+            throw _iteratorError16;
+          }
+        }
+      }
 
       return a;
     }
@@ -617,29 +688,29 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
       var bins = range.map(function (d) {
         return { x: d, value: 0, items: [] };
       });
-      var _iteratorNormalCompletion15 = true;
-      var _didIteratorError15 = false;
-      var _iteratorError15 = undefined;
+      var _iteratorNormalCompletion17 = true;
+      var _didIteratorError17 = false;
+      var _iteratorError17 = undefined;
 
       try {
-        for (var _iterator15 = items[Symbol.iterator](), _step15; !(_iteratorNormalCompletion15 = (_step15 = _iterator15.next()).done); _iteratorNormalCompletion15 = true) {
-          var item = _step15.value;
+        for (var _iterator17 = items[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
+          var item = _step17.value;
 
           var i = scale(item.date);
           bins[i].value++;
           bins[i].items.push(item);
         }
       } catch (err) {
-        _didIteratorError15 = true;
-        _iteratorError15 = err;
+        _didIteratorError17 = true;
+        _iteratorError17 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion15 && _iterator15['return']) {
-            _iterator15['return']();
+          if (!_iteratorNormalCompletion17 && _iterator17['return']) {
+            _iterator17['return']();
           }
         } finally {
-          if (_didIteratorError15) {
-            throw _iteratorError15;
+          if (_didIteratorError17) {
+            throw _iteratorError17;
           }
         }
       }
@@ -663,62 +734,62 @@ define(['exports', 'module', 'd3', 'postal', './config', './data', './components
     api.resize = function () {
       var name = undefined,
           c = undefined;
-      var _iteratorNormalCompletion16 = true;
-      var _didIteratorError16 = false;
-      var _iteratorError16 = undefined;
+      var _iteratorNormalCompletion18 = true;
+      var _didIteratorError18 = false;
+      var _iteratorError18 = undefined;
 
       try {
-        for (var _iterator16 = charts[Symbol.iterator](), _step16; !(_iteratorNormalCompletion16 = (_step16 = _iterator16.next()).done); _iteratorNormalCompletion16 = true) {
-          var _step16$value = _slicedToArray(_step16.value, 2);
+        for (var _iterator18 = charts[Symbol.iterator](), _step18; !(_iteratorNormalCompletion18 = (_step18 = _iterator18.next()).done); _iteratorNormalCompletion18 = true) {
+          var _step18$value = _slicedToArray(_step18.value, 2);
 
-          name = _step16$value[0];
-          c = _step16$value[1];
+          name = _step18$value[0];
+          c = _step18$value[1];
 
           var w = parseInt(_d3.select(name).style('width'));
           var _h = parseInt(_d3.select(name).style('height'));
           c.resize([w, _h]);
         }
       } catch (err) {
-        _didIteratorError16 = true;
-        _iteratorError16 = err;
+        _didIteratorError18 = true;
+        _iteratorError18 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion16 && _iterator16['return']) {
-            _iterator16['return']();
+          if (!_iteratorNormalCompletion18 && _iterator18['return']) {
+            _iterator18['return']();
           }
         } finally {
-          if (_didIteratorError16) {
-            throw _iteratorError16;
+          if (_didIteratorError18) {
+            throw _iteratorError18;
           }
         }
       }
 
-      var _iteratorNormalCompletion17 = true;
-      var _didIteratorError17 = false;
-      var _iteratorError17 = undefined;
+      var _iteratorNormalCompletion19 = true;
+      var _didIteratorError19 = false;
+      var _iteratorError19 = undefined;
 
       try {
-        for (var _iterator17 = pathogens[Symbol.iterator](), _step17; !(_iteratorNormalCompletion17 = (_step17 = _iterator17.next()).done); _iteratorNormalCompletion17 = true) {
-          var _step17$value = _slicedToArray(_step17.value, 2);
+        for (var _iterator19 = pathogens[Symbol.iterator](), _step19; !(_iteratorNormalCompletion19 = (_step19 = _iterator19.next()).done); _iteratorNormalCompletion19 = true) {
+          var _step19$value = _slicedToArray(_step19.value, 2);
 
-          name = _step17$value[0];
-          c = _step17$value[1];
+          name = _step19$value[0];
+          c = _step19$value[1];
 
           var w = parseInt(_d3.select('#chart-' + name).style('width'));
           var _h2 = parseInt(_d3.select('#chart-' + name).style('height'));
           c.resize([w, _h2]);
         }
       } catch (err) {
-        _didIteratorError17 = true;
-        _iteratorError17 = err;
+        _didIteratorError19 = true;
+        _iteratorError19 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion17 && _iterator17['return']) {
-            _iterator17['return']();
+          if (!_iteratorNormalCompletion19 && _iterator19['return']) {
+            _iterator19['return']();
           }
         } finally {
-          if (_didIteratorError17) {
-            throw _iteratorError17;
+          if (_didIteratorError19) {
+            throw _iteratorError19;
           }
         }
       }

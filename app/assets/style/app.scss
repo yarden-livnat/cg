@@ -32,9 +32,32 @@ body {
   right: $info-width - 5;
   height: $details-height;
   padding: 0 20px 0 10px;
+}
 
-  //ul { list-style: none; position: relative; padding: 10px 0; margin: 0;}
-  //ul li { display: inline-block; padding: 0 10px; vertical-align: top;}
+#selection {
+  font-size: 8pt;
+  padding-left: 6px;
+
+  .selection-label {
+    width: 40pt;
+    display: inline-block;
+  }
+
+  ul { display: inline-block; list-style: none; position: relative; padding: 0 0; margin: 0;}
+  ul li {
+    display: inline-block;
+    padding: 0 2px;
+    border: solid lightgray 1px;
+    border-radius: 3px;
+
+    &.selected {
+      font-weight: normal;
+    }
+
+    &.excluded {
+      text-decoration: line-through;
+    }
+  }
 }
 
 #info-area {
@@ -65,16 +88,13 @@ body {
   }
 }
 
-#tags-table {
-  width: 240px;
-}
-
 .selected {
   font-weight: bold;
 }
 
 .excluded {
-  color: lightgrey;
+  //color: lightgrey;
+  text-decoration: line-through;
 }
 
 .chart {
@@ -105,7 +125,7 @@ body {
   position: fixed;
   left: 10px;
   right: $map-width + 20px;
-  top: $details-height + 20px;
+  top: $details-height + 50px;
   bottom: 10px;
   border: lightgray 1px solid;
 }

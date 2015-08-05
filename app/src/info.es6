@@ -20,20 +20,20 @@ export default function(opt) {
 
   let selection;
 
-  let tagsTable = ntable('#details-area', 'tags-table').header([
+  let tagsTable = ntable('#details-tables', 'tags-table').header([
     {name: 'name', title: 'Tag'},
     {name: 'act', attr: 'numeric'},
     {name: 'num', attr: 'numeric'}
   ]);
 
-  let categoryTable = ntable('#details-area', 'category-table').header([
+  let categoryTable = ntable('#details-tables', 'category-table').header([
     {name: 'category'},
-    {name: 'n'}
+    {name: 'num', attr: 'numeric'}
   ]);
 
-  let systemTable = ntable('#details-area', 'system-table').header([
+  let systemTable = ntable('#details-tables', 'system-table').header([
     {name: 'system'},
-    {name: 'n'}
+    {name: 'num', attr: 'numeric'}
   ]);
 
 
@@ -143,35 +143,43 @@ export default function(opt) {
   }
 
   function selectionChanged() {
-    let from = d3.time.day.ceil(data.fromDate),
-      to = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
-      range = d3.time.day.range(from, to),
-      scale = d3.time.scale()
-        .domain([from, to])
-        .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
+    updateCharts();
+    updateTables();
+    updateSelectionList();
+  }
+
+  function updateCharts() {
+    let from  = d3.time.day.ceil(data.fromDate),
+        to    = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
+        range = d3.time.day.range(from, to),
+        scale = d3.time.scale()
+          .domain([from, to])
+          .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
 
     let selectedSeries = [];
 
-    for (let tag of selection.tags()) {
+    for(let tag of selection.tags()) {
       let bins = histogram(tag.items, range, scale);
       selectedSeries.push({
-        label: tag.concept.label,
-        color: tag.color,
-        type: 'line',
+        label:  tag.concept.label,
+        color:  tag.color,
+        type:   'line',
         marker: 'solid',
         values: bins
-      });
+      }
+      );
     }
 
-    for (let tag of selection.excluded()) {
+    for(let tag of selection.excluded()) {
       let bins = histogram(tag.items, range, scale);
       selectedSeries.push({
-        label: tag.concept.label,
-        color: tag.color,
-        type: 'line',
+        label:  tag.concept.label,
+        color:  tag.color,
+        type:   'line',
         marker: 'dash',
         values: bins
-      });
+      }
+      );
     }
 
     //selectedSeries.push({
@@ -182,7 +190,9 @@ export default function(opt) {
     //});
 
     selectedChart.data(selectedSeries);
+  }
 
+  function updateTables() {
     let categories = new Map();
     let systems = new Map();
     for (let tag of selection.tags()) {
@@ -209,20 +219,34 @@ export default function(opt) {
       }
     }));
 
-    mark(selection.tags(), 'selected');
-    mark(selection.excluded(), 'excluded');
+    mark(selection.tags(), {selected: true, excluded: false});
+    mark(selection.excluded(), {selected: false, excluded: true});
 
     categoryTable.data(toArray(categories.values()));
     systemTable.data(toArray(systems.values()));
   }
 
-  function mark(list, marker) {
+  function updateSelectionList() {
+    let tag, list = [];
+    for (tag of selection.tags()) {
+      list.push({name: tag.concept.label, attr: 'selected'});
+    }
+    for (tag of selection.excluded()) {
+      list.push({name:  tag.concept.label, attr: 'excluded'});
+    }
+
+    let s = d3.select('#selection-list').selectAll('li')
+      .data(list);
+
+    s.enter().append('li');
+    s.text(d => d.name).attr('class', d => d.attr);
+    s.exit().remove();
+  }
+
+  function mark(list, markers) {
     let s = new Set();
     for (let tag of list) { s.add(tag.concept.label); }
-    let rows = tagsTable.row(
-        d => s.has(d.name)
-    );
-    rows.classed(marker, true);
+    tagsTable.row(d => s.has(d.name)).selectAll(':first-child').classed(markers);
   }
 
   function selectPathogen(name, show) {
