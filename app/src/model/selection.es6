@@ -49,7 +49,7 @@ function release_color(tag) {
         list.push(a[ia]);
         if (++ia === na || ++ib === nb) { return list; }
         va = a[ia].id;
-        va = b[ib].id;
+        vb = b[ib].id;
       }
     }
   }

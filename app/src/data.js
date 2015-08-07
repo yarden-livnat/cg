@@ -79,6 +79,14 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
         console.error(err);
         stopSpinner();
       } else {
+        var _iteratorNormalCompletion;
+
+        var _didIteratorError;
+
+        var _iteratorError;
+
+        var _iterator, _step;
+
         (function () {
           var map = new Map();
 
@@ -98,6 +106,33 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
               entry.items.push(items.get(d.enc_id));
             }
           });
+
+          _iteratorNormalCompletion = true;
+          _didIteratorError = false;
+          _iteratorError = undefined;
+
+          try {
+            for (_iterator = tags[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+              var tag = _step.value;
+
+              tag.items.sort(function (a, b) {
+                return a.id - b.id;
+              });
+            }
+          } catch (err) {
+            _didIteratorError = true;
+            _iteratorError = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion && _iterator['return']) {
+                _iterator['return']();
+              }
+            } finally {
+              if (_didIteratorError) {
+                throw _iteratorError;
+              }
+            }
+          }
 
           // TODO: handle probabilities
 

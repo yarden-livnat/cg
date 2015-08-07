@@ -88,6 +88,10 @@ export function fetchAssociations(params) {
         }
       });
 
+      for (let tag of tags) {
+        tag.items.sort( (a,b) => a.id - b.id);
+      }
+
       // TODO: handle probabilities
 
       fromDate = dateFormat.parse(params.from);

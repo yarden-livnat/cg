@@ -63,7 +63,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
           return list;
         }
         va = a[ia].id;
-        va = b[ib].id;
+        vb = b[ib].id;
       }
     }
   }
