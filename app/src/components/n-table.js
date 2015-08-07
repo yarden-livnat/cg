@@ -15,7 +15,8 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
         tbody = table.append("tbody"),
         dispatch = _d3.dispatch("click"),
         columns = undefined,
-        sortCol = undefined;
+        sortCol = undefined,
+        _data = undefined;
 
     function capitalize(str) {
       var def = arguments[1] === undefined ? "" : arguments[1];
@@ -52,12 +53,13 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
       header: function header(columnsDef) {
         columnsDef = typeof columnsDef == "string" && columnsDef.split(",") || columnsDef;
         columns = columnsDef.map(function (col) {
-          col = typeof col != "string" && col || { name: col };
+          col = typeof col == "string" && { name: col } || col;
           col.title = col.title || capitalize(col.name, "?");
           col.cellValue = col.cellValue || f(col.name);
           col.cellAttr = col.cellAttr || f({});
           col.attr = col.attr || "tableColHeader";
           col.sortOrder = col.sortOrder || 0;
+          col.render = col.render || "text";
 
           return col;
         });
@@ -78,6 +80,9 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
       },
 
       data: function data(list) {
+        if (!arguments.length) return _data;
+
+        _data = list;
         var rows = tbody.selectAll("tr").data(list, columns[0].cellValue);
 
         rows.enter().append("tr");
@@ -89,19 +94,88 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
           });
         });
 
-        cells.enter().append("td").on("click", function (d) {
+        cells.enter().append("td").attr("class", function (d) {
+          return d.col.attr;
+        }).on("click", function (d) {
           dispatch.click(d);
         });
 
-        cells.text(function (d) {
+        cells.filter(function (d) {
+          return d.col.render == "text";
+        }).text(function (d) {
           return d.value;
-        }).attr("class", function (d) {
-          return d.col.attr;
         }).classed(function (d) {
           return d.attr;
         });
 
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          var _loop = function () {
+            var col = _step.value;
+
+            if (col.render != "text") {
+              cells.filter(function (d) {
+                return d.col == col;
+              }).attr("background-color", "red").call(col.render);
+            }
+          };
+
+          for (var _iterator = columns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            _loop();
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator["return"]) {
+              _iterator["return"]();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+
         cells.exit().remove();
+
+        // adjust header cols width
+
+        var i = 0;
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = tbody.select("tr").selectAll("td")[0][Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var c = _step2.value;
+
+            columns[i++].width = parseInt(_d3.select(c).style("width"));
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+              _iterator2["return"]();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+
+        if (columns.length > 0) columns[columns.length - 1].width += 15;
+        thead.selectAll("th").data(columns).attr("width", function (d) {
+          return d.width;
+        });
+
         return this;
       },
 

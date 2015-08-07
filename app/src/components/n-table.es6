@@ -17,7 +17,8 @@ export default function(container, id) {
       tbody = table.append('tbody'),
       dispatch = d3.dispatch('click'),
       columns,
-      sortCol;
+      sortCol,
+      data;
 
   function capitalize(str, def = "") {
     return str && str.length > 0 && str[0].toUpperCase() + str.substr(1) || def;
@@ -48,12 +49,13 @@ export default function(container, id) {
     header(columnsDef) {
       columnsDef = typeof columnsDef == 'string' && columnsDef.split(',') || columnsDef;
       columns = columnsDef.map( col => {
-        col = typeof col != 'string' && col || { name: col };
+        col = typeof col == 'string' && { name: col } || col;
         col.title = col.title || capitalize(col.name, '?');
         col.cellValue = col.cellValue || f(col.name);
         col.cellAttr = col.cellAttr || f({});
         col.attr = col.attr || "tableColHeader";
         col.sortOrder = col.sortOrder || 0;
+        col.render = col.render || 'text';
 
         return col;
       });
@@ -73,6 +75,9 @@ export default function(container, id) {
     },
 
     data(list) {
+      if (!arguments.length) return data;
+
+      data = list;
       let rows = tbody.selectAll('tr')
         .data(list, columns[0].cellValue);
 
@@ -83,15 +88,35 @@ export default function(container, id) {
         .data(row => columns.map(c => ({ col: c, value: c.cellValue(row), attr: c.cellAttr(row), row:row })));
 
       cells.enter().append('td')
+        .attr('class', d => d.col.attr)
         .on('click', d => {dispatch.click(d);});
 
-      cells.text( d => d.value)
-        .attr('class', d => d.col.attr)
+      cells.filter(d => d.col.render == 'text')
+        .text( d => d.value)
         .classed( d => d.attr );
 
+      for (let col of columns) {
+        if (col.render != 'text') {
+          cells.filter( d => d.col == col)
+            .attr('background-color', 'red')
+            .call(col.render);
+        }
+      }
+
       cells.exit().remove();
+
+      // adjust header cols width
+
+      let i = 0;
+      for (let c of tbody.select('tr').selectAll('td')[0]) {
+        columns[i++].width = parseInt(d3.select(c).style('width'));
+      }
+      if (columns.length > 0) columns[columns.length-1].width += 15;
+      thead.selectAll('th').data(columns).attr('width', d => d.width);
+
       return this;
     },
+
 
     row(filter) {
       return tbody.selectAll('tr').filter(filter);

@@ -220,7 +220,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       recompute();
     }
 
-    function recompute() {
+    function recompute(silent) {
       domain = filteredDomain;
       _tags.forEach(function (tag) {
         domain = intersect(domain, tag.items);
@@ -229,7 +229,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         domain = excludeItems(domain, tag.items);
       });
 
-      dispatch.changed();
+      if (!silent) dispatch.changed();
     }
 
     function check(domain, msg) {
@@ -315,6 +315,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         set: function (list) {
           initialDomain = list;
           _clear(false);
+          //recompute(true);
         },
         configurable: true,
         enumerable: true

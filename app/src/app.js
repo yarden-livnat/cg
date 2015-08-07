@@ -1,4 +1,4 @@
-define(['exports', './components/xpanel', 'd3', 'postal', './data', './query', './map', './cg/cg', './info', './model/models'], function (exports, _componentsXpanel, _d3, _postal, _data, _query, _map, _cgCg, _info, _modelModels) {
+define(['exports', './components/xpanel', 'd3', 'postal', './data', './query', './map', './cg/cg', './info/info', './model/models'], function (exports, _componentsXpanel, _d3, _postal, _data, _query, _map, _cgCg, _infoInfo, _modelModels) {
   /**
    * Created by yarden on 6/30/15.
    */
@@ -12,7 +12,7 @@ define(['exports', './components/xpanel', 'd3', 'postal', './data', './query', '
   var map = (0, _map)();
   var selection = _modelModels.selection();
   var cg = (0, _CG['default'])();
-  var info = (0, _info)();
+  var info = (0, _infoInfo)();
 
   _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
       selection.domain = _data.domain;

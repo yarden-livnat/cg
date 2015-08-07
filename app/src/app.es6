@@ -11,7 +11,7 @@ import * as data from './data';
 import * as query from './query';
 import * as Map from './map'
 import CG from './cg/cg';
-import * as Info from './info';
+import * as Info from './info/info';
 
 import * as model from './model/models'
 

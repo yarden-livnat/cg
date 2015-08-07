@@ -147,7 +147,7 @@ function release_color(tag) {
     }
 
 
-    function recompute() {
+    function recompute(silent) {
       domain = filteredDomain;
       tags.forEach(function (tag) {
         domain = intersect(domain, tag.items);
@@ -156,7 +156,8 @@ function release_color(tag) {
         domain = excludeItems(domain, tag.items);
       });
 
-      dispatch.changed();
+      if (!silent)
+        dispatch.changed();
     }
 
     function check(domain, msg) {
@@ -173,6 +174,7 @@ function release_color(tag) {
       set domain(list) {
         initialDomain = list;
         clear(false);
+        //recompute(true);
       },
 
       countActive(items) {

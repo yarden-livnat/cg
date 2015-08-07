@@ -2,10 +2,9 @@ table {
   display: inline-block;
   height: 130px;
   margin: 0 0 5px 5px;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: collapse;
-  border: solid 1px lightgray;
-  /*text-decoration: underline; }*/ }
+  border: solid 1px lightgray; }
   table th {
     border-bottom: solid thin lightgray; }
   table td, table th {
@@ -13,12 +12,6 @@ table {
   table td.text-col, table th.text-col {
     text-align: left; }
   table td.number-col, table th.number-col {
-    text-align: right; }
-  table td:nth-child(1), table th:nth-child(1) {
-    min-width: 120px; }
-  table td:nth-child(2), table th:nth-child(2) {
-    width: 50px; }
-  table td:nth-child(2) {
     text-align: right; }
   table thead {
     background-color: #eee;
@@ -115,6 +108,15 @@ table {
   .dropdown-check-list ul.items li {
     list-style: none;
     font: 7pt Arial; }
+
+.bullet {
+  font: 9pt sanss-serif; }
+  .bullet .range.s0 {
+    fill: #eee;
+    color: #000; }
+  .bullet .range.s1 {
+    fill: lightsteelblue;
+    color: #000; }
 
 .x-panel {
   width: auto;
