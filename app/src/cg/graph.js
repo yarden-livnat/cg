@@ -227,7 +227,7 @@ define(['exports', 'module', 'lodash'], function (exports, module, _lodash) {
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = nodes[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var node = _step.value;
 
           node.scale = 1;

@@ -178,53 +178,87 @@ export default function() {
     function selectNode(d) {
       force.stop();
 
-      d.selected = !d.selected;
-      d3.select(this).classed('selected', d.selected);
+      //d.selected = !d.selected;
+      //d3.select(this).classed('selected', d.selected);
 
-      if (!d.selected  && partialLayout.delete(d.tag)) {
-        prevVisible = _.filter(graph.nodes, function(node) { return node.visible; });
-      } else {
-        prevVisible = null;
-      }
+      // TODO: check what the preVisible is all about
+      //if (!d.selected  && partialLayout.delete(d.tag)) {
+      //  prevVisible = _.filter(graph.nodes, function(node) { return node.visible; });
+      //} else {
+      //  prevVisible = null;
+      //}
+      //
+      //if (d.selected && d.excluded) {
+      //  d.excluded = false;
+      //  d3.select(this).classed('excluded', false);
+      //}
+      //d3.select(this).select('.frame')
+      //  .transition()
+      //  .duration(opt.canvas.duration)
+      //  .style('opacity', d.selected ? 1 : 0);
 
-      if (d.selected && d.excluded) {
-        d.excluded = false;
-        d3.select(this).classed('excluded', false);
-      }
-      d3.select(this).select('.frame')
-        .transition()
-        .duration(opt.canvas.duration)
-        .style('opacity', d.selected ? 1 : 0);
-
-      selection.select(d.tag,  d.selected);
+      selection.select(d.tag,  !d.selected);
     }
 
     function excludeNode(d) {
       force.stop();
 
-      d.excluded = !d.excluded;
-      d3.select(this).classed('excluded', d.excluded);
+      //d.excluded = !d.excluded;
+      //d3.select(this).classed('excluded', d.excluded);
+      //
+      //if (d.excluded && d.selected) {
+      //  d.selected = false;
+      //  d3.select(this).classed('selected', false);
+      //}
+      //if (d.excluded) {
+      //  d.lastScale = d.scale;
+      //}
 
-      if (d.excluded && d.selected) {
-        d.selected = false;
-        d3.select(this).classed('selected', false);
-      }
-      if (d.excluded) {
-        d.lastScale = d.scale;
-      }
+      //d3.select(this).select('.frame')
+      //  .transition()
+      //  .duration(opt.canvas.duration)
+      //  .style('opacity', d.excluded ? 1 : 0);
 
-      d3.select(this).select('.frame')
-        .transition()
-        .duration(opt.canvas.duration)
-        .style('opacity', d.excluded ? 1 : 0);
-
-      selection.exclude(d.tag,  d.excluded);
+      selection.exclude(d.tag,  !d.excluded);
     }
 
     function selectionChanged() {
       if (graph == undefined) return;
-
       graph.domain = selection.domain;
+
+      let tag, state = new Map();
+      let changed = [];
+
+      for (tag of selection.tags()) { state.set(tag, 'selected'); }
+      for (tag of selection.excluded()) { state.set(tag, 'excluded');}
+
+      prevVisible = null;
+      for (let node of graph.nodes) {
+        let s = state.get(node.tag);
+        if (!s) {
+          if (node.selected || node.excluded) {
+            node.selected = node.excluded = false;
+            changed.push(node);
+          }
+        } if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
+          if (!node.selected && s == 'selected' && partialLayout.delete(node.tag)) {
+            prevVisible = _.filter(graph.nodes, function(node) { return node.visible; });
+          }
+          node.selected = (s == 'selected');
+          node.excluded = (s == 'excluded');
+          changed.push(node);
+        }
+      }
+
+      svgNodes.selectAll(".node").data(changed, function(d) { return d.id;})
+        .classed('selected', d => d.selected)
+        .classed('excluded', d => d.excluded)
+        .select('.frame')
+          .transition()
+          .duration(opt.canvas.duration)
+          .style('opacity', d => (d.selected || d.excluded) ? 1 : 0);
+
+
       if (prevVisible) {
         adjustLayout();
         prevVisible = null;

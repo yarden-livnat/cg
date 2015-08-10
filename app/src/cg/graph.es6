@@ -176,7 +176,7 @@ export default function() {
     nodes.forEach(function(node) { current.set(node.id, node); });
 
     nodes = data;
-    for (let node of node) {
+    for (let node of nodes) {
       node.scale = 1.0;
       node.visible = true;
       node.selected = false;

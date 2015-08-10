@@ -158,49 +158,157 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     function selectNode(d) {
       force.stop();
 
-      d.selected = !d.selected;
-      _d32['default'].select(this).classed('selected', d.selected);
+      //d.selected = !d.selected;
+      //d3.select(this).classed('selected', d.selected);
 
-      if (!d.selected && partialLayout['delete'](d.tag)) {
-        prevVisible = _lodash.filter(graph.nodes, function (node) {
-          return node.visible;
-        });
-      } else {
-        prevVisible = null;
-      }
+      // TODO: check what the preVisible is all about
+      //if (!d.selected  && partialLayout.delete(d.tag)) {
+      //  prevVisible = _.filter(graph.nodes, function(node) { return node.visible; });
+      //} else {
+      //  prevVisible = null;
+      //}
+      //
+      //if (d.selected && d.excluded) {
+      //  d.excluded = false;
+      //  d3.select(this).classed('excluded', false);
+      //}
+      //d3.select(this).select('.frame')
+      //  .transition()
+      //  .duration(opt.canvas.duration)
+      //  .style('opacity', d.selected ? 1 : 0);
 
-      if (d.selected && d.excluded) {
-        d.excluded = false;
-        _d32['default'].select(this).classed('excluded', false);
-      }
-      _d32['default'].select(this).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', d.selected ? 1 : 0);
-
-      selection.select(d.tag, d.selected);
+      selection.select(d.tag, !d.selected);
     }
 
     function excludeNode(d) {
       force.stop();
 
-      d.excluded = !d.excluded;
-      _d32['default'].select(this).classed('excluded', d.excluded);
+      //d.excluded = !d.excluded;
+      //d3.select(this).classed('excluded', d.excluded);
+      //
+      //if (d.excluded && d.selected) {
+      //  d.selected = false;
+      //  d3.select(this).classed('selected', false);
+      //}
+      //if (d.excluded) {
+      //  d.lastScale = d.scale;
+      //}
 
-      if (d.excluded && d.selected) {
-        d.selected = false;
-        _d32['default'].select(this).classed('selected', false);
-      }
-      if (d.excluded) {
-        d.lastScale = d.scale;
-      }
+      //d3.select(this).select('.frame')
+      //  .transition()
+      //  .duration(opt.canvas.duration)
+      //  .style('opacity', d.excluded ? 1 : 0);
 
-      _d32['default'].select(this).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', d.excluded ? 1 : 0);
-
-      selection.exclude(d.tag, d.excluded);
+      selection.exclude(d.tag, !d.excluded);
     }
 
     function selectionChanged() {
       if (graph == undefined) return;
-
       graph.domain = selection.domain;
+
+      var tag = undefined,
+          state = new Map();
+      var changed = [];
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = selection.tags()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          tag = _step.value;
+          state.set(tag, 'selected');
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = selection.excluded()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          tag = _step2.value;
+          state.set(tag, 'excluded');
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      prevVisible = null;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = graph.nodes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var node = _step3.value;
+
+          var s = state.get(node.tag);
+          if (!s) {
+            if (node.selected || node.excluded) {
+              node.selected = node.excluded = false;
+              changed.push(node);
+            }
+          }if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
+            if (!node.selected && s == 'selected' && partialLayout['delete'](node.tag)) {
+              prevVisible = _lodash.filter(graph.nodes, function (node) {
+                return node.visible;
+              });
+            }
+            node.selected = s == 'selected';
+            node.excluded = s == 'excluded';
+            changed.push(node);
+          }
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      svgNodes.selectAll('.node').data(changed, function (d) {
+        return d.id;
+      }).classed('selected', function (d) {
+        return d.selected;
+      }).classed('excluded', function (d) {
+        return d.excluded;
+      }).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', function (d) {
+        return d.selected || d.excluded ? 1 : 0;
+      });
+
       if (prevVisible) {
         adjustLayout();
         prevVisible = null;
