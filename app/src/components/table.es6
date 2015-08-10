@@ -15,7 +15,7 @@ export default function(container, id) {
   let table = container.append('table').attr('id', id),
       thead = table.append('thead').append('tr'),
       tbody = table.append('tbody'),
-      dispatch = d3.dispatch('click'),
+      dispatch = d3.dispatch('click', 'mouseover', 'mouseout'),
       columns,
       sortCol, sortHeader,
       data;
@@ -98,7 +98,9 @@ export default function(container, id) {
       cells.enter().append('td')
         //.attr('class', d => d.col.attr)
         .attr('min-width', d => d.col.minWidth)
-        .on('click', d => {dispatch.click(d);});
+        .on('click', function(d)  {dispatch.click(d); })
+        .on('mouseover', function(d) { dispatch.mouseover(d); })
+        .on('mouseout', function(d) { dispatch.mouseout(d); });
 
       cells.attr('class', d => d.col.cellAttr(d.row));
 
@@ -135,6 +137,11 @@ export default function(container, id) {
 
     cell(rfilter, cfilter) {
       return row(rfilter).filter(cfilter);
+    },
+
+    on(type, cb) {
+      dispatch.on(type, cb);
+      return this;
     }
   }
 }

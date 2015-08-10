@@ -13,7 +13,7 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
     var table = container.append("table").attr("id", id),
         thead = table.append("thead").append("tr"),
         tbody = table.append("tbody"),
-        dispatch = _d3.dispatch("click"),
+        dispatch = _d3.dispatch("click", "mouseover", "mouseout"),
         columns = undefined,
         sortCol = undefined,
         sortHeader = undefined,
@@ -111,6 +111,10 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
           return d.col.minWidth;
         }).on("click", function (d) {
           dispatch.click(d);
+        }).on("mouseover", function (d) {
+          dispatch.mouseover(d);
+        }).on("mouseout", function (d) {
+          dispatch.mouseout(d);
         });
 
         cells.attr("class", function (d) {
@@ -203,6 +207,11 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
 
       cell: function cell(rfilter, cfilter) {
         return row(rfilter).filter(cfilter);
+      },
+
+      on: function on(type, cb) {
+        dispatch.on(type, cb);
+        return this;
       }
     };
   };

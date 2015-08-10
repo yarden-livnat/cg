@@ -56,6 +56,22 @@
         fill: red;
       }
     }
+
+    &.highlight {
+      fill: red;
+
+      .scaledTag .frame {
+        opacity: 1;
+      }
+
+      .scaledTag .bg {
+        fill: yellow;
+      }
+
+      .frame {
+        opacity: 1.0;
+      }
+    }
   }
 
   .link {

@@ -11,8 +11,8 @@ import bar from '../components/bar';
 
 export default function(opt) {
   let selection;
-  //let bullets = bullet();
   let bars = bar();
+  let post = postal.channel('events');
 
   let tagsTable = table('#details-tables', 'tags-table').header([
     {name: 'name', title: 'Concept', cellAttr: r => r.attr && r.attr.name},
@@ -21,7 +21,8 @@ export default function(opt) {
     //{name: 'act', attr: 'numeric'},
     //{name: 'num', title: 'N', attr: 'numeric'},
     {name: 'encounters', render: bars}
-  ]);
+  ]).on('mouseover', function(d) { post.publish('tag.highlight', d.value);})
+    .on('mouseout', function(d) { post.publish('tag.unhighlight', d.value);});
 
   function init() {
     postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
@@ -35,6 +36,7 @@ export default function(opt) {
         //category: tag.concept.category,
         //system: tag.concept.system,
         //act:  tag.items.length,
+        //num: tag.items.length,
         //num: tag.items.length,
         encounters: tag.items.length,
         tag: tag,
@@ -59,14 +61,10 @@ export default function(opt) {
           max = Math.max(max, row.encounters);
         //} else {
         //  row.encounters = row.tag.items.length;
-        }
       }
       bars.max(max);
       tagsTable.data(rows);
     }
-
-    //mark(selection.tags(), {selected: true, excluded: false});
-    //mark(selection.excluded(), {selected: false, excluded: true});
   }
 
   function updateSelectionList() {
@@ -84,12 +82,6 @@ export default function(opt) {
     s.enter().append('li');
     s.text(d => d.name).attr('class', d => d.attr);
     s.exit().remove();
-  }
-
-  function mark(list, markers) {
-    let s = new Set();
-    for (let tag of list) { s.add(tag.concept.label); }
-    tagsTable.row(d => s.has(d.name)).selectAll(':first-child').classed(markers);
   }
 
   return {

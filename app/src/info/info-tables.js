@@ -17,8 +17,8 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
 
   module.exports = function (opt) {
     var _selection = undefined;
-    //let bullets = bullet();
     var bars = (0, _bar['default'])();
+    var post = _postal2['default'].channel('events');
 
     var tagsTable = (0, _table['default'])('#details-tables', 'tags-table').header([{ name: 'name', title: 'Concept', cellAttr: function cellAttr(r) {
         return r.attr && r.attr.name;
@@ -27,7 +27,11 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
     //{name: 'system', title: 'Sys'},
     //{name: 'act', attr: 'numeric'},
     //{name: 'num', title: 'N', attr: 'numeric'},
-    { name: 'encounters', render: bars }]);
+    { name: 'encounters', render: bars }]).on('mouseover', function (d) {
+      post.publish('tag.highlight', d.value);
+    }).on('mouseout', function (d) {
+      post.publish('tag.unhighlight', d.value);
+    });
 
     function _init() {
       _postal2['default'].subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
@@ -44,11 +48,13 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
           //system: tag.concept.system,
           //act:  tag.items.length,
           //num: tag.items.length,
+          //num: tag.items.length,
           encounters: tag.items.length,
           tag: tag,
           attr: {}
         };
       }));
+      selectionChanged();
     }
 
     function selectionChanged() {
@@ -114,12 +120,11 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
             var row = _step3.value;
 
             row.attr.name = attr.get(row.name);
-            if (attr.get(row.tag.concept.label) != 'excluded') {
-              row.encounters = _selection.countActive(row.tag.items);
-              max = Math.max(max, row.encounters);
-            } else {
-              row.encounters = row.tag.items.length;
-            }
+            //if (attr.get(row.tag.concept.label) != 'excluded') {
+            row.encounters = _selection.countActive(row.tag.items);
+            max = Math.max(max, row.encounters);
+            //} else {
+            //  row.encounters = row.tag.items.length;
           }
         } catch (err) {
           _didIteratorError3 = true;
@@ -139,9 +144,6 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
         bars.max(max);
         tagsTable.data(rows);
       }
-
-      //mark(selection.tags(), {selected: true, excluded: false});
-      //mark(selection.excluded(), {selected: false, excluded: true});
     }
 
     function updateSelectionList() {
@@ -206,37 +208,6 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
         return d.attr;
       });
       s.exit().remove();
-    }
-
-    function mark(list, markers) {
-      var s = new Set();
-      var _iteratorNormalCompletion6 = true;
-      var _didIteratorError6 = false;
-      var _iteratorError6 = undefined;
-
-      try {
-        for (var _iterator6 = list[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-          var tag = _step6.value;
-          s.add(tag.concept.label);
-        }
-      } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
-            _iterator6['return']();
-          }
-        } finally {
-          if (_didIteratorError6) {
-            throw _iteratorError6;
-          }
-        }
-      }
-
-      tagsTable.row(function (d) {
-        return s.has(d.name);
-      }).selectAll(':first-child').classed(markers);
     }
 
     return {
