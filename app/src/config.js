@@ -38,7 +38,7 @@ define(['exports', 'd3'], function (exports, _d3) {
 
       // nodes
       nodeRadius: 3,
-      nodeScale: _d3.scale.linear().domain([0.3, 1]).range([0.3, 1]).clamp(true),
+      nodeScale: _d3.scale.linear().domain([0.4, 1]).range([0.4, 1]).clamp(true),
 
       duration: 500,
       fastDuration: 50

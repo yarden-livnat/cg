@@ -224,7 +224,6 @@ export default function() {
 
     function selectionChanged() {
       if (graph == undefined) return;
-      graph.domain = selection.domain;
 
       let tag, state = new Map();
       let changed = [];
@@ -244,6 +243,9 @@ export default function() {
           if (!node.selected && s == 'selected' && partialLayout.delete(node.tag)) {
             prevVisible = _.filter(graph.nodes, function(node) { return node.visible; });
           }
+          if (!node.excluded && (s == 'excluded')) {
+            node.lastScale = node.scale;
+          }
           node.selected = (s == 'selected');
           node.excluded = (s == 'excluded');
           changed.push(node);
@@ -258,6 +260,7 @@ export default function() {
           .duration(opt.canvas.duration)
           .style('opacity', d => (d.selected || d.excluded) ? 1 : 0);
 
+      graph.domain = selection.domain;
 
       if (prevVisible) {
         adjustLayout();
@@ -768,27 +771,37 @@ export default function() {
 
     postal.subscribe({channel: 'data', topic: 'changed', callback: () => {
       force.stop();
+      let current = new Map();
+      let n = graph.nodes;
+      for (let node of graph.nodes) {
+        current.set(node.id, node);
+        if (node.label == 'wheezing') {
+          console.log('new data: wheezing:', node);
+        }
+      }
+
       let nodes = data.tags.map(function(d) {
+        let node = current.get(d.id);
+        if (node) return node;
         return {
           id: d.id,
           label: d.concept.label,
           tag: d,
-          items: d.items
+          items: d.items,
+          x: Math.random() * width,
+          y: Math.random() * height,
+          scale: 1.0,
+          visible: true,
+          selected: false,
+          excluded: false
         };
       });
       graph.update(nodes);
 
-      // random initial pos instead of the default (0,0)
-      _.forEach(graph.nodes, function (node) {
-          if (!node.hasOwnProperty('x')) {
-            node.x = Math.random() * width;
-            node.y = Math.random() * height;
-          }
-        }
-      );
-
       render(opt.canvas.duration);
       relayout(opt.layout.initIterations);
+
+      selectionChanged();
       return this;
     }});
   }

@@ -22,7 +22,7 @@ table {
   table tbody {
     display: block;
     overflow: auto;
-    max-height: 100px;
+    max-height: 110px;
     height: 100%;
     font: 9pt sans-serif; }
 
@@ -195,12 +195,10 @@ input[type=date]::-webkit-inner-spin-button {
     font-size: 2em;
     font-weight: normal;
     stroke: none; }
-  .cg .node.selected .circle {
-    fill: red; }
   .cg .node.excluded .scaledTag .bg {
-    fill: yellow; }
-  .cg .node.fixed {
-    text-decoration: underline; }
+    fill: #fafafa; }
+  .cg .node.fixed .circle {
+    fill: red; }
   .cg .link {
     fill: none;
     stroke: #666;

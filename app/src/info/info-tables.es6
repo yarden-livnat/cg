@@ -41,6 +41,7 @@ export default function(opt) {
         attr: {}
       }
     }));
+    selectionChanged();
   }
 
   function selectionChanged() {
@@ -53,8 +54,12 @@ export default function(opt) {
       let max = 0;
       for(let row of rows) {
         row.attr.name = attr.get(row.name);
-        row.encounters = selection.countActive(row.tag.items);
-        max = Math.max(max, row.encounters);
+        //if (attr.get(row.tag.concept.label) != 'excluded') {
+          row.encounters =   selection.countActive(row.tag.items);
+          max = Math.max(max, row.encounters);
+        //} else {
+        //  row.encounters = row.tag.items.length;
+        }
       }
       bars.max(max);
       tagsTable.data(rows);
@@ -102,6 +107,5 @@ export default function(opt) {
     resize() {
       return this;
     }
-  }
-
+  };
 }

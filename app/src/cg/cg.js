@@ -204,7 +204,6 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
     function selectionChanged() {
       if (graph == undefined) return;
-      graph.domain = selection.domain;
 
       var tag = undefined,
           state = new Map();
@@ -279,6 +278,9 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
                 return node.visible;
               });
             }
+            if (!node.excluded && s == 'excluded') {
+              node.lastScale = node.scale;
+            }
             node.selected = s == 'selected';
             node.excluded = s == 'excluded';
             changed.push(node);
@@ -308,6 +310,8 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       }).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', function (d) {
         return d.selected || d.excluded ? 1 : 0;
       });
+
+      graph.domain = selection.domain;
 
       if (prevVisible) {
         adjustLayout();
@@ -790,26 +794,58 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
       _postal2['default'].subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
           force.stop();
+          var current = new Map();
+          var n = graph.nodes;
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
+
+          try {
+            for (var _iterator4 = graph.nodes[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              var node = _step4.value;
+
+              current.set(node.id, node);
+              if (node.label == 'wheezing') {
+                console.log('new data: wheezing:', node);
+              }
+            }
+          } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+                _iterator4['return']();
+              }
+            } finally {
+              if (_didIteratorError4) {
+                throw _iteratorError4;
+              }
+            }
+          }
+
           var nodes = _data.tags.map(function (d) {
+            var node = current.get(d.id);
+            if (node) return node;
             return {
               id: d.id,
               label: d.concept.label,
               tag: d,
-              items: d.items
+              items: d.items,
+              x: Math.random() * width,
+              y: Math.random() * height,
+              scale: 1,
+              visible: true,
+              selected: false,
+              excluded: false
             };
           });
           graph.update(nodes);
 
-          // random initial pos instead of the default (0,0)
-          _lodash.forEach(graph.nodes, function (node) {
-            if (!node.hasOwnProperty('x')) {
-              node.x = Math.random() * width;
-              node.y = Math.random() * height;
-            }
-          });
-
           render(_config.cg.canvas.duration);
           relayout(_config.cg.layout.initIterations);
+
+          selectionChanged();
           return _this;
         } });
     }

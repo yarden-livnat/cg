@@ -114,8 +114,12 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
             var row = _step3.value;
 
             row.attr.name = attr.get(row.name);
-            row.encounters = _selection.countActive(row.tag.items);
-            max = Math.max(max, row.encounters);
+            if (attr.get(row.tag.concept.label) != 'excluded') {
+              row.encounters = _selection.countActive(row.tag.items);
+              max = Math.max(max, row.encounters);
+            } else {
+              row.encounters = row.tag.items.length;
+            }
           }
         } catch (err) {
           _didIteratorError3 = true;

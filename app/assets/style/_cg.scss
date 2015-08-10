@@ -38,19 +38,23 @@
     }
 
     &.selected {
-      .circle {
-        fill: red;
-      }
+      //.circle {
+      //  fill: red;
+      //}
     }
 
     &.excluded {
       .scaledTag .bg {
-        fill: yellow;
+        //fill: yellow;
+        fill: #fafafa;
       }
     }
 
     &.fixed {
-      text-decoration:underline;
+      //text-decoration:underline;
+      .circle {
+        fill: red;
+      }
     }
   }
 

@@ -20,6 +20,7 @@ export let population = new Map();
 export let pathogens = [];
 export let detectors = [];
 
+let tagsMap = new Map();
 let ignore_tags = ["conjunctivitis"];
 let ignore = [];
 
@@ -62,14 +63,16 @@ export function fetchAssociations(params) {
 
   startSpinner();
   d3.json(uri, function(err, data) {
+    let prevTagsMap = tagsMap;
     tags = [];
+    tagsMap = new Map();
     domain = data.enc;
 
     if (err) {
       console.error(err);
       stopSpinner();
     } else {
-      let map = new Map();
+
 
       data.enc.forEach(d  => {
         d.date = dateFormat.parse(d.date);
@@ -78,10 +81,11 @@ export function fetchAssociations(params) {
 
       data.associations.forEach(d => {
         if (ignore.indexOf(d.tag_id) == -1) {
-          let entry = map.get(d.tag_id);
+          let entry = tagsMap.get(d.tag_id);
           if (!entry) {
-            entry = {id: d.tag_id, concept: kb.get(d.tag_id), items: []};
-            map.set(d.tag_id, entry);
+            entry = prevTagsMap.get(d.tag_id) || {id: d.tag_id, concept: kb.get(d.tag_id)};
+            entry.items = [];
+            tagsMap.set(d.tag_id, entry);
             tags.push(entry);
           }
           entry.items.push(items.get(d.enc_id));
@@ -95,7 +99,7 @@ export function fetchAssociations(params) {
       fromDate = dateFormat.parse(params.from);
       toDate = dateFormat.parse(params.to);
 
-      stopSpinner;
+      stopSpinner();
       post.publish('pre-changed')
       post.publish('changed');
       post.publish('post-changed');

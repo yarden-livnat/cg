@@ -33,6 +33,7 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
   var detectors = [];
 
   exports.detectors = detectors;
+  var tagsMap = new Map();
   var ignore_tags = ['conjunctivitis'];
   var ignore = [];
 
@@ -72,76 +73,68 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
 
     startSpinner();
     _d3.json(uri, function (err, data) {
+      var prevTagsMap = tagsMap;
       exports.tags = tags = [];
+      tagsMap = new Map();
       exports.domain = domain = data.enc;
 
       if (err) {
         console.error(err);
         stopSpinner();
       } else {
-        var _iteratorNormalCompletion;
 
-        var _didIteratorError;
+        data.enc.forEach(function (d) {
+          d.date = dateFormat.parse(d.date);
+          items.set(d.id, d);
+        });
 
-        var _iteratorError;
-
-        var _iterator, _step;
-
-        (function () {
-          var map = new Map();
-
-          data.enc.forEach(function (d) {
-            d.date = dateFormat.parse(d.date);
-            items.set(d.id, d);
-          });
-
-          data.associations.forEach(function (d) {
-            if (ignore.indexOf(d.tag_id) == -1) {
-              var entry = map.get(d.tag_id);
-              if (!entry) {
-                entry = { id: d.tag_id, concept: kb.get(d.tag_id), items: [] };
-                map.set(d.tag_id, entry);
-                tags.push(entry);
-              }
-              entry.items.push(items.get(d.enc_id));
+        data.associations.forEach(function (d) {
+          if (ignore.indexOf(d.tag_id) == -1) {
+            var entry = tagsMap.get(d.tag_id);
+            if (!entry) {
+              entry = prevTagsMap.get(d.tag_id) || { id: d.tag_id, concept: kb.get(d.tag_id) };
+              entry.items = [];
+              tagsMap.set(d.tag_id, entry);
+              tags.push(entry);
             }
-          });
+            entry.items.push(items.get(d.enc_id));
+          }
+        });
 
-          _iteratorNormalCompletion = true;
-          _didIteratorError = false;
-          _iteratorError = undefined;
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
 
+        try {
+          for (var _iterator = tags[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var tag = _step.value;
+
+            tag.items.sort(function (a, b) {
+              return a.id - b.id;
+            });
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
           try {
-            for (_iterator = tags[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-              var tag = _step.value;
-
-              tag.items.sort(function (a, b) {
-                return a.id - b.id;
-              });
+            if (!_iteratorNormalCompletion && _iterator['return']) {
+              _iterator['return']();
             }
-          } catch (err) {
-            _didIteratorError = true;
-            _iteratorError = err;
           } finally {
-            try {
-              if (!_iteratorNormalCompletion && _iterator['return']) {
-                _iterator['return']();
-              }
-            } finally {
-              if (_didIteratorError) {
-                throw _iteratorError;
-              }
+            if (_didIteratorError) {
+              throw _iteratorError;
             }
           }
+        }
 
-          exports.fromDate = fromDate = dateFormat.parse(params.from);
-          exports.toDate = toDate = dateFormat.parse(params.to);
+        exports.fromDate = fromDate = dateFormat.parse(params.from);
+        exports.toDate = toDate = dateFormat.parse(params.to);
 
-          stopSpinner;
-          post.publish('pre-changed');
-          post.publish('changed');
-          post.publish('post-changed');
-        })();
+        stopSpinner();
+        post.publish('pre-changed');
+        post.publish('changed');
+        post.publish('post-changed');
       }
     });
   }
