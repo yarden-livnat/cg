@@ -849,18 +849,13 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
           return _this;
         } });
 
-      _postal2['default'].subscribe({ channel: 'events', topic: 'tag.highlight', callback: function callback(d) {
-          return highlight(d, true);
-        } });
-      _postal2['default'].subscribe({ channel: 'events', topic: 'tag.unhighlight', callback: function callback(d) {
-          return highlight(d, false);
-        } });
+      _postal2['default'].subscribe({ channel: 'events', topic: 'tag.highlight', callback: highlight });
     }
 
-    function highlight(name, onoff) {
+    function highlight(item) {
       svgNodes.selectAll('.node').filter(function (d) {
-        return d.label == name;
-      }).classed('highlight', onoff);
+        return d.label == item.name;
+      }).classed('highlight', item.show);
     }
 
     /*

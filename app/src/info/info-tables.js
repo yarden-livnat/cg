@@ -28,9 +28,9 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
     //{name: 'act', attr: 'numeric'},
     //{name: 'num', title: 'N', attr: 'numeric'},
     { name: 'encounters', render: bars }]).on('mouseover', function (d) {
-      post.publish('tag.highlight', d.value);
+      post.publish('tag.highlight', { name: d.value, show: true });
     }).on('mouseout', function (d) {
-      post.publish('tag.unhighlight', d.value);
+      post.publish('tag.highlight', { name: d.value, show: false });
     });
 
     function _init() {

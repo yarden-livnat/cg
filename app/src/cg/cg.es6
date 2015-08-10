@@ -805,14 +805,12 @@ export default function() {
       return this;
     }});
 
-    postal.subscribe({channel: 'events', topic: 'tag.highlight', callback: d => highlight(d, true)});
-    postal.subscribe({channel: 'events', topic: 'tag.unhighlight', callback: d => highlight(d, false)});
-
+    postal.subscribe({channel: 'events', topic: 'tag.highlight', callback: highlight});
   }
 
-  function highlight(name, onoff) {
-    svgNodes.selectAll(".node").filter( d => d.label == name )
-      .classed('highlight', onoff)
+  function highlight(item) {
+    svgNodes.selectAll(".node").filter( d => d.label == item.name )
+      .classed('highlight', item.show);
   }
 
   /*

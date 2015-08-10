@@ -21,8 +21,8 @@ export default function(opt) {
     //{name: 'act', attr: 'numeric'},
     //{name: 'num', title: 'N', attr: 'numeric'},
     {name: 'encounters', render: bars}
-  ]).on('mouseover', function(d) { post.publish('tag.highlight', d.value);})
-    .on('mouseout', function(d) { post.publish('tag.unhighlight', d.value);});
+  ]).on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
+    .on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); });
 
   function init() {
     postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
