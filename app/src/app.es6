@@ -20,7 +20,15 @@ let selection = model.selection();
 let cg = CG();
 let info = Info();
 
-postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});
+let preSelection;
+
+postal.subscribe({channel:'data', topic:'pre-changed', callback: () => {
+  selection.reset(data.domain, data.tags);
+}});
+
+//postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});
+postal.subscribe({channel:'data', topic:'post-changed', callback: () => {
+  selection.update(); }});
 
 postal.subscribe({channel:'data', topic:'ready', callback: () => {initModules()}});
 

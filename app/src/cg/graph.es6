@@ -172,22 +172,24 @@ export default function() {
   };
 
   graph.update = function (data) {
-    let prev = new Map();
-    nodes.forEach(function(node) { prev.set(node.id, node); });
+    let current = new Map();
+    nodes.forEach(function(node) { current.set(node.id, node); });
 
     nodes = data;
-    nodes.forEach(function(node) {
+    for (let node of node) {
       node.scale = 1.0;
       node.visible = true;
       node.selected = false;
 
-      let n = prev.get(node.id);
-      if (n) {
-        node.x = n.x;
-        node.y = n.y;
+      let cn = current.get(node.id);
+      if (cn) {
+        node.x = cn.x;
+        node.y = cn.y;
+        node.selected = cn.selected;
+        node.excluded = cn.excluded;
       }
       //color: tag.positive ? opt.POS_COLOR : opt.NEG_COLOR;
-    });
+    }
     rescale();
     createEdges();
   };

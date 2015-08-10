@@ -8,7 +8,7 @@ table {
   border: solid 1px lightgray;
 
   th { border-bottom: solid thin lightgray;  }
-  td, th { padding: 0.25rem;  }
+  td, th { padding: 2px;  }
   td.text-col, th.text-col { text-align: left; }
   td.number-col, th.number-col { text-align: right; }
 
@@ -19,7 +19,7 @@ table {
   //td:nth-child(2) {text-align: right;}
 
   thead {
-    background-color: #eee;
+    background-color: #fafafa;
     font: 9pt sans-serif;
     tr {
       display: block;
@@ -49,7 +49,7 @@ table {
   content: "";
   border-left: 1px solid black;
   border-top: 1px solid black;
-  padding: 3px;
+  padding: 32x;
   margin-left: 5px;
   top: 30%;
   display:none;
@@ -155,9 +155,23 @@ table {
   }
 }
 
+/* bullet */
 .bullet {
   font: 9pt sanss-serif;
 
   .range.s0 { fill: #eee; color: #000; }
   .range.s1 { fill: lightsteelblue; color: #000; }
+}
+
+/* bar */
+.bar {
+  font: 10px sanss-serif;
+  background-color: #e0e0e0;
+
+  rect {
+    fill: lightsteelblue;
+  }
+  text {
+    fill:black;
+  }
 }

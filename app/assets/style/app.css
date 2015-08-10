@@ -8,13 +8,13 @@ table {
   table th {
     border-bottom: solid thin lightgray; }
   table td, table th {
-    padding: 0.25rem; }
+    padding: 2px; }
   table td.text-col, table th.text-col {
     text-align: left; }
   table td.number-col, table th.number-col {
     text-align: right; }
   table thead {
-    background-color: #eee;
+    background-color: #fafafa;
     font: 9pt sans-serif; }
     table thead tr {
       display: block;
@@ -36,7 +36,7 @@ table {
   content: "";
   border-left: 1px solid black;
   border-top: 1px solid black;
-  padding: 3px;
+  padding: 32x;
   margin-left: 5px;
   top: 30%;
   display: none; }
@@ -109,6 +109,7 @@ table {
     list-style: none;
     font: 7pt Arial; }
 
+/* bullet */
 .bullet {
   font: 9pt sanss-serif; }
   .bullet .range.s0 {
@@ -117,6 +118,15 @@ table {
   .bullet .range.s1 {
     fill: lightsteelblue;
     color: #000; }
+
+/* bar */
+.bar {
+  font: 10px sanss-serif;
+  background-color: #e0e0e0; }
+  .bar rect {
+    fill: lightsteelblue; }
+  .bar text {
+    fill: black; }
 
 .x-panel {
   width: auto;

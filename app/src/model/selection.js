@@ -232,6 +232,93 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       if (!silent) dispatch.changed();
     }
 
+    function _reset(newDomain, newTags) {
+      var tag = undefined;
+      var prevTags = _tags;
+      var prevExcluded = _excluded;
+      var current = new Set();
+
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = newTags[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          tag = _step3.value;
+          current.add(tag.concept.label);
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      _tags = new Set();
+      _excluded = new Set();
+
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = prevTags[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          tag = _step4.value;
+
+          if (current.has(tag.concept.label)) _tags.add(tag);else release_color(tag);
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+            _iterator4['return']();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = prevExcluded[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          tag = _step5.value;
+
+          if (current.has(tag.concept.label)) _excluded.add(tag);else release_color(tag);
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+            _iterator5['return']();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+
+      filteredDomain = initialDomain = newDomain;
+      recompute(true);
+    }
+
     function check(domain, msg) {
       for (var i = 0; i < domain.length; i++) {
         if (domain[i] == undefined) console.log(msg, 'at', i);
@@ -242,6 +329,14 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
      * API
      */
     var selection = Object.defineProperties({
+
+      reset: function reset(newDomain, currentTags) {
+        _reset(newDomain, currentTags);
+      },
+
+      update: function update() {
+        dispatch.changed();
+      },
 
       countActive: function countActive(items) {
         return intersect(domain, items).length;

@@ -134,13 +134,13 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
             }
           }
 
-          // TODO: handle probabilities
-
           exports.fromDate = fromDate = dateFormat.parse(params.from);
           exports.toDate = toDate = dateFormat.parse(params.to);
 
           stopSpinner;
+          post.publish('pre-changed');
           post.publish('changed');
+          post.publish('post-changed');
         })();
       }
     });

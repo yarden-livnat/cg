@@ -160,6 +160,31 @@ function release_color(tag) {
         dispatch.changed();
     }
 
+    function reset(newDomain, newTags) {
+      let tag;
+      let prevTags = tags;
+      let prevExcluded = excluded;
+      let current = new Set();
+
+      for (tag of newTags) current.add(tag.concept.label);
+
+      tags = new Set();
+      excluded = new Set();
+
+      for (tag of prevTags) {
+        if (current.has(tag.concept.label)) tags.add(tag);
+        else release_color(tag);
+      }
+
+      for (tag of prevExcluded) {
+        if (current.has(tag.concept.label)) excluded.add(tag);
+        else release_color(tag);
+      }
+
+      filteredDomain = initialDomain = newDomain;
+      recompute(true);
+    }
+
     function check(domain, msg) {
       for(let i = 0; i < domain.length; i++)
         if (domain[i] == undefined) console.log(msg, 'at', i);
@@ -175,6 +200,14 @@ function release_color(tag) {
         initialDomain = list;
         clear(false);
         //recompute(true);
+      },
+
+      reset(newDomain, currentTags) {
+        reset(newDomain, currentTags);
+      },
+
+      update() {
+        dispatch.changed();
       },
 
       countActive(items) {

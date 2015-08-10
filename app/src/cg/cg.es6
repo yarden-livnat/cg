@@ -2,13 +2,13 @@
  * Created by yarden on 12/17/14.
  */
 
-import * as d3 from 'd3'
-import * as postal from 'postal';
+import d3 from 'd3'
+import postal from 'postal';
 import * as _ from 'lodash'
 
 import * as data from '../data'
 import {cg as opt} from '../config'
-import * as Graph from './graph'
+import Graph from './graph'
 
 
 let ctrl = postal.channel('cg');

@@ -216,24 +216,48 @@ define(['exports', 'module', 'lodash'], function (exports, module, _lodash) {
     });
 
     graph.update = function (data) {
-      var prev = new Map();
+      var current = new Map();
       nodes.forEach(function (node) {
-        prev.set(node.id, node);
+        current.set(node.id, node);
       });
 
       nodes = data;
-      nodes.forEach(function (node) {
-        node.scale = 1;
-        node.visible = true;
-        node.selected = false;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
-        var n = prev.get(node.id);
-        if (n) {
-          node.x = n.x;
-          node.y = n.y;
+      try {
+        for (var _iterator = node[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var node = _step.value;
+
+          node.scale = 1;
+          node.visible = true;
+          node.selected = false;
+
+          var cn = current.get(node.id);
+          if (cn) {
+            node.x = cn.x;
+            node.y = cn.y;
+            node.selected = cn.selected;
+            node.excluded = cn.excluded;
+          }
+          //color: tag.positive ? opt.POS_COLOR : opt.NEG_COLOR;
         }
-        //color: tag.positive ? opt.POS_COLOR : opt.NEG_COLOR;
-      });
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
       rescale();
       createEdges();
     };

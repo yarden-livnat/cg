@@ -92,13 +92,13 @@ export function fetchAssociations(params) {
         tag.items.sort( (a,b) => a.id - b.id);
       }
 
-      // TODO: handle probabilities
-
       fromDate = dateFormat.parse(params.from);
       toDate = dateFormat.parse(params.to);
 
       stopSpinner;
+      post.publish('pre-changed')
       post.publish('changed');
+      post.publish('post-changed');
     }
   });
 }

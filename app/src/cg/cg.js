@@ -5,7 +5,15 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
   'use strict';
 
-  var ctrl = _postal.channel('cg');
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _d32 = _interopRequireDefault(_d3);
+
+  var _postal2 = _interopRequireDefault(_postal);
+
+  var _Graph = _interopRequireDefault(_graph);
+
+  var ctrl = _postal2['default'].channel('cg');
 
   module.exports = function () {
     var width = undefined,
@@ -14,7 +22,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         svg = undefined,
         svgNodes = undefined,
         svgLinks = undefined,
-        force = _d3.layout.force(),
+        force = _d32['default'].layout.force(),
         d3nodes = undefined,
         d3links = undefined,
         activeNodes = undefined,
@@ -22,11 +30,11 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         prevVisible = null,
         partialLayout = new Set(),
         selection = undefined,
-        graph = (0, _graph)();
+        graph = (0, _Graph['default'])();
 
-    var x = _d3.scale.linear().domain([0, 1]).range([0, 1]);
+    var x = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
 
-    var y = _d3.scale.linear().domain([0, 1]).range([0, 1]);
+    var y = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
 
     /*
      * rendering
@@ -84,7 +92,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
      * Interactions
      */
 
-    var drag = _d3.behavior.drag().origin(function (d) {
+    var drag = _d32['default'].behavior.drag().origin(function (d) {
       return { x: d.x, y: d.y };
     }).on('dragstart', onDragStart).on('drag', onDrag).on('dragend', onDragEnd);
 
@@ -92,15 +100,15 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
     function onDragStart(d, mx, my) {
       d.fixed |= 2;
-      offsetX = _d3.event.sourceEvent.layerX - x(d.x);
-      offsetY = _d3.event.sourceEvent.layerY - y(d.y);
+      offsetX = _d32['default'].event.sourceEvent.layerX - x(d.x);
+      offsetY = _d32['default'].event.sourceEvent.layerY - y(d.y);
     }
 
     function onDrag(d) {
-      _d3.select(this).classed('fixed', d.fixed |= 3);
-      d.x = d.px = x.invert(_d3.event.sourceEvent.layerX - offsetX);
-      d.y = d.py = y.invert(_d3.event.sourceEvent.layerY - offsetY);
-      _d3.select(this).attr('transform', function (d) {
+      _d32['default'].select(this).classed('fixed', d.fixed |= 3);
+      d.x = d.px = x.invert(_d32['default'].event.sourceEvent.layerX - offsetX);
+      d.y = d.py = y.invert(_d32['default'].event.sourceEvent.layerY - offsetY);
+      _d32['default'].select(this).attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       });
       d3links.call(edgeRenderer.update);
@@ -111,7 +119,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     }
 
     function dblclick(d) {
-      _d3.select(this).classed('fixed', d.fixed = false);
+      _d32['default'].select(this).classed('fixed', d.fixed = false);
     }
 
     var mouse_time = Date.now();
@@ -126,9 +134,9 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
       var dt = Date.now() - mouse_time;
       if (dt < 200) {
-        if (_d3.event.metaKey) {
-          _d3.select(this).classed('fixed', d.fixed = false);
-        } else if (_d3.event.shiftKey) {
+        if (_d32['default'].event.metaKey) {
+          _d32['default'].select(this).classed('fixed', d.fixed = false);
+        } else if (_d32['default'].event.shiftKey) {
           excludeNode.call(this, d);
         } else {
           selectNode.call(this, d);
@@ -137,11 +145,11 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     }
 
     function mouseover(d) {
-      _d3.select(this.parentNode).select('text').transition().duration(_config.cg.canvas.duration).attr('transform', 'translate(7, 0) scale(1)');
+      _d32['default'].select(this.parentNode).select('text').transition().duration(_config.cg.canvas.duration).attr('transform', 'translate(7, 0) scale(1)');
     }
 
     function mouseout(d) {
-      _d3.select(this.parentNode).select('text').transition().duration(_config.cg.canvas.duration).call(scaleNode);
+      _d32['default'].select(this.parentNode).select('text').transition().duration(_config.cg.canvas.duration).call(scaleNode);
     }
 
     /*
@@ -151,7 +159,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       force.stop();
 
       d.selected = !d.selected;
-      _d3.select(this).classed('selected', d.selected);
+      _d32['default'].select(this).classed('selected', d.selected);
 
       if (!d.selected && partialLayout['delete'](d.tag)) {
         prevVisible = _lodash.filter(graph.nodes, function (node) {
@@ -163,9 +171,9 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
       if (d.selected && d.excluded) {
         d.excluded = false;
-        _d3.select(this).classed('excluded', false);
+        _d32['default'].select(this).classed('excluded', false);
       }
-      _d3.select(this).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', d.selected ? 1 : 0);
+      _d32['default'].select(this).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', d.selected ? 1 : 0);
 
       selection.select(d.tag, d.selected);
     }
@@ -174,17 +182,17 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       force.stop();
 
       d.excluded = !d.excluded;
-      _d3.select(this).classed('excluded', d.excluded);
+      _d32['default'].select(this).classed('excluded', d.excluded);
 
       if (d.excluded && d.selected) {
         d.selected = false;
-        _d3.select(this).classed('selected', false);
+        _d32['default'].select(this).classed('selected', false);
       }
       if (d.excluded) {
         d.lastScale = d.scale;
       }
 
-      _d3.select(this).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', d.excluded ? 1 : 0);
+      _d32['default'].select(this).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', d.excluded ? 1 : 0);
 
       selection.exclude(d.tag, d.excluded);
     }
@@ -407,7 +415,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     function nudge() {
       computeBboxes();
       show(_config.cg['control'].overlap);
-      _d3.timer(function () {
+      _d32['default'].timer(function () {
         var r = nudge_step();
         updatePosition();
         return r;
@@ -531,9 +539,9 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         d.w = bbox.width;
         d.h = bbox.height;
 
-        _d3.select(this).select('.bg').attr('width', bbox.width - 2).attr('height', bbox.height - 2).attr('x', bbox.x + 1).attr('y', bbox.y + 1);
+        _d32['default'].select(this).select('.bg').attr('width', bbox.width - 2).attr('height', bbox.height - 2).attr('x', bbox.x + 1).attr('y', bbox.y + 1);
 
-        _d3.select(this).select('.border').attr('width', bbox.width).attr('height', bbox.height).attr('y', bbox.y);
+        _d32['default'].select(this).select('.border').attr('width', bbox.width).attr('height', bbox.height).attr('y', bbox.y);
       });
 
       scaled.call(scaleNode);
@@ -613,11 +621,11 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     var edgeRenderer = LineRenderer;
 
     function highlightEdge(d) {
-      _d3.select(this).classed('highlight', true).style('opacity', 1);
+      _d32['default'].select(this).classed('highlight', true).style('opacity', 1);
     }
 
     function unhighlightEdge(d) {
-      _d3.select(this).classed('highlight', false).style('opacity', _config.cg.canvas.edgeOpacity);
+      _d32['default'].select(this).classed('highlight', false).style('opacity', _config.cg.canvas.edgeOpacity);
     }
 
     function updateForce() {
@@ -672,7 +680,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         render(_config.cg.canvas.fastDuration);
       });
 
-      _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
+      _postal2['default'].subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
           force.stop();
           var nodes = _data.tags.map(function (d) {
             return {
@@ -705,9 +713,9 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     var cg = {};
 
     cg.init = function (el) {
-      width = _d3.select(el).attr('width');
-      height = _d3.select(el).attr('height');
-      svgContainer = _d3.select(el).classed('cg', true).append('svg');
+      width = _d32['default'].select(el).attr('width');
+      height = _d32['default'].select(el).attr('height');
+      svgContainer = _d32['default'].select(el).classed('cg', true).append('svg');
       svg = svgContainer.append('g');
 
       // transparent bg to catch pan/zoom mouse actions
@@ -735,7 +743,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
       y.domain([0, height]).range([0, height]);
 
-      zoom = _d3.behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
+      zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
       svg.call(zoom);
 
       svg.select('.overlay').attr('width', width).attr('height', height);

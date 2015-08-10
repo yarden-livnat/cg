@@ -14,8 +14,15 @@ define(['exports', './components/xpanel', 'd3', 'postal', './data', './query', '
   var cg = (0, _CG['default'])();
   var info = (0, _infoInfo)();
 
-  _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
-      selection.domain = _data.domain;
+  var preSelection = undefined;
+
+  _postal.subscribe({ channel: 'data', topic: 'pre-changed', callback: function callback() {
+      selection.reset(_data.domain, _data.tags);
+    } });
+
+  //postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});
+  _postal.subscribe({ channel: 'data', topic: 'post-changed', callback: function callback() {
+      selection.update();
     } });
 
   _postal.subscribe({ channel: 'data', topic: 'ready', callback: function callback() {
