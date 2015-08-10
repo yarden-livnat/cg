@@ -223,6 +223,9 @@ function release_color(tag) {
       },
 
       exclude(tag, add) {
+        if (arguments.length == 1) {
+          add = !excluded.has(tag);
+        }
         if (add) {
           if (excluded.has(tag)) return;
           assign_color(tag);
@@ -250,7 +253,8 @@ function release_color(tag) {
       },
 
       select(tag, op) {
-        op = op || op == undefined;
+        if (op == undefined) op = !tags.has(tag);
+
         if (op) add(tag);
         else remove(tag)
       },

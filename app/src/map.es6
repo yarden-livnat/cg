@@ -120,9 +120,7 @@ export default function (opt) {
       }
     }
 
-    console.log('selected: '+selectedZipcodes);
     svg.selectAll('path').filter( d => updated.has(d.properties.Zip_Code) )
-      .each(d => { console.log(d+': '+d.state.boundary_color);})
       .style('stroke', d => d.state.boundary_color );
 
     selectionFilter.domain(selectedZipcodes);

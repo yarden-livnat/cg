@@ -139,11 +139,8 @@ define(['exports', 'module', 'd3', 'leaflet', 'postal', './config'], function (e
         }
       }
 
-      console.log('selected: ' + selectedZipcodes);
       svg.selectAll('path').filter(function (d) {
         return updated.has(d.properties.Zip_Code);
-      }).each(function (d) {
-        console.log(d + ': ' + d.state.boundary_color);
       }).style('stroke', function (d) {
         return d.state.boundary_color;
       });

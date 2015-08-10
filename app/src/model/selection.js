@@ -351,6 +351,9 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       },
 
       exclude: function exclude(tag, add) {
+        if (arguments.length == 1) {
+          add = !_excluded.has(tag);
+        }
         if (add) {
           if (_excluded.has(tag)) return;
           assign_color(tag);
@@ -380,7 +383,8 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       },
 
       select: function select(tag, op) {
-        op = op || op == undefined;
+        if (op == undefined) op = !_tags.has(tag);
+
         if (op) add(tag);else remove(tag);
       },
 

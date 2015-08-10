@@ -201,12 +201,6 @@ input[type=date]::-webkit-inner-spin-button {
     fill: red; }
   .cg .node.highlight {
     fill: red; }
-    .cg .node.highlight .scaledTag .frame {
-      opacity: 1; }
-    .cg .node.highlight .scaledTag .bg {
-      fill: yellow; }
-    .cg .node.highlight .frame {
-      opacity: 1.0; }
   .cg .link {
     fill: none;
     stroke: #666;
