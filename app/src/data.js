@@ -23,7 +23,7 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
 
   exports.toDate = toDate;
   var tags = [];
-  exports.tags = tags;
+  exports.selected = tags;
   var domain = [];
   exports.domain = domain;
   var population = new Map();
@@ -74,7 +74,7 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
     startSpinner();
     _d3.json(uri, function (err, data) {
       var prevTagsMap = tagsMap;
-      exports.tags = tags = [];
+      exports.selected = tags = [];
       tagsMap = new Map();
       exports.domain = domain = data.enc;
 

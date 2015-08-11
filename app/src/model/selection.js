@@ -127,24 +127,24 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     var _excluded = new Set();
     var filters = new Map();
 
-    var _tags = new Set();
+    var tags = new Set();
 
     var dispatch = _d3.dispatch('changed');
 
     _clear(true);
 
     function add(tag) {
-      if (_tags.has(tag)) return;
+      if (tags.has(tag)) return;
 
       assign_color(tag);
 
-      _tags.add(tag);
+      tags.add(tag);
       _excluded['delete'](tag);
       recompute();
     }
 
     function remove(tag) {
-      if (!_tags['delete'](tag)) return;
+      if (!tags['delete'](tag)) return;
       release_color(tag);
       recompute();
     }
@@ -155,7 +155,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = _tags[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = tags[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var tag = _step.value;
 
           release_color(tag);
@@ -200,7 +200,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         }
       }
 
-      _tags = new Set();
+      tags = new Set();
       _excluded = new Set();
       filteredDomain = initialDomain;
       domain = initialDomain;
@@ -222,7 +222,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     function recompute(silent) {
       domain = filteredDomain;
-      _tags.forEach(function (tag) {
+      tags.forEach(function (tag) {
         domain = intersect(domain, tag.items);
       });
       _excluded.forEach(function (tag) {
@@ -234,7 +234,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     function _reset(newDomain, newTags) {
       var tag = undefined;
-      var prevTags = _tags;
+      var prevTags = tags;
       var prevExcluded = _excluded;
       var current = new Set();
 
@@ -262,7 +262,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         }
       }
 
-      _tags = new Set();
+      tags = new Set();
       _excluded = new Set();
 
       var _iteratorNormalCompletion4 = true;
@@ -273,7 +273,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         for (var _iterator4 = prevTags[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
           tag = _step4.value;
 
-          if (current.has(tag.concept.label)) _tags.add(tag);else release_color(tag);
+          if (current.has(tag.concept.label)) tags.add(tag);else release_color(tag);
         }
       } catch (err) {
         _didIteratorError4 = true;
@@ -343,7 +343,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       },
 
       selectedItems: function selectedItems() {
-        return _tags.size || _excluded.size ? domain : [];
+        return tags.size || _excluded.size ? domain : [];
       },
 
       clear: function clear(silent) {
@@ -358,7 +358,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
           if (_excluded.has(tag)) return;
           assign_color(tag);
           _excluded.add(tag);
-          _tags['delete'](tag);
+          tags['delete'](tag);
         } else {
           if (!_excluded['delete'](tag)) return;
           release_color(tag);
@@ -383,13 +383,13 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       },
 
       select: function select(tag, op) {
-        if (op == undefined) op = !_tags.has(tag);
+        if (op == undefined) op = !tags.has(tag);
 
         if (op) add(tag);else remove(tag);
       },
 
-      tags: function tags() {
-        return _tags;
+      selected: function selected() {
+        return tags;
       },
 
       excluded: function excluded() {
@@ -398,7 +398,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
       isAnySelected: function isAnySelected() {
         return _.some(arguments, function (tag) {
-          if (_tags.has(tag)) return true;
+          if (tags.has(tag)) return true;
         }, this);
       },
 

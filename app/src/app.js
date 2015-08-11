@@ -17,7 +17,7 @@ define(['exports', './components/xpanel', 'd3', 'postal', './data', './query', '
   var preSelection = undefined;
 
   _postal.subscribe({ channel: 'data', topic: 'pre-changed', callback: function callback() {
-      selection.reset(_data.domain, _data.tags);
+      selection.reset(_data.domain, _data.selected);
     } });
 
   //postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});

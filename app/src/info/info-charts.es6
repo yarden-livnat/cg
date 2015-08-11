@@ -2,12 +2,13 @@
  * Created by yarden on 8/6/15.
  */
 
-import * as d3 from 'd3'
-import * as postal from 'postal'
+import d3 from 'd3'
+import postal from 'postal'
 
 import {pathogens_duration} from '../config'
 import * as data from '../data'
-import * as chart from '../components/chart'
+import chart from '../components/chart'
+import chart2 from '../components/chart2'
 
 
 export default function(opt) {
@@ -17,13 +18,13 @@ export default function(opt) {
   let dateFormat = d3.time.format('%Y-%m-%d');
 
   let selection;
-
-  let summaryChart = chart().el('#summary-chart');
-  let selectedChart = chart().el('#selected-chart');
+  let summaryData = [];
+  let summaryChart = chart2().el('#summary-chart');
+  //let selectedChart = chart().el('#selected-chart');
 
   let charts = new Map([
     ['#summary-chart', summaryChart],
-    ['#selected-chart', selectedChart],
+    //['#selected-chart', selectedChart],
   ]);
 
   let pathogens = new Map();
@@ -78,7 +79,22 @@ export default function(opt) {
   }
 
   function dataChanged() {
-    summaryChart.data(binData(data.domain));
+    let f = d3.time.day.ceil(data.fromDate),
+        t = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
+        range = d3.time.day.range(f, t),
+        scale = d3.time.scale()
+          .domain([f, t])
+          .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
+
+    let bins = range.map(function (day) { return {x: day, value: 0, items: []}; });
+    for (let item of data.domain) {
+      let i = scale(item.date);
+      bins[i].value++;
+      bins[i].items.push(item);
+    }
+
+    summaryData = [{label: 'data', color: 'black', values: bins, right: true}];
+    summaryChart.data(summaryData);
 
     for (let name of pathogens.keys()) { updatePathogens(name); }
 
@@ -98,24 +114,6 @@ export default function(opt) {
       .catch( e => { console.error('Detectors error:', e); });
   }
 
-  function binData(items) {
-    let f = d3.time.day.ceil(data.fromDate),
-        t = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
-        range = d3.time.day.range(f, t),
-        scale = d3.time.scale()
-          .domain([f, t])
-          .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
-
-    let bins = range.map(function (day) { return {x: day, value: 0, items: []}; });
-    for (let item of items) {
-      let i = scale(item.date);
-      bins[i].value++;
-      bins[i].items.push(item);
-    }
-
-    return [{label: 'data', color: 'black', values: bins}];
-  }
-
   function selectionChanged() {
     let from  = d3.time.day.ceil(data.fromDate),
         to    = d3.time.day.offset(d3.time.day.ceil(data.toDate), 1),
@@ -126,26 +124,24 @@ export default function(opt) {
 
     let selectedSeries = [];
 
-    for(let tag of selection.tags()) {
-      let bins = histogram(tag.items, range, scale);
+    for(let tag of selection.selected()) {
       selectedSeries.push({
           label:  tag.concept.label,
           color:  tag.color,
           type:   'line',
           marker: 'solid',
-          values: bins
+          values: histogram(tag.items, range, scale)
         }
       );
     }
 
     for(let tag of selection.excluded()) {
-      let bins = histogram(tag.items, range, scale);
       selectedSeries.push({
           label:  tag.concept.label,
           color:  tag.color,
           type:   'line',
           marker: 'dash',
-          values: bins
+          values:  histogram(tag.items, range, scale)
         }
       );
     }
@@ -157,7 +153,10 @@ export default function(opt) {
     //  values: histogram(selection.selectedItems(), range)
     //});
 
-    selectedChart.data(selectedSeries);
+    //selectedChart.data(selectedSeries);
+
+    selectedSeries.push(summaryData[0]);
+    summaryChart.data(selectedSeries);
   }
 
   function selectPathogen(name, show) {

@@ -259,7 +259,7 @@ function release_color(tag) {
         else remove(tag)
       },
 
-      tags() {
+      selected() {
         return tags;
       },
 

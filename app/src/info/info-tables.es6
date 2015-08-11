@@ -24,11 +24,8 @@ export default function(opt) {
   ]).on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
     .on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); })
     .on('click', function(d) {
-      if (d3.event.shiftKey) {
-        selection.exclude(d.row.tag);
-      } else {
-        selection.select(d.row.tag);
-      }
+      if (d3.event.shiftKey) selection.exclude(d.row.tag);
+      else selection.select(d.row.tag);
     });
 
   let catTable = table('#details-tables', 'cat-table').header([
@@ -48,8 +45,8 @@ export default function(opt) {
   function dataChanged() {
     let entry;
 
-    bars.max(d3.max(data.tags, d => d.items.length));
-    tagsTable.data(data.tags.map(tag => {
+    bars.max(d3.max(data.selected, d => d.items.length));
+    tagsTable.data(data.selected.map(tag => {
       return {
         name: tag.concept.label,
         //category: tag.concept.category,
@@ -65,7 +62,7 @@ export default function(opt) {
 
     // categories
     let cat = new Map();
-    for (let tag of data.tags) {
+    for (let tag of data.selected) {
       let n = cat.get(tag.concept.category) || 0;
       cat.set(tag.concept.category, n+1);
     }
@@ -77,7 +74,7 @@ export default function(opt) {
 
     //systems
     let sys = new Map();
-    for (let tag of data.tags) {
+    for (let tag of data.selected) {
       let n = sys.get(tag.concept.system) || 0;
       sys.set(tag.concept.system, n+1);
     }
@@ -95,7 +92,7 @@ export default function(opt) {
 
     let tag, attr = new Map();
 
-    for (tag of selection.tags()) { attr.set(tag.concept.label, 'selected'); }
+    for (tag of selection.selected()) { attr.set(tag.concept.label, 'selected'); }
     for (tag of selection.excluded()) { attr.set(tag.concept.label, 'excluded'); }
 
     let rows = tagsTable.data();
@@ -116,7 +113,7 @@ export default function(opt) {
     let entry;
     let categories = new Map();
     let systems = new Map();
-    for (tag of data.tags) {
+    for (tag of data.selected) {
       if (selection.countActive(tag.items) > 0) {
         let c = categories.get(tag.concept.category) || 0;
         categories.set(tag.concept.category, c+1);
@@ -141,7 +138,7 @@ export default function(opt) {
 
   function updateSelectionList() {
     let tag, list = [];
-    for (tag of selection.tags()) {
+    for (tag of selection.selected()) {
       list.push({name: tag.concept.label, attr: 'selected'});
     }
     for (tag of selection.excluded()) {

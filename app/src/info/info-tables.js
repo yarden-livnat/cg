@@ -32,11 +32,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
     }).on('mouseout', function (d) {
       post.publish('tag.highlight', { name: d.value, show: false });
     }).on('click', function (d) {
-      if (_d32['default'].event.shiftKey) {
-        _selection.exclude(d.row.tag);
-      } else {
-        _selection.select(d.row.tag);
-      }
+      if (_d32['default'].event.shiftKey) _selection.exclude(d.row.tag);else _selection.select(d.row.tag);
     });
 
     var catTable = (0, _table['default'])('#details-tables', 'cat-table').header([{ name: 'category' }, { name: 'encounters' }]);
@@ -50,10 +46,10 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
     function dataChanged() {
       var entry = undefined;
 
-      bars.max(_d32['default'].max(_data.tags, function (d) {
+      bars.max(_d32['default'].max(_data.selected, function (d) {
         return d.items.length;
       }));
-      tagsTable.data(_data.tags.map(function (tag) {
+      tagsTable.data(_data.selected.map(function (tag) {
         return {
           name: tag.concept.label,
           //category: tag.concept.category,
@@ -74,7 +70,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = _data.tags[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = _data.selected[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var tag = _step.value;
 
           var n = cat.get(tag.concept.category) || 0;
@@ -130,7 +126,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
       var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator3 = _data.tags[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        for (var _iterator3 = _data.selected[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
           var tag = _step3.value;
 
           var n = sys.get(tag.concept.system) || 0;
@@ -193,7 +189,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
       var _iteratorError5 = undefined;
 
       try {
-        for (var _iterator5 = _selection.tags()[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        for (var _iterator5 = _selection.selected()[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
           tag = _step5.value;
           attr.set(tag.concept.label, 'selected');
         }
@@ -281,7 +277,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
       var _iteratorError8 = undefined;
 
       try {
-        for (var _iterator8 = _data.tags[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+        for (var _iterator8 = _data.selected[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
           tag = _step8.value;
 
           if (_selection.countActive(tag.items) > 0) {
@@ -371,7 +367,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
       var _iteratorError11 = undefined;
 
       try {
-        for (var _iterator11 = _selection.tags()[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
+        for (var _iterator11 = _selection.selected()[Symbol.iterator](), _step11; !(_iteratorNormalCompletion11 = (_step11 = _iterator11.next()).done); _iteratorNormalCompletion11 = true) {
           tag = _step11.value;
 
           list.push({ name: tag.concept.label, attr: 'selected' });

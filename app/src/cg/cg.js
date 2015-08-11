@@ -214,7 +214,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = selection.tags()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = selection.selected()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           tag = _step.value;
           state.set(tag, 'selected');
         }
@@ -345,7 +345,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     })();
 
     function relayout(iter) {
-      selection.tags().forEach(function (tag) {
+      selection.selected().forEach(function (tag) {
         partialLayout.add(tag);
       });
 
@@ -824,7 +824,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
             }
           }
 
-          var nodes = _data.tags.map(function (d) {
+          var nodes = _data.selected.map(function (d) {
             var node = current.get(d.id);
             if (node) return node;
             return {

@@ -23,7 +23,7 @@ let info = Info();
 let preSelection;
 
 postal.subscribe({channel:'data', topic:'pre-changed', callback: () => {
-  selection.reset(data.domain, data.tags);
+  selection.reset(data.domain, data.selected);
 }});
 
 //postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});

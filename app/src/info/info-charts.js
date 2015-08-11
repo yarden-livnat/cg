@@ -1,34 +1,44 @@
-define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../components/chart'], function (exports, module, _d3, _postal, _config, _data, _componentsChart) {
+define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../components/chart', '../components/chart2'], function (exports, module, _d3, _postal, _config, _data, _componentsChart, _componentsChart2) {
   /**
    * Created by yarden on 8/6/15.
    */
 
   'use strict';
 
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
   function _slicedToArray(arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }
+
+  var _d32 = _interopRequireDefault(_d3);
+
+  var _postal2 = _interopRequireDefault(_postal);
+
+  var _chart = _interopRequireDefault(_componentsChart);
+
+  var _chart2 = _interopRequireDefault(_componentsChart2);
 
   module.exports = function (opt) {
     var MIN_Y = 5;
     var CHART_MAX_WIDTH = 500;
 
-    var dateFormat = _d3.time.format('%Y-%m-%d');
+    var dateFormat = _d32['default'].time.format('%Y-%m-%d');
 
     var _selection = undefined;
+    var summaryData = [];
+    var summaryChart = (0, _chart2['default'])().el('#summary-chart');
+    //let selectedChart = chart().el('#selected-chart');
 
-    var summaryChart = (0, _componentsChart)().el('#summary-chart');
-    var selectedChart = (0, _componentsChart)().el('#selected-chart');
-
-    var charts = new Map([['#summary-chart', summaryChart], ['#selected-chart', selectedChart]]);
+    var charts = new Map([['#summary-chart', summaryChart]]);
 
     var pathogens = new Map();
 
     var detectors = [];
 
     function _init() {
-      _postal.subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
+      _postal2['default'].subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
 
       /* pathogens */
-      var items = _d3.select('#pathogens').select('ul').selectAll('li').data(_data.pathogens).enter().append('li');
+      var items = _d32['default'].select('#pathogens').select('ul').selectAll('li').data(_data.pathogens).enter().append('li');
 
       items.append('input').attr('type', 'checkbox').attr('value', function (d) {
         return d.name;
@@ -40,8 +50,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
         return d.name;
       });
 
-      var menu = _d3.select('#pathogens .items');
-      _d3.select('#pathogens').select('.anchor').on('click', function () {
+      var menu = _d32['default'].select('#pathogens .items');
+      _d32['default'].select('#pathogens').select('.anchor').on('click', function () {
         if (menu.classed('visible')) {
           menu.classed('visible', false).style('display', 'none');
         } else {
@@ -54,7 +64,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
       });
 
       /* detectors */
-      _d3.select('#detectors-charts').selectAll('div').data(_data.detectors).enter().append('div').attr('id', function (d) {
+      _d32['default'].select('#detectors-charts').selectAll('div').data(_data.detectors).enter().append('div').attr('id', function (d) {
         return 'detector-' + d.name;
       });
 
@@ -66,7 +76,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
         for (var _iterator = _data.detectors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var d = _step.value;
 
-          var c = (0, _componentsChart)().el('#detector-' + d.name).title(d.name).scale(_d3.scale.linear());
+          var c = (0, _chart['default'])().el('#detector-' + d.name).title(d.name).scale(_d32['default'].scale.linear());
           var detector = { name: d.name, chart: c, data: [] };
           detectors.push(detector);
         }
@@ -87,16 +97,25 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
     }
 
     function dataChanged() {
-      summaryChart.data(binData(_data.domain));
+      var f = _d32['default'].time.day.ceil(_data.fromDate),
+          t = _d32['default'].time.day.offset(_d32['default'].time.day.ceil(_data.toDate), 1),
+          range = _d32['default'].time.day.range(f, t),
+          scale = _d32['default'].time.scale().domain([f, t]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
 
+      var bins = range.map(function (day) {
+        return { x: day, value: 0, items: [] };
+      });
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = pathogens.keys()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var _name = _step2.value;
-          updatePathogens(_name);
+        for (var _iterator2 = _data.domain[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var item = _step2.value;
+
+          var i = scale(item.date);
+          bins[i].value++;
+          bins[i].items.push(item);
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -113,23 +132,50 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
         }
       }
 
+      summaryData = [{ label: 'data', color: 'black', values: bins, right: true }];
+      summaryChart.data(summaryData);
+
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = pathogens.keys()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var _name = _step3.value;
+          updatePathogens(_name);
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
       _data.fetch('detectors', detectors.map(function (d) {
         return d.name;
       }), _data.fromDate, _data.toDate).then(function (d) {
-        var _iteratorNormalCompletion3 = true;
-        var _didIteratorError3 = false;
-        var _iteratorError3 = undefined;
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
 
         try {
-          for (var _iterator3 = d[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var entry = _step3.value;
-            var _iteratorNormalCompletion4 = true;
-            var _didIteratorError4 = false;
-            var _iteratorError4 = undefined;
+          for (var _iterator4 = d[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var entry = _step4.value;
+            var _iteratorNormalCompletion5 = true;
+            var _didIteratorError5 = false;
+            var _iteratorError5 = undefined;
 
             try {
-              for (var _iterator4 = detectors[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-                var detector = _step4.value;
+              for (var _iterator5 = detectors[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+                var detector = _step5.value;
 
                 if (detector.name == entry.name) {
                   detector.data = entry.rows;
@@ -138,31 +184,31 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
                 }
               }
             } catch (err) {
-              _didIteratorError4 = true;
-              _iteratorError4 = err;
+              _didIteratorError5 = true;
+              _iteratorError5 = err;
             } finally {
               try {
-                if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-                  _iterator4['return']();
+                if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+                  _iterator5['return']();
                 }
               } finally {
-                if (_didIteratorError4) {
-                  throw _iteratorError4;
+                if (_didIteratorError5) {
+                  throw _iteratorError5;
                 }
               }
             }
           }
         } catch (err) {
-          _didIteratorError3 = true;
-          _iteratorError3 = err;
+          _didIteratorError4 = true;
+          _iteratorError4 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-              _iterator3['return']();
+            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+              _iterator4['return']();
             }
           } finally {
-            if (_didIteratorError3) {
-              throw _iteratorError3;
+            if (_didIteratorError4) {
+              throw _iteratorError4;
             }
           }
         }
@@ -173,50 +219,11 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
       });
     }
 
-    function binData(items) {
-      var f = _d3.time.day.ceil(_data.fromDate),
-          t = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
-          range = _d3.time.day.range(f, t),
-          scale = _d3.time.scale().domain([f, t]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
-
-      var bins = range.map(function (day) {
-        return { x: day, value: 0, items: [] };
-      });
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
-
-      try {
-        for (var _iterator5 = items[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var item = _step5.value;
-
-          var i = scale(item.date);
-          bins[i].value++;
-          bins[i].items.push(item);
-        }
-      } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-            _iterator5['return']();
-          }
-        } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
-          }
-        }
-      }
-
-      return [{ label: 'data', color: 'black', values: bins }];
-    }
-
     function selectionChanged() {
-      var from = _d3.time.day.ceil(_data.fromDate),
-          to = _d3.time.day.offset(_d3.time.day.ceil(_data.toDate), 1),
-          range = _d3.time.day.range(from, to),
-          scale = _d3.time.scale().domain([from, to]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
+      var from = _d32['default'].time.day.ceil(_data.fromDate),
+          to = _d32['default'].time.day.offset(_d32['default'].time.day.ceil(_data.toDate), 1),
+          range = _d32['default'].time.day.range(from, to),
+          scale = _d32['default'].time.scale().domain([from, to]).rangeRound([0, Math.max(range.length, MIN_Y)]); // hack: rangeRound still give fraction if range is 0-1
 
       var selectedSeries = [];
 
@@ -225,16 +232,15 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
       var _iteratorError6 = undefined;
 
       try {
-        for (var _iterator6 = _selection.tags()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+        for (var _iterator6 = _selection.selected()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
           var tag = _step6.value;
 
-          var bins = histogram(tag.items, range, scale);
           selectedSeries.push({
             label: tag.concept.label,
             color: tag.color,
             type: 'line',
             marker: 'solid',
-            values: bins
+            values: histogram(tag.items, range, scale)
           });
         }
       } catch (err) {
@@ -260,13 +266,12 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
         for (var _iterator7 = _selection.excluded()[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
           var tag = _step7.value;
 
-          var bins = histogram(tag.items, range, scale);
           selectedSeries.push({
             label: tag.concept.label,
             color: tag.color,
             type: 'line',
             marker: 'dash',
-            values: bins
+            values: histogram(tag.items, range, scale)
           });
         }
       } catch (err) {
@@ -291,26 +296,29 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
       //  values: histogram(selection.selectedItems(), range)
       //});
 
-      selectedChart.data(selectedSeries);
+      //selectedChart.data(selectedSeries);
+
+      selectedSeries.push(summaryData[0]);
+      summaryChart.data(selectedSeries);
     }
 
     function selectPathogen(name, show) {
       if (show) {
-        var div = _d3.select('#pathogens-charts').append('div').attr('id', 'chart-' + name);
-        var c = (0, _componentsChart)().el(div).title(name);
+        var div = _d32['default'].select('#pathogens-charts').append('div').attr('id', 'chart-' + name);
+        var c = (0, _chart['default'])().el(div).title(name);
         pathogens.set(name, c);
         updatePathogens(name);
       } else {
-        _d3.select('#pathogens-charts').select('#chart-' + name).remove();
+        _d32['default'].select('#pathogens-charts').select('#chart-' + name).remove();
         pathogens['delete'](name);
       }
     }
 
     function updatePathogens(names) {
-      var from = _d3.time.day.offset(_d3.time.month.offset(_data.toDate, -_config.pathogens_duration), 1);
+      var from = _d32['default'].time.day.offset(_d32['default'].time.month.offset(_data.toDate, -_config.pathogens_duration), 1);
       var to = _data.toDate;
-      var range = _d3.time.day.range(from, to);
-      var scale = _d3.time.scale().domain([from, to]).rangeRound([0, range.length - 1]);
+      var range = _d32['default'].time.day.range(from, to);
+      var scale = _d32['default'].time.scale().domain([from, to]).rangeRound([0, range.length - 1]);
 
       _data.fetch('pathogens', [names], from, _data.toDate).then(function (d) {
         var _iteratorNormalCompletion8 = true;
@@ -573,8 +581,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
             name = _step14$value[0];
             c = _step14$value[1];
 
-            var w = parseInt(_d3.select(name).style('width'));
-            var _h = parseInt(_d3.select(name).style('height'));
+            var w = parseInt(_d32['default'].select(name).style('width'));
+            var _h = parseInt(_d32['default'].select(name).style('height'));
             c.resize([w, _h]);
           }
         } catch (err) {
@@ -603,8 +611,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
             name = _step15$value[0];
             c = _step15$value[1];
 
-            var w = parseInt(_d3.select('#chart-' + name).style('width'));
-            var _h2 = parseInt(_d3.select('#chart-' + name).style('height'));
+            var w = parseInt(_d32['default'].select('#chart-' + name).style('width'));
+            var _h2 = parseInt(_d32['default'].select('#chart-' + name).style('height'));
             c.resize([w, _h2]);
           }
         } catch (err) {
@@ -622,12 +630,14 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
           }
         }
 
-        var h = parseInt(_d3.select('#info-area').style('height')) - parseInt(_d3.select('#pathogens').style('height'));
-        _d3.select('#pathogens-charts').style('max-height', h + 'px');
+        var h = parseInt(_d32['default'].select('#info-area').style('height')) - parseInt(_d32['default'].select('#pathogens').style('height'));
+        _d32['default'].select('#pathogens-charts').style('max-height', h + 'px');
         return this;
       }
     };
   };
 });
+
+//['#selected-chart', selectedChart],
 
 //# sourceMappingURL=info-charts.js.map

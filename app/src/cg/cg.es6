@@ -228,7 +228,7 @@ export default function() {
       let tag, state = new Map();
       let changed = [];
 
-      for (tag of selection.tags()) { state.set(tag, 'selected'); }
+      for (tag of selection.selected()) { state.set(tag, 'selected'); }
       for (tag of selection.excluded()) { state.set(tag, 'excluded');}
 
       prevVisible = null;
@@ -300,7 +300,7 @@ export default function() {
 
 
     function relayout(iter) {
-      selection.tags().forEach(function(tag) {
+      selection.selected().forEach(function(tag) {
         partialLayout.add(tag); });
 
       iter = iter || 0;
@@ -780,7 +780,7 @@ export default function() {
         }
       }
 
-      let nodes = data.tags.map(function(d) {
+      let nodes = data.selected.map(function(d) {
         let node = current.get(d.id);
         if (node) return node;
         return {
