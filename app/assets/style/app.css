@@ -25,11 +25,14 @@ table {
     max-height: 110px;
     height: 100%;
     font: 9pt sans-serif; }
+    table tbody text:hover {
+      background-color: lightgray; }
 
 .tableColHeader {
   text-align: left; }
-  .tableColHeader .numeric {
-    text-align: right; }
+
+.numeric {
+  text-align: right; }
 
 .tableColHeader:after {
   position: absolute;
@@ -66,7 +69,7 @@ table {
   stroke-opacity: 0.5; }
 .chart path.line {
   fill: none;
-  stroke-width: px; }
+  stroke-width: 1px; }
 .chart rect.pane {
   cursor: move;
   fill: none;
@@ -127,6 +130,28 @@ table {
     fill: lightsteelblue; }
   .bar text {
     fill: black; }
+
+/* histogram */
+.selector {
+  height: 150px; }
+  .selector .bar {
+    fill: steelblue;
+    shape-rendering: crispEdges; }
+  .selector .bar text {
+    fill: #fff; }
+  .selector .axis text {
+    font: 8px sans-serif; }
+  .selector .axis path, .selector .axis line {
+    fill: none;
+    stroke: #333;
+    shape-rendering: crispEdges; }
+  .selector .brush .extent {
+    fill: #ddd;
+    fill-opacity: 0.2;
+    stroke: #888;
+    stroke-width: 1px;
+    /*fill-opacity: .25;*/
+    shape-rendering: crispEdges; }
 
 .x-panel {
   width: auto;

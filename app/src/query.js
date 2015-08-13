@@ -1,4 +1,4 @@
-define(['exports', 'd3', './data'], function (exports, _d3, _data) {
+define(['exports', 'd3', 'lockr', './data'], function (exports, _d3, _lockr, _data) {
   /**
    * Created by yarden on 7/13/15.
    */
@@ -10,24 +10,36 @@ define(['exports', 'd3', './data'], function (exports, _d3, _data) {
   });
   exports.init = init;
 
-  var dateFormat = _d3.time.format('%Y-%m-%d');
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _d32 = _interopRequireDefault(_d3);
+
+  var _Lockr = _interopRequireDefault(_lockr);
+
+  var dateFormat = _d32['default'].time.format('%Y-%m-%d');
 
   function submit() {
-    var date = _d3.select('#date').property('value');
-    var duration = _d3.select('#duration').property('value');
+    var date = _d32['default'].select('#date').property('value');
+    var duration = _d32['default'].select('#duration').property('value');
+
+    _Lockr['default'].set('query.date', date);
+    _Lockr['default'].set('query.duration', duration);
 
     _data.fetchAssociations({
-      from: dateFormat(_d3.time.day.offset(_d3.time.week.offset(dateFormat.parse(date), -duration), 1)),
+      from: dateFormat(_d32['default'].time.day.offset(_d32['default'].time.week.offset(dateFormat.parse(date), -duration), 1)),
       to: date
     });
   }
 
   function init() {
-    _d3.select('#submit').on('click', submit);
+    _d32['default'].select('#submit').on('click', submit);
 
     // default dates
-    _d3.select('#date').property('value', '2007-12-14');
-    _d3.select('#duration').property('value', '1');
+    var date = _Lockr['default'].get('query.date', '2007-12-14');
+    var duration = _Lockr['default'].get('query.duration', 1);
+    var context = _Lockr['default'].get('query.context', 4);
+    _d32['default'].select('#date').property('value', date);
+    _d32['default'].select('#duration').property('value', duration);
   }
 });
 

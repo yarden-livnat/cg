@@ -10,16 +10,15 @@ import table from '../components/table';
 import bar from '../components/bar';
 
 export default function(opt) {
+  let post = postal.channel('events');
   let selection;
   let bars = bar();
-  let post = postal.channel('events');
+
+  let catFilter = GroupFilter('category');
+  let sysFilter = GroupFilter('system');
 
   let tagsTable = table('#details-tables', 'tags-table').header([
     {name: 'name', title: 'Concept', cellAttr: r => r.attr && r.attr.name},
-    //{name: 'category', title: 'Cat'},
-    //{name: 'system', title: 'Sys'},
-    //{name: 'act', attr: 'numeric'},
-    //{name: 'num', title: 'N', attr: 'numeric'},
     {name: 'encounters', render: bars}
   ]).on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
     .on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); })
@@ -30,13 +29,17 @@ export default function(opt) {
 
   let catTable = table('#details-tables', 'cat-table').header([
     {name: 'category'},
-    {name: 'encounters'}
-  ]);
+    {name: 'n', title: '#tags', attr:'numeric'}
+  ]).on('click', function(d) {
+    catFilter.change(d.value);
+  });
 
   let sysTable = table('#details-tables', 'sys-table').header([
     {name: 'system'},
-    {name: 'encounters'}
-  ]);
+    {name: 'n', title: '#tags', attr:'numeric'}
+  ]).on('click', function(d) {
+      sysFilter.change(d.value);
+    });
 
   function init() {
     postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
@@ -49,11 +52,6 @@ export default function(opt) {
     tagsTable.data(data.selected.map(tag => {
       return {
         name: tag.concept.label,
-        //category: tag.concept.category,
-        //system: tag.concept.system,
-        //act:  tag.items.length,
-        //num: tag.items.length,
-        //num: tag.items.length,
         encounters: tag.items.length,
         tag: tag,
         attr: {}
@@ -68,7 +66,7 @@ export default function(opt) {
     }
     let categories = [];
     for (entry of cat.entries()) {
-      categories.push({category: entry[0], encounters: entry[1]});
+      categories.push({category: entry[0], n: entry[1]});
     }
     catTable.data(categories);
 
@@ -80,7 +78,7 @@ export default function(opt) {
     }
     let systems = [];
     for (entry of sys.entries()) {
-      systems.push({system: entry[0], encounters: entry[1]});
+      systems.push({system: entry[0], n: entry[1]});
     }
     sysTable.data(systems);
 
@@ -124,14 +122,14 @@ export default function(opt) {
 
     let cat = [];
     for (entry of categories.entries()) {
-      cat.push({category: entry[0], encounters: entry[1]});
+      cat.push({category: entry[0], n: entry[1]});
     }
     catTable.data(cat);
 
 
     let sys = [];
     for (entry of systems.entries()) {
-      sys.push({system: entry[0], encounters: entry[1]});
+      sys.push({system: entry[0], n: entry[1]});
     }
     sysTable.data(sys);
   }
@@ -153,6 +151,37 @@ export default function(opt) {
     s.exit().remove();
   }
 
+  function GroupFilter(field) {
+    let dispatch = d3.dispatch('change');
+    let group = new Set();
+
+    let f = function(tag) {
+      return group.size == 0 || group.has(tag.concept[field]);
+    };
+
+    f.add = function(item) {
+      group.add(item);
+      dispatch.change();
+    };
+
+    f.remove = function(item) {
+      if (group.delete(item))
+        dispatch.change();
+    };
+
+    f.change = function(item) {
+      if (!group.delete(item))
+        group.add(item);
+      dispatch.change();
+    };
+
+    f.on = function(type, cb) {
+      dispatch.on(type, cb);
+    };
+
+    return f;
+  }
+
   return {
     init() {
       init();
@@ -161,6 +190,8 @@ export default function(opt) {
 
     selection(s) {
       selection = s;
+      selection.addTagsFilter(catFilter, 'category', true);
+      selection.addTagsFilter(sysFilter, 'system', true);
       selection.on('changed.info.tables', selectionChanged);
       return this;
     },

@@ -36,13 +36,18 @@ table {
     //  background-color: @alternate_row_background_color;
     //}
     font: 9pt sans-serif;
+
+    text:hover {
+      background-color: lightgray;
+    }
   }
 }
 
 .tableColHeader {
   text-align: left;
-  .numeric { text-align: right}
 }
+
+.numeric { text-align: right}
 
 .tableColHeader:after {
   position: absolute;
@@ -173,5 +178,38 @@ table {
   }
   text {
     fill:black;
+  }
+}
+
+/* histogram */
+.selector {
+  height: 150px;
+
+  .bar {
+    fill: steelblue;
+    shape-rendering: crispEdges;
+  }
+
+  .bar text {
+    fill: #fff;
+  }
+
+  .axis text {
+    font: 8px sans-serif;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke: #333;
+    shape-rendering: crispEdges;
+  }
+
+  .brush .extent {
+    fill:  #ddd;
+    fill-opacity: 0.2;
+    stroke: #888;
+    stroke-width: 1px;
+    /*fill-opacity: .25;*/
+    shape-rendering: crispEdges;
   }
 }

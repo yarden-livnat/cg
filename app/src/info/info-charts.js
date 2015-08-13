@@ -25,8 +25,17 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
 
     var _selection = undefined;
     var summaryData = [];
-    var summaryChart = (0, _chart2['default'])().el('#summary-chart');
+    var summaryChart = (0, _chart2['default'])('#summary-chart');
     //let selectedChart = chart().el('#selected-chart');
+
+    var pathogensTimeFormat = _d32['default'].time.format.multi([['%b %d', function (d) {
+      return d.getDate() != 1;
+    }], ['%B', function (d) {
+      return d.getMonth();
+    }]]);
+    var pathogens_scale = _d32['default'].time.scale().nice(_d32['default'].time.week, 1);
+    pathogens_scale.tickFormat(_d32['default'].format('%b %d'));
+    pathogens_scale.ticks(_d32['default'].time.week, 1);
 
     var charts = new Map([['#summary-chart', summaryChart]]);
 
@@ -305,7 +314,11 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
     function selectPathogen(name, show) {
       if (show) {
         var div = _d32['default'].select('#pathogens-charts').append('div').attr('id', 'chart-' + name);
-        var c = (0, _chart['default'])().el(div).title(name);
+        var x = _d32['default'].time.scale().nice(_d32['default'].time.week, 1);
+        x.tickFormat(_d32['default'].time.format('%m %d'));
+        x.ticks(_d32['default'].time.week, 1);
+        var c = (0, _chart2['default'])(div).title(name).xscale(x);
+
         pathogens.set(name, c);
         updatePathogens(name);
       } else {
@@ -315,10 +328,11 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
     }
 
     function updatePathogens(names) {
-      var from = _d32['default'].time.day.offset(_d32['default'].time.month.offset(_data.toDate, -_config.pathogens_duration), 1);
-      var to = _data.toDate;
-      var range = _d32['default'].time.day.range(from, to);
-      var scale = _d32['default'].time.scale().domain([from, to]).rangeRound([0, range.length - 1]);
+      var from = _d32['default'].time.week(_d32['default'].time.day.offset(_d32['default'].time.month.offset(_data.toDate, -_config.pathogens_duration), 1));
+      var to = _d32['default'].time.week.ceil(_data.toDate);
+      var range = _d32['default'].time.week.range(from, to);
+
+      var start = _d32['default'].time.weekOfYear(from);
 
       _data.fetch('pathogens', [names], from, _data.toDate).then(function (d) {
         var _iteratorNormalCompletion8 = true;
@@ -332,9 +346,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
             var positive = range.map(function (d) {
               return { x: d, value: 0, items: [] };
             });
-            var negative = range.map(function (d) {
-              return { x: d, value: 0, items: [] };
-            });
+            //let negative = range.map(function (d) { return {x: d, value: 0, items: []}; });
 
             var _iteratorNormalCompletion9 = true;
             var _didIteratorError9 = false;
@@ -344,11 +356,13 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
               for (var _iterator9 = entry.rows[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
                 var item = _step9.value;
 
-                item.date = dateFormat.parse(item.date);
-                var i = scale(item.date);
-                var bins = item.positive ? positive : negative;
-                bins[i].value++;
-                bins[i].items.push(item);
+                if (item.positive) {
+                  item.date = dateFormat.parse(item.date);
+                  var i = _d32['default'].time.weekOfYear(item.date) - start;
+                  //let bins = item.positive ? positive : negative;
+                  positive[i].value++;
+                  positive[i].items.push(item);
+                }
               }
             } catch (err) {
               _didIteratorError9 = true;

@@ -16,18 +16,16 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
   var _bar = _interopRequireDefault(_componentsBar);
 
   module.exports = function (opt) {
+    var post = _postal2['default'].channel('events');
     var _selection = undefined;
     var bars = (0, _bar['default'])();
-    var post = _postal2['default'].channel('events');
+
+    var catFilter = GroupFilter('category');
+    var sysFilter = GroupFilter('system');
 
     var tagsTable = (0, _table['default'])('#details-tables', 'tags-table').header([{ name: 'name', title: 'Concept', cellAttr: function cellAttr(r) {
         return r.attr && r.attr.name;
-      } },
-    //{name: 'category', title: 'Cat'},
-    //{name: 'system', title: 'Sys'},
-    //{name: 'act', attr: 'numeric'},
-    //{name: 'num', title: 'N', attr: 'numeric'},
-    { name: 'encounters', render: bars }]).on('mouseover', function (d) {
+      } }, { name: 'encounters', render: bars }]).on('mouseover', function (d) {
       post.publish('tag.highlight', { name: d.value, show: true });
     }).on('mouseout', function (d) {
       post.publish('tag.highlight', { name: d.value, show: false });
@@ -35,9 +33,13 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
       if (_d32['default'].event.shiftKey) _selection.exclude(d.row.tag);else _selection.select(d.row.tag);
     });
 
-    var catTable = (0, _table['default'])('#details-tables', 'cat-table').header([{ name: 'category' }, { name: 'encounters' }]);
+    var catTable = (0, _table['default'])('#details-tables', 'cat-table').header([{ name: 'category' }, { name: 'n', title: '#tags', attr: 'numeric' }]).on('click', function (d) {
+      catFilter.change(d.value);
+    });
 
-    var sysTable = (0, _table['default'])('#details-tables', 'sys-table').header([{ name: 'system' }, { name: 'encounters' }]);
+    var sysTable = (0, _table['default'])('#details-tables', 'sys-table').header([{ name: 'system' }, { name: 'n', title: '#tags', attr: 'numeric' }]).on('click', function (d) {
+      sysFilter.change(d.value);
+    });
 
     function _init() {
       _postal2['default'].subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
@@ -52,11 +54,6 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
       tagsTable.data(_data.selected.map(function (tag) {
         return {
           name: tag.concept.label,
-          //category: tag.concept.category,
-          //system: tag.concept.system,
-          //act:  tag.items.length,
-          //num: tag.items.length,
-          //num: tag.items.length,
           encounters: tag.items.length,
           tag: tag,
           attr: {}
@@ -100,7 +97,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
         for (var _iterator2 = cat.entries()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           entry = _step2.value;
 
-          categories.push({ category: entry[0], encounters: entry[1] });
+          categories.push({ category: entry[0], n: entry[1] });
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -156,7 +153,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
         for (var _iterator4 = sys.entries()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
           entry = _step4.value;
 
-          systems.push({ system: entry[0], encounters: entry[1] });
+          systems.push({ system: entry[0], n: entry[1] });
         }
       } catch (err) {
         _didIteratorError4 = true;
@@ -311,7 +308,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
         for (var _iterator9 = categories.entries()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
           entry = _step9.value;
 
-          cat.push({ category: entry[0], encounters: entry[1] });
+          cat.push({ category: entry[0], n: entry[1] });
         }
       } catch (err) {
         _didIteratorError9 = true;
@@ -339,7 +336,7 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
         for (var _iterator10 = systems.entries()[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
           entry = _step10.value;
 
-          sys.push({ system: entry[0], encounters: entry[1] });
+          sys.push({ system: entry[0], n: entry[1] });
         }
       } catch (err) {
         _didIteratorError10 = true;
@@ -423,6 +420,35 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
       s.exit().remove();
     }
 
+    function GroupFilter(field) {
+      var dispatch = _d32['default'].dispatch('change');
+      var group = new Set();
+
+      var f = function f(tag) {
+        return group.size == 0 || group.has(tag.concept[field]);
+      };
+
+      f.add = function (item) {
+        group.add(item);
+        dispatch.change();
+      };
+
+      f.remove = function (item) {
+        if (group['delete'](item)) dispatch.change();
+      };
+
+      f.change = function (item) {
+        if (!group['delete'](item)) group.add(item);
+        dispatch.change();
+      };
+
+      f.on = function (type, cb) {
+        dispatch.on(type, cb);
+      };
+
+      return f;
+    }
+
     return {
       init: function init() {
         _init();
@@ -431,6 +457,8 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/table', '
 
       selection: function selection(s) {
         _selection = s;
+        _selection.addTagsFilter(catFilter, 'category', true);
+        _selection.addTagsFilter(sysFilter, 'system', true);
         _selection.on('changed.info.tables', selectionChanged);
         return this;
       },

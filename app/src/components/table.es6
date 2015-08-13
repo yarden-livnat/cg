@@ -59,7 +59,7 @@ export default function(container, id) {
         col.title = col.title || capitalize(col.name, '?');
         col.cellValue = col.cellValue || f(col.name);
         col.cellAttr = col.cellAttr || f({});
-        col.attr = col.attr || "tableColHeader";
+        col.attr = col.attr || '';
         col.sortOrder = col.sortOrder || 0;
         col.render = col.render || 'text';
 
@@ -70,7 +70,7 @@ export default function(container, id) {
         .data(columns);
 
       h.enter().append('th')
-        .attr('class', c => c.attr)
+        .attr('class', 'tableColHeader')
         .on('click', onSort);
 
       h.text(c => c.title);
@@ -96,13 +96,11 @@ export default function(container, id) {
         .data(row => columns.map(c => ({ col: c, value: c.cellValue(row), attr: c.cellAttr(row), row:row })));
 
       cells.enter().append('td')
-        //.attr('class', d => d.col.attr)
-        .attr('min-width', d => d.col.minWidth)
+        .attr('class', d => d.col.attr)
+        .attr('width', d => d.col.minWidth)
         .on('click', function(d)  {dispatch.click(d); })
         .on('mouseover', function(d) { dispatch.mouseover(d); })
         .on('mouseout', function(d) { dispatch.mouseout(d); });
-
-      cells.attr('class', d => d.col.cellAttr(d.row));
 
       cells.filter(d => d.col.render == 'text')
         .text( d => d.value)

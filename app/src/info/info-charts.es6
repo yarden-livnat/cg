@@ -19,8 +19,17 @@ export default function(opt) {
 
   let selection;
   let summaryData = [];
-  let summaryChart = chart2().el('#summary-chart');
+  let summaryChart = chart2('#summary-chart');
   //let selectedChart = chart().el('#selected-chart');
+
+  let pathogensTimeFormat = d3.time.format.multi([
+    ["%b %d", function(d) { return d.getDate() != 1; }],
+    ["%B", function(d) { return d.getMonth(); }],
+  ])
+  let pathogens_scale = d3.time.scale()
+    .nice(d3.time.week, 1);
+  pathogens_scale.tickFormat(d3.format('%b %d'));
+  pathogens_scale.ticks(d3.time.week, 1);
 
   let charts = new Map([
     ['#summary-chart', summaryChart],
@@ -163,7 +172,12 @@ export default function(opt) {
     if (show) {
       let div = d3.select('#pathogens-charts').append('div')
         .attr('id', 'chart-'+name);
-      let c = chart().el(div).title(name);
+      let x = d3.time.scale()
+        .nice(d3.time.week, 1);
+      x.tickFormat(d3.time.format('%m %d'));
+      x.ticks(d3.time.week, 1);
+      let c = chart2(div).title(name).xscale(x);
+
       pathogens.set(name, c);
       updatePathogens(name);
     }
@@ -174,25 +188,26 @@ export default function(opt) {
   }
 
   function updatePathogens(names) {
-    let from = d3.time.day.offset(d3.time.month.offset(data.toDate, -pathogens_duration), 1);
-    let to = data.toDate;
-    let range = d3.time.day.range(from, to);
-    let scale = d3.time.scale()
-      .domain([from, to])
-      .rangeRound([0, range.length-1]);
+    let from = d3.time.week(d3.time.day.offset(d3.time.month.offset(data.toDate, -pathogens_duration), 1));
+    let to = d3.time.week.ceil(data.toDate);
+    let range = d3.time.week.range(from, to);
+
+    let start = d3.time.weekOfYear(from);
 
     data.fetch('pathogens', [names], from, data.toDate)
       .then(function(d) {
         for (let entry of d) {
           let positive = range.map(function (d) { return {x: d, value: 0, items: []}; });
-          let negative = range.map(function (d) { return {x: d, value: 0, items: []}; });
+          //let negative = range.map(function (d) { return {x: d, value: 0, items: []}; });
 
-          for (let item of entry.rows) {
-            item.date = dateFormat.parse(item.date);
-            let i = scale(item.date);
-            let bins = item.positive ? positive : negative;
-            bins[i].value++;
-            bins[i].items.push(item);
+          for(let item of entry.rows) {
+            if (item.positive) {
+              item.date = dateFormat.parse(item.date);
+              let i = d3.time.weekOfYear(item.date) - start;
+              //let bins = item.positive ? positive : negative;
+              positive[i].value++;
+              positive[i].items.push(item);
+            }
           }
 
           let series = [

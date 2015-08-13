@@ -13,7 +13,8 @@
       "leaflet": "github:Leaflet/Leaflet@^0.7.3",
       "lodash": "npm:lodash@^3.10.0",
       "mbostock/queue": "github:mbostock/queue@^1.0.7",
-      "postal": "npm:postal@^1.0.6"
+      "postal": "npm:postal@^1.0.6",
+      "tsironis/lockr": "github:tsironis/lockr@^0.8.2"
     },
     "devDependencies": {
       "babel": "npm:babel-core@^5.1.13",

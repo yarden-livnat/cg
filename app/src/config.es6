@@ -2,9 +2,10 @@
  * Created by yarden on 7/3/15.
  */
 
-import * as d3 from 'd3';
+import d3 from 'd3';
 
-export const MAP_DEFAULTS =  {
+
+export let MAP_DEFAULTS =  {
     mapbox: {
       url: "https://a.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={access_token}",
       opt: {
@@ -67,3 +68,5 @@ export let cg = {
     linkDistanceFactor: 100
   }
 }
+
+

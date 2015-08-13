@@ -64,7 +64,7 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
           col.title = col.title || capitalize(col.name, "?");
           col.cellValue = col.cellValue || f(col.name);
           col.cellAttr = col.cellAttr || f({});
-          col.attr = col.attr || "tableColHeader";
+          col.attr = col.attr || "";
           col.sortOrder = col.sortOrder || 0;
           col.render = col.render || "text";
 
@@ -73,9 +73,7 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
 
         var h = thead.selectAll("th").data(columns);
 
-        h.enter().append("th").attr("class", function (c) {
-          return c.attr;
-        }).on("click", onSort);
+        h.enter().append("th").attr("class", "tableColHeader").on("click", onSort);
 
         h.text(function (c) {
           return c.title;
@@ -105,9 +103,9 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
           });
         });
 
-        cells.enter().append("td")
-        //.attr('class', d => d.col.attr)
-        .attr("min-width", function (d) {
+        cells.enter().append("td").attr("class", function (d) {
+          return d.col.attr;
+        }).attr("width", function (d) {
           return d.col.minWidth;
         }).on("click", function (d) {
           dispatch.click(d);
@@ -115,10 +113,6 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
           dispatch.mouseover(d);
         }).on("mouseout", function (d) {
           dispatch.mouseout(d);
-        });
-
-        cells.attr("class", function (d) {
-          return d.col.cellAttr(d.row);
         });
 
         cells.filter(function (d) {

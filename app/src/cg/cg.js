@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', './graph'], function (exports, module, _d3, _postal, _lodash, _data, _config, _graph) {
+define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', './graph', '../components/selector'], function (exports, module, _d3, _postal, _lodash, _data, _config, _graph, _componentsSelector) {
   /**
    * Created by yarden on 12/17/14.
    */
@@ -11,7 +11,11 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
   var _postal2 = _interopRequireDefault(_postal);
 
+  var _2 = _interopRequireDefault(_lodash);
+
   var _Graph = _interopRequireDefault(_graph);
+
+  var _Selector = _interopRequireDefault(_componentsSelector);
 
   var ctrl = _postal2['default'].channel('cg');
 
@@ -29,8 +33,21 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         activeEdges = undefined,
         prevVisible = null,
         partialLayout = new Set(),
-        selection = undefined,
+        nodesRange = [0, 1],
+        edgesRange = [0.7, 1],
+        showEdges = true,
+        _selection = undefined,
         graph = (0, _Graph['default'])();
+
+    var nodesSelector = (0, _Selector['default'])().width(100).height(50).select(nodesRange).on('select', function (r) {
+      nodesRange = r;
+      render(_config.cg.canvas.fastDuration);
+      updateEdgesSelector();
+    });
+
+    var edgesSelector = (0, _Selector['default'])().width(100).height(50).select(edgesRange).on('select', function (r) {
+      edgesRange = r;render(_config.cg.canvas.fastDuration);
+    });
 
     var x = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
 
@@ -47,19 +64,30 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     }
 
     function visibleEdges() {
-      if (_config.cg.canvas.showEdges == 'none') return [];
+      if (!showEdges) return [];
 
-      var all = _config.cg.canvas.showEdges == 'all';
-      var range = _config.cg.canvas.edgeValueSelection;
       return graph.edges.filter(function (edge) {
-        return edge.source.visible && edge.target.visible && (all || selection.isAnySelected(edge.source.tag, edge.target.tag)) && (edge.value >= range[0] && edge.value <= range[1]);
+        return edge.source.visible && edge.target.visible
+        //&& (selection.isAnySelected(edge.source.tag, edge.target.tag))
+         && (edge.value >= edgesRange[0] && edge.value <= edgesRange[1]);
       });
+
+      //if (opt.canvas.showEdges == 'none') return [];
+      //
+      //var all = opt.canvas.showEdges == 'all';
+      ////var range = opt.canvas.edgeValueSelection;
+      //return graph.edges.filter(function (edge) {
+      //  return edge.source.visible && edge.target.visible
+      //    && (all || selection.isAnySelected(edge.source.tag, edge.target.tag))
+      //    && (edge.value >= edgesRange[0] && edge.value <= edgesRange[1]) ;
+      //});
     }
 
     function render(duration) {
+      duration = duration || _config.cg.canvas.duration;
       // mark visible nodes
       graph.nodes.forEach(function (node) {
-        node.visible = node.items.length > 0 || node.excluded;
+        node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1] || node.excluded;
         if (node.excluded) {
           node.scale = node.lastScale;
         }
@@ -177,7 +205,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       //  .duration(opt.canvas.duration)
       //  .style('opacity', d.selected ? 1 : 0);
 
-      selection.select(d.tag, !d.selected);
+      _selection.select(d.tag, !d.selected);
     }
 
     function excludeNode(d) {
@@ -199,7 +227,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       //  .duration(opt.canvas.duration)
       //  .style('opacity', d.excluded ? 1 : 0);
 
-      selection.exclude(d.tag, !d.excluded);
+      _selection.exclude(d.tag, !d.excluded);
     }
 
     function selectionChanged() {
@@ -214,7 +242,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = selection.selected()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = _selection.selected()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           tag = _step.value;
           state.set(tag, 'selected');
         }
@@ -238,7 +266,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = selection.excluded()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (var _iterator2 = _selection.excluded()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           tag = _step2.value;
           state.set(tag, 'excluded');
         }
@@ -274,7 +302,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
             }
           }if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
             if (!node.selected && s == 'selected' && partialLayout['delete'](node.tag)) {
-              prevVisible = _lodash.filter(graph.nodes, function (node) {
+              prevVisible = _2['default'].filter(graph.nodes, function (node) {
                 return node.visible;
               });
             }
@@ -311,13 +339,16 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         return d.selected || d.excluded ? 1 : 0;
       });
 
-      graph.domain = selection.domain;
+      graph.domain = _selection.domain;
 
       if (prevVisible) {
         adjustLayout();
         prevVisible = null;
       }
       render(_config.cg.canvas.duration);
+
+      updateNodesSelector();
+      updateEdgesSelector();
     }
 
     /*
@@ -345,7 +376,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     })();
 
     function relayout(iter) {
-      selection.selected().forEach(function (tag) {
+      _selection.selected().forEach(function (tag) {
         partialLayout.add(tag);
       });
 
@@ -390,17 +421,17 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       clock.mark('force done');
       clock.print();
 
-      _lodash.forEach(graph.nodes, function (n) {
+      _2['default'].forEach(graph.nodes, function (n) {
         n.px = x;n.py = y;
       });
     }
 
     function adjustLayout() {
       console.log('adjust layout');
-      var notFixed = _lodash.filter(prevVisible, function (node) {
+      var notFixed = _2['default'].filter(prevVisible, function (node) {
         return !(node.fixed & 1);
       });
-      _lodash.forEach(notFixed, function (node) {
+      _2['default'].forEach(notFixed, function (node) {
         node.fixed |= 1;
       });
 
@@ -411,10 +442,10 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         }
       });
 
-      var nodes = _lodash.filter(graph.nodes, function (node) {
+      var nodes = _2['default'].filter(graph.nodes, function (node) {
         return node.visible;
       });
-      var edges = _lodash.filter(graph.edges, function (edge) {
+      var edges = _2['default'].filter(graph.edges, function (edge) {
         return edge.source.visible && edge.target.visible;
       });
 
@@ -424,10 +455,10 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
       force.stop();
 
-      _lodash.forEach(notFixed, function (node) {
+      _2['default'].forEach(notFixed, function (node) {
         node.fixed &= ~1;
       });
-      _lodash.forEach(graph.nodes, function (n) {
+      _2['default'].forEach(graph.nodes, function (n) {
         n.px = x;n.py = y;
       });
       updatePosition();
@@ -442,7 +473,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       //console.log('update pos');
 
       if (_config.cg.layout.clampToWindow) {
-        _lodash.forEach(activeNodes, function (node) {
+        _2['default'].forEach(activeNodes, function (node) {
           node.x = clamp(node.x, 0, width - node.w);
           node.y = clamp(node.y, 0, height - node.h);
         });
@@ -460,7 +491,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
           sum = 0,
           zero = 0,
           one = 0;
-      _lodash.each(activeNodes, function (node) {
+      _2['default'].each(activeNodes, function (node) {
         var dx = Math.abs(node.x - node.px);
         var dy = Math.abs(node.y - node.py);
         var speed = Math.sqrt(dx * dx + dy + dy);
@@ -610,7 +641,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         name = name.splice(1);
         pos = false;
       }
-      return _lodash.find(bboxes, function (n) {
+      return _2['default'].find(bboxes, function (n) {
         return n.label == name && n.tag.positive == pos;
       });
     }
@@ -858,62 +889,134 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       }).classed('highlight', item.show);
     }
 
+    function updateNodesSelector() {
+      var values = [];
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = graph.nodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var node = _step5.value;
+
+          if (node.items.length > 0) values.push(node.scale);
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+            _iterator5['return']();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+
+      nodesSelector.data(values);
+    }
+
+    function updateEdgesSelector() {
+      var active = [];
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = graph.edges[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var edge = _step6.value;
+
+          if (edge.source.visible && edge.target.visible) active.push(edge.value);
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+            _iterator6['return']();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
+      }
+
+      edgesSelector.data(active);
+    }
+
     /*
      * API
      */
 
-    var cg = {};
+    return {
 
-    cg.init = function (el) {
-      width = _d32['default'].select(el).attr('width');
-      height = _d32['default'].select(el).attr('height');
-      svgContainer = _d32['default'].select(el).classed('cg', true).append('svg');
-      svg = svgContainer.append('g');
+      init: function init(el) {
+        width = _d32['default'].select(el).attr('width');
+        height = _d32['default'].select(el).attr('height');
+        svgContainer = _d32['default'].select(el).classed('cg', true).append('svg');
+        svg = svgContainer.append('g');
 
-      // transparent bg to catch pan/zoom mouse actions
-      svg.append('rect').attr('class', 'overlay').attr('width', width).attr('height', height);
+        // transparent bg to catch pan/zoom mouse actions
+        svg.append('rect').attr('class', 'overlay').attr('width', width).attr('height', Math.max(0, height - edgesSelector.height() - 10));
 
-      svgLinks = svg.append('g').attr('class', 'links');
-      svgNodes = svg.append('g').attr('class', 'nodes');
+        svgLinks = svg.append('g').attr('class', 'links');
+        svgNodes = svg.append('g').attr('class', 'nodes');
 
-      force.on('tick', updatePosition).on('end', forceDone);
+        var g = svgContainer.append('g').attr('class', 'cgSelectors');
 
-      addListeners();
-      return this;
-    };
+        nodesSelector(g.append('g').attr('class', 'nodesSelector'));
 
-    cg.resize = function (size) {
-      force.stop();
+        g.append('text').attr('transform', 'translate(20,' + (nodesSelector.height() + 5) + ')').text('nodes');
 
-      width = size[0];
-      height = size[1];
+        edgesSelector(g.append('g').attr('class', 'edgesSelector').attr('transform', 'translate(' + (nodesSelector.width() + 10) + ',0)'));
 
-      svgContainer.attr('width', width).attr('height', height);
-      force.size([width, height]);
+        g.append('text').attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) + ',' + (nodesSelector.height() + 5) + ')').text('edges').on('click', function () {
+          showEdges = !showEdges;render();
+        });
 
-      x.domain([0, width]).range([0, width]);
+        force.on('tick', updatePosition).on('end', forceDone);
 
-      y.domain([0, height]).range([0, height]);
+        addListeners();
+        return this;
+      },
 
-      zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
-      svg.call(zoom);
+      resize: function resize(size) {
+        force.stop();
 
-      svg.select('.overlay').attr('width', width).attr('height', height);
+        width = size[0];
+        height = size[1];
 
-      if (graph) {
-        relayout();
-        render(_config.cg.canvas.fastDuration);
+        svgContainer.attr('width', width).attr('height', height);
+        force.size([width, height]);
+
+        x.domain([0, width]).range([0, width]);
+        y.domain([0, height]).range([0, height]);
+
+        zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
+        svg.call(zoom);
+
+        svg.select('.overlay').attr('width', width).attr('height', height);
+
+        if (graph) {
+          relayout();
+          render(_config.cg.canvas.fastDuration);
+        }
+
+        svgContainer.select('.cgSelectors').attr('transform', 'translate(10,' + (height - nodesSelector.height() - 15) + ')');
+
+        return this;
+      },
+
+      selection: function selection(s) {
+        _selection = s;
+        _selection.on('changed.cg', selectionChanged);
       }
-
-      return this;
     };
-
-    cg.selection = function (s) {
-      selection = s;
-      selection.on('changed.cg', selectionChanged);
-    };
-
-    return cg;
   };
 });
 

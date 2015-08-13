@@ -38,6 +38,7 @@ System.config({
     "mbostock/queue": "github:mbostock/queue@1.0.7",
     "postal": "npm:postal@1.0.6",
     "queue": "github:mbostock/queue@1.0.7",
+    "lockr": "github:tsironis/lockr@0.8.2",
     "github:jspm/nodelibs-process@0.1.1": {
       "process": "npm:process@0.10.1"
     },

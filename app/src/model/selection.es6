@@ -97,6 +97,7 @@ function release_color(tag) {
 
     let excluded = new Set();
     let filters = new Map();
+    let tagFilters = new Map();
 
     let tags = new Set();
 
@@ -146,14 +147,22 @@ function release_color(tag) {
       recompute();
     }
 
+    function useTag(tag) {
+      for (let f of tagFilters.values()) {
+        if (!f(tag)) return false;
+      }
+      return true;
+    }
 
     function recompute(silent) {
       domain = filteredDomain;
       tags.forEach(function (tag) {
-        domain = intersect(domain, tag.items);
+        if (useTag(tag))
+          domain = intersect(domain, tag.items);
       });
       excluded.forEach(function (tag) {
-        domain = excludeItems(domain, tag.items);
+        if (useTag(tag))
+          domain = excludeItems(domain, tag.items);
       });
 
       if (!silent)
@@ -240,16 +249,31 @@ function release_color(tag) {
 
       addFilter(filter, key) {
         filters.set(key, filter);
-        filter.on('change', () => filterDomain());
+        filter.on('change.selection', () => filterDomain());
         filterDomain();
       },
 
       removeFilter(key) {
         let filter = filters.get(key);
         if (!filter) return;
-        filter.off('change');
+        filter.off('change.selection');
         filters.delete(key);
         filterDomain();
+      },
+
+      addTagsFilter(filter, key, silence) {
+        tagFilters.set(key, filter);
+        filter.on('change.selection', () => {recompute(); });
+        recompute(silence);
+      },
+
+      removeTagsFilter(key) {
+        let filter = tagFilters.get(key);
+        if (!filter) return;
+
+        filter.off('change.selection');
+        tagFilters.delete(key);
+        recompute();
       },
 
       select(tag, op) {
@@ -268,10 +292,14 @@ function release_color(tag) {
       },
 
       isAnySelected() {
-        return _.some(arguments, function (tag) {
-            if (tags.has(tag)) return true;
-          }, this
-        );
+        for (let tag of arguments) {
+          if (tags.has(tag)) return true;
+        }
+        return false;
+        //return _.some(arguments, function (tag) {
+        //    if (tags.has(tag)) return true;
+        //  }, this
+        //);
       },
 
       on(type, listener) {
