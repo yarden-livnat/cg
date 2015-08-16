@@ -75,13 +75,13 @@ def load_meta():
                 conn.execute('insert into encounter values (?, ?, ?, ?)',
                             (row[id_idx], row[date_idx][:10], row[age_idx], row[zipcode_idx]))
 
-                for i, p in enumerate(row[5:-1]):
+                for i, p in enumerate(row[5:-1], 1000):
                     if p == '0':
                         enc_pat.append((row[id_idx], i, False))
                     elif p == '1':
                         enc_pat.append((row[id_idx], i, True))
 
-    conn.executemany('insert into pathogen_info values (?, ?)', enumerate(pathogens))
+    conn.executemany('insert into pathogen_info values (?, ?)', enumerate(pathogens, 1000))
     conn.executemany('insert into pathogens values (?, ?, ?)', enc_pat)
 
 
@@ -119,19 +119,20 @@ def init():
                 id integer primary key,
                 category text,
                 name text,
-                details text,
+                flavor text,
                 system text
             )
            """)
 
-        conn.executemany('insert into kb (id, category, name, details, system) values(?, ?, ?, ?, ?)', tags)
+        conn.executemany('insert into kb (id, category, name, flavor, system) values(?, ?, ?, ?, ?)', tags)
 
         # pathogens
         conn.execute('drop table if exists pathogen_info')
         conn.execute("""
             create table pathogen_info (
                 id integer primary key,
-                name text
+                name text,
+                label text
             )
             """)
 
@@ -174,11 +175,14 @@ def init():
 
         # encounters
         conn.execute('drop table if exists encounter')
-        conn.execute('create table encounter ('
-                    ' id integer primary key,'
-                    ' date date,'
-                    ' age integer,'
-                    ' zipcode text)')
+        conn.execute("""
+            create table encounter (
+                id integer primary key,
+                date date,
+                age integer,
+                zipcode text
+            )
+            """)
 
 # *** Main ***
 if len(argv) == 1:

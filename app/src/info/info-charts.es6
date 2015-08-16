@@ -25,7 +25,8 @@ export default function(opt) {
   let pathogensTimeFormat = d3.time.format.multi([
     ["%b %d", function(d) { return d.getDate() != 1; }],
     ["%B", function(d) { return d.getMonth(); }],
-  ])
+  ]);
+
   let pathogens_scale = d3.time.scale()
     .nice(d3.time.week, 1);
   pathogens_scale.tickFormat(d3.format('%b %d'));
@@ -80,10 +81,13 @@ export default function(opt) {
       .append('div')
       .attr('id', d => 'detector-'+d.name);
 
+    detectors = new Map();
     for (let d of data.detectors) {
-      let c = chart().el('#detector-'+d.name).title(d.name).scale(d3.scale.linear());
-      let detector = { name: d.name, chart: c, data:[] };
-      detectors.push(detector);
+      detectors.set(d.name, {
+        name:  d.name,
+        chart: chart2('#detector-' + d.name).title(d.name).xscale(d3.scale.linear()),
+        data:  []
+      });
     }
   }
 
@@ -107,15 +111,15 @@ export default function(opt) {
 
     for (let name of pathogens.keys()) { updatePathogens(name); }
 
-    data.fetch('detectors', detectors.map(d => d.name), data.fromDate, data.toDate)
-      .then( d => {
-        for (let entry of d) {
-          for (let detector of detectors) {
-            if (detector.name == entry.name) {
-              detector.data = entry.rows;
-              //detector.data.sort( d => d.id );
-              break;
-            }
+    let names = [];
+    for (let d of detectors.values()) names.push(d.name);
+    data.fetch('detectors',names, data.fromDate, data.toDate)
+      .then( list => {
+        for (let d of list) {
+          let detector = detectors.get(d.name);
+          detector.data = new Map();
+          for (let r of d.rows) {
+            detector.data.set(r.id, r);
           }
         }
         updateDetectors();
@@ -166,6 +170,8 @@ export default function(opt) {
 
     selectedSeries.push(summaryData[0]);
     summaryChart.data(selectedSeries);
+
+    updateDetectors();
   }
 
   function selectPathogen(name, show) {
@@ -234,32 +240,30 @@ export default function(opt) {
   }
 
   function updateDetectors() {
-    let domain = selection.domain; // check that it is sorted by id
-    let n = domain.length;
 
-    for (let detector of detectors) {
+    for (let detector of detectors.values()) {
       let prob = [], similar = [];
-      let i = 0;
+
       for (let j=0; j<100; j++) {
         prob.push({x: j/100, value: 0, items:[]});
         similar.push({x: j/100, value: 0, items: []});
       }
 
-      let found = 0;
-      for (let entry of detector.data) {
-        while (i < n && domain[i].id < entry.id) i++;
-        if (i == n) break;
-        if (domain[i].id == entry.id) {
-          found++;
-          let p = prob[Math.min(Math.floor(entry.prob*100), 99)];
-          p.value++;
-          p.items.push(entry);
+      if (detector.data.size > 0) {
+        for(let e of selection.domain) {
+          let entry = detector.data.get(e.id);
+          if (entry == undefined || entry == null) {
+            console.log('[Detector] missing prob', e.id);
+          } else {
+            let p = prob[Math.min(Math.floor(entry.prob * 100), 99)];
+            p.value++;
+            p.items.push(entry);
 
-          let s = similar[Math.min(Math.floor(entry.similar*100), 99)];
-          s.value ++;
-          s.items.push(entry);
+            let s = similar[Math.min(Math.floor(entry.similar * 100), 99)];
+            s.value++;
+            s.items.push(entry);
+          }
 
-          i++;
         }
       }
 
