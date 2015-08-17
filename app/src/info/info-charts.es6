@@ -8,7 +8,7 @@ import postal from 'postal'
 import {pathogens_duration} from '../config'
 import * as data from '../data'
 import chart from '../components/chart'
-import chart2 from '../components/chart2'
+import chart3 from '../components/chart3'
 
 
 export default function(opt) {
@@ -19,7 +19,7 @@ export default function(opt) {
 
   let selection;
   let summaryData = [];
-  let summaryChart = chart2('#summary-chart');
+  let summaryChart = chart3('#summary-chart', true);
   //let selectedChart = chart().el('#selected-chart');
 
   let pathogensTimeFormat = d3.time.format.multi([
@@ -85,7 +85,7 @@ export default function(opt) {
     for (let d of data.detectors) {
       detectors.set(d.name, {
         name:  d.name,
-        chart: chart2('#detector-' + d.name).title(d.name).xscale(d3.scale.linear()),
+        chart: chart3('#detector-' + d.name).title(d.name).xscale(d3.scale.linear().domain([0.5, 1])),
         data:  []
       });
     }
@@ -182,7 +182,7 @@ export default function(opt) {
         .nice(d3.time.week, 1);
       x.tickFormat(d3.time.format('%m %d'));
       x.ticks(d3.time.week, 1);
-      let c = chart2(div).title(name).xscale(x);
+      let c = chart3(div).title(name).xscale(x);
 
       pathogens.set(name, c);
       updatePathogens(name);
@@ -198,7 +198,8 @@ export default function(opt) {
     let to = d3.time.week.ceil(data.toDate);
     let range = d3.time.week.range(from, to);
 
-    let start = d3.time.weekOfYear(from);
+    let from_week = d3.time.weekOfYear(from);
+    let from_year = from.getFullYear();
 
     data.fetch('pathogens', [names], from, data.toDate)
       .then(function(d) {
@@ -209,7 +210,7 @@ export default function(opt) {
           for(let item of entry.rows) {
             if (item.positive) {
               item.date = dateFormat.parse(item.date);
-              let i = d3.time.weekOfYear(item.date) - start;
+              let i = d3.time.weekOfYear(item.date) + (item.date.getFullYear() - from_year)*52 - from_week;
               //let bins = item.positive ? positive : negative;
               positive[i].value++;
               positive[i].items.push(item);
@@ -222,6 +223,7 @@ export default function(opt) {
               color: 'red',
               type: 'line',
               marker: 'solid',
+              interpolate: 'step-after',
               values: positive
               //}
               //{
@@ -244,9 +246,10 @@ export default function(opt) {
     for (let detector of detectors.values()) {
       let prob = [], similar = [];
 
-      for (let j=0; j<100; j++) {
-        prob.push({x: j/100, value: 0, items:[]});
-        similar.push({x: j/100, value: 0, items: []});
+      let scale = d3.scale.linear().domain([0.5, 1]). rangeRound([0, 19]).clamp(true); // .ticks(5);
+      for (let j=0; j<20; j++) {
+        prob.push({x: 0.5 + j/40, value: 0, items:[]});
+        similar.push({x: 0.5 + j/40, value: 0, items: []});
       }
 
       if (detector.data.size > 0) {
@@ -255,32 +258,40 @@ export default function(opt) {
           if (entry == undefined || entry == null) {
             console.log('[Detector] missing prob', e.id);
           } else {
-            let p = prob[Math.min(Math.floor(entry.prob * 100), 99)];
-            p.value++;
-            p.items.push(entry);
+            if (entry.prob > 0.5) {
+              let p = prob[scale(entry.prob)];
+              p.value++;
+              p.items.push(entry);
+            }
 
-            let s = similar[Math.min(Math.floor(entry.similar * 100), 99)];
-            s.value++;
-            s.items.push(entry);
+            if (entry.similar > 0.5) {
+              let s = similar[scale(entry.similar)];
+              s.value++;
+              s.items.push(entry);
+            }
           }
 
         }
       }
 
+      // ignore zero probabilities
       prob[0].value = 0;
       similar[0].value = 0;
+
       let series = [{
         label: 'prob',
-        color: 'black',
+        color: 'red',
         type: 'line',
         marker: 'solid',
+        interpolate: 'step-after',
         values: prob
       },
         {
           label: 'similar',
           color: 'gray',
           type: 'line',
-          marker: 'dash',
+          marker: 'solid',
+          interpolate: 'step-after',
           values: similar
         }];
       detector.chart.data(series);

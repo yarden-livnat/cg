@@ -47,14 +47,16 @@ table {
   text-align: left;
 }
 
-.numeric { text-align: right}
+.numeric {
+  text-align: right;
+}
 
 .tableColHeader:after {
   position: absolute;
   content: "";
   border-left: 1px solid black;
   border-top: 1px solid black;
-  padding: 32x;
+  padding: 3px;
   margin-left: 5px;
   top: 30%;
   display:none;
@@ -211,5 +213,21 @@ table {
     stroke-width: 1px;
     /*fill-opacity: .25;*/
     shape-rendering: crispEdges;
+  }
+}
+
+.chart {
+  width: $chart-width;
+  height: $chart-height;
+  border: 1px solid lightgrey ;
+  padding: 5px;
+  margin: 5px;
+
+  .tick {
+    font-size: 6pt;
+  }
+
+  .title {
+    font-size: 8pt;
   }
 }

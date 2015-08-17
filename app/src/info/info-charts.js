@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../components/chart', '../components/chart2'], function (exports, module, _d3, _postal, _config, _data, _componentsChart, _componentsChart2) {
+define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../components/chart', '../components/chart3'], function (exports, module, _d3, _postal, _config, _data, _componentsChart, _componentsChart3) {
   /**
    * Created by yarden on 8/6/15.
    */
@@ -15,7 +15,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
 
   var _chart = _interopRequireDefault(_componentsChart);
 
-  var _chart2 = _interopRequireDefault(_componentsChart2);
+  var _chart3 = _interopRequireDefault(_componentsChart3);
 
   module.exports = function (opt) {
     var MIN_Y = 5;
@@ -25,7 +25,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
 
     var _selection = undefined;
     var summaryData = [];
-    var summaryChart = (0, _chart2['default'])('#summary-chart');
+    var summaryChart = (0, _chart3['default'])('#summary-chart', true);
     //let selectedChart = chart().el('#selected-chart');
 
     var pathogensTimeFormat = _d32['default'].time.format.multi([['%b %d', function (d) {
@@ -89,7 +89,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
 
           detectors.set(d.name, {
             name: d.name,
-            chart: (0, _chart2['default'])('#detector-' + d.name).title(d.name).xscale(_d32['default'].scale.linear()),
+            chart: (0, _chart3['default'])('#detector-' + d.name).title(d.name).xscale(_d32['default'].scale.linear().domain([0.5, 1])),
             data: []
           });
         }
@@ -345,7 +345,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
         var x = _d32['default'].time.scale().nice(_d32['default'].time.week, 1);
         x.tickFormat(_d32['default'].time.format('%m %d'));
         x.ticks(_d32['default'].time.week, 1);
-        var c = (0, _chart2['default'])(div).title(name).xscale(x);
+        var c = (0, _chart3['default'])(div).title(name).xscale(x);
 
         pathogens.set(name, c);
         updatePathogens(name);
@@ -360,7 +360,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
       var to = _d32['default'].time.week.ceil(_data.toDate);
       var range = _d32['default'].time.week.range(from, to);
 
-      var start = _d32['default'].time.weekOfYear(from);
+      var from_week = _d32['default'].time.weekOfYear(from);
+      var from_year = from.getFullYear();
 
       _data.fetch('pathogens', [names], from, _data.toDate).then(function (d) {
         var _iteratorNormalCompletion9 = true;
@@ -386,7 +387,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
 
                 if (item.positive) {
                   item.date = dateFormat.parse(item.date);
-                  var i = _d32['default'].time.weekOfYear(item.date) - start;
+                  var i = _d32['default'].time.weekOfYear(item.date) + (item.date.getFullYear() - from_year) * 52 - from_week;
                   //let bins = item.positive ? positive : negative;
                   positive[i].value++;
                   positive[i].items.push(item);
@@ -412,6 +413,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
               color: 'red',
               type: 'line',
               marker: 'solid',
+              interpolate: 'step-after',
               values: positive
               //}
               //{
@@ -455,9 +457,10 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
           var prob = [],
               similar = [];
 
-          for (var j = 0; j < 100; j++) {
-            prob.push({ x: j / 100, value: 0, items: [] });
-            similar.push({ x: j / 100, value: 0, items: [] });
+          var scale = _d32['default'].scale.linear().domain([0.5, 1]).rangeRound([0, 19]).clamp(true); // .ticks(5);
+          for (var j = 0; j < 20; j++) {
+            prob.push({ x: 0.5 + j / 40, value: 0, items: [] });
+            similar.push({ x: 0.5 + j / 40, value: 0, items: [] });
           }
 
           if (detector.data.size > 0) {
@@ -473,13 +476,17 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
                 if (entry == undefined || entry == null) {
                   console.log('[Detector] missing prob', e.id);
                 } else {
-                  var p = prob[Math.min(Math.floor(entry.prob * 100), 99)];
-                  p.value++;
-                  p.items.push(entry);
+                  if (entry.prob > 0.5) {
+                    var p = prob[scale(entry.prob)];
+                    p.value++;
+                    p.items.push(entry);
+                  }
 
-                  var s = similar[Math.min(Math.floor(entry.similar * 100), 99)];
-                  s.value++;
-                  s.items.push(entry);
+                  if (entry.similar > 0.5) {
+                    var s = similar[scale(entry.similar)];
+                    s.value++;
+                    s.items.push(entry);
+                  }
                 }
               }
             } catch (err) {
@@ -498,19 +505,23 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../data', '../compone
             }
           }
 
+          // ignore zero probabilities
           prob[0].value = 0;
           similar[0].value = 0;
+
           var series = [{
             label: 'prob',
-            color: 'black',
+            color: 'red',
             type: 'line',
             marker: 'solid',
+            interpolate: 'step-after',
             values: prob
           }, {
             label: 'similar',
             color: 'gray',
             type: 'line',
-            marker: 'dash',
+            marker: 'solid',
+            interpolate: 'step-after',
             values: similar
           }];
           detector.chart.data(series);
