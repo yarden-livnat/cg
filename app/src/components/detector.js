@@ -43,7 +43,9 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         svg.select('g.x.axis').call(xAxis);
         svg.select('g.y.axis').call(yAxis);
 
-        var columns = svg.select('.data').selectAll('.col').data(d.data).enter().append('g').attr('class', 'col').attr('transform', function (d) {
+        var columns = svg.select('.data').selectAll('.col').data(d.data);
+
+        columns.enter().append('g').attr('class', 'col').attr('transform', function (d) {
           return 'translate(' + x(d.x) + ',0)';
         });
 
@@ -59,7 +61,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
           return color[i];
         });
 
-        bars.transition().attr('y', function (d) {
+        bars.transition().duration(300).attr('y', function (d) {
           return y(d.y1);
         }).attr('height', function (d) {
           return y(d.y0) - y(d.y1);

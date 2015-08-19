@@ -19,13 +19,16 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/detector'
 
     _postal2['default'].subscribe({ channel: 'data', topic: 'changed', callback: dataChanged });
 
+    var _selection = undefined;
     var detector = (0, _Detector['default'])();
     var detectorsData = [];
     var range = _d32['default'].range(0.5, 1, 0.5 / N_BINS);
 
-    var enter = _d32['default'].select('#detectors').selectAll('div').data(_data.detectors).enter().append('div').attr('id', function (d) {
-      return 'detector-' + d.name;
-    }).attr('class', 'detector').call(detector.build);
+    function _init() {
+      _d32['default'].select('#detectors').selectAll('div').data(_data.detectors).enter().append('div').attr('id', function (d) {
+        return 'detector-' + d.name;
+      }).attr('class', 'detector').call(detector.build);
+    }
 
     function dataChanged() {
       _data.fetch('detectors', _data.detectors.map(function (d) {
@@ -39,6 +42,8 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/detector'
     }
 
     function update() {
+      var domain = _selection.domainMap;
+
       var list = [];
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
@@ -60,11 +65,13 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/detector'
             for (var _iterator2 = d.rows[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
               var r = _step2.value;
 
-              if (r.prob > 0.5) {
-                hist[Math.min(Math.floor((r.prob - 0.5) / 0.5 * N_BINS), N_BINS - 1)].p++;
-              }
-              if (r.similar > 0.5) {
-                hist[Math.min(Math.floor((r.similar - 0.5) / 0.5 * N_BINS), N_BINS - 1)].s++;
+              if (domain.has(r.id)) {
+                if (r.prob > 0.5) {
+                  hist[Math.min(Math.floor((r.prob - 0.5) / 0.5 * N_BINS), N_BINS - 1)].p++;
+                }
+                if (r.similar > 0.5) {
+                  hist[Math.min(Math.floor((r.similar - 0.5) / 0.5 * N_BINS), N_BINS - 1)].s++;
+                }
               }
             }
           } catch (err) {
@@ -99,10 +106,21 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/detector'
         }
       }
 
+      console.log('detectors:', list);
       detector(_d32['default'].select('#detectors').selectAll('.detector').data(list));
     }
 
-    var api = function api() {};
+    return {
+      init: function init() {
+        _init();
+      },
+
+      selection: function selection(s) {
+        _selection = s;
+        _selection.on('changed.info.detectors', update);
+        return this;
+      }
+    };
   };
 });
 

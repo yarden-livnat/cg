@@ -91,9 +91,10 @@ function release_color(tag) {
   }
 
   export default function() {
-    let initialDomain = undefined;
-    let filteredDomain = undefined;
+    let initialDomain = [];
+    let filteredDomain = [];
     let domain = [];
+    let domainMap = new Map();
 
     let excluded = new Set();
     let filters = new Map();
@@ -165,6 +166,9 @@ function release_color(tag) {
           domain = excludeItems(domain, tag.items);
       });
 
+      domainMap = new Map();
+      for (let d of domain) domainMap.set(d.id, d);
+
       if (!silent)
         dispatch.changed();
     }
@@ -194,15 +198,10 @@ function release_color(tag) {
       recompute(true);
     }
 
-    function check(domain, msg) {
-      for(let i = 0; i < domain.length; i++)
-        if (domain[i] == undefined) console.log(msg, 'at', i);
-    }
-
     /*
      * API
      */
-    let selection = {
+    return  {
       get domain() { return domain; },
 
       set domain(list) {
@@ -210,6 +209,8 @@ function release_color(tag) {
         clear(false);
         //recompute(true);
       },
+
+      get domainMap() { return domainMap; },
 
       reset(newDomain, currentTags) {
         reset(newDomain, currentTags);
@@ -307,6 +308,4 @@ function release_color(tag) {
         return this;
       }
     };
-
-    return selection;
   }

@@ -50,7 +50,9 @@ export default function(options) {
       svg.select('g.y.axis').call(yAxis);
 
       let columns = svg.select('.data').selectAll('.col')
-        .data(d.data)
+        .data(d.data);
+
+      columns
         .enter().append('g')
           .attr('class', 'col')
           .attr('transform', d => 'translate(' + x(d.x) + ',0)');
@@ -67,6 +69,7 @@ export default function(options) {
         .attr('fill', (d, i) => color[i]);
 
       bars.transition()
+        .duration(300)
         .attr('y', d => y(d.y1))
         .attr('height', d => y(d.y0) - y(d.y1));
     });

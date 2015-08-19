@@ -120,9 +120,10 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
   }
 
   module.exports = function () {
-    var initialDomain = undefined;
-    var filteredDomain = undefined;
+    var initialDomain = [];
+    var filteredDomain = [];
     var domain = [];
+    var domainMap = new Map();
 
     var _excluded = new Set();
     var filters = new Map();
@@ -259,23 +260,15 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         if (useTag(tag)) domain = excludeItems(domain, tag.items);
       });
 
-      if (!silent) dispatch.changed();
-    }
-
-    function _reset(newDomain, newTags) {
-      var tag = undefined;
-      var prevTags = tags;
-      var prevExcluded = _excluded;
-      var current = new Set();
-
+      domainMap = new Map();
       var _iteratorNormalCompletion4 = true;
       var _didIteratorError4 = false;
       var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator4 = newTags[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          tag = _step4.value;
-          current.add(tag.concept.label);
+        for (var _iterator4 = domain[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var d = _step4.value;
+          domainMap.set(d.id, d);
         }
       } catch (err) {
         _didIteratorError4 = true;
@@ -292,18 +285,23 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         }
       }
 
-      tags = new Set();
-      _excluded = new Set();
+      if (!silent) dispatch.changed();
+    }
+
+    function _reset(newDomain, newTags) {
+      var tag = undefined;
+      var prevTags = tags;
+      var prevExcluded = _excluded;
+      var current = new Set();
 
       var _iteratorNormalCompletion5 = true;
       var _didIteratorError5 = false;
       var _iteratorError5 = undefined;
 
       try {
-        for (var _iterator5 = prevTags[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        for (var _iterator5 = newTags[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
           tag = _step5.value;
-
-          if (current.has(tag.concept.label)) tags.add(tag);else release_color(tag);
+          current.add(tag.concept.label);
         }
       } catch (err) {
         _didIteratorError5 = true;
@@ -320,15 +318,18 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         }
       }
 
+      tags = new Set();
+      _excluded = new Set();
+
       var _iteratorNormalCompletion6 = true;
       var _didIteratorError6 = false;
       var _iteratorError6 = undefined;
 
       try {
-        for (var _iterator6 = prevExcluded[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+        for (var _iterator6 = prevTags[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
           tag = _step6.value;
 
-          if (current.has(tag.concept.label)) _excluded.add(tag);else release_color(tag);
+          if (current.has(tag.concept.label)) tags.add(tag);else release_color(tag);
         }
       } catch (err) {
         _didIteratorError6 = true;
@@ -345,20 +346,39 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         }
       }
 
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
+
+      try {
+        for (var _iterator7 = prevExcluded[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          tag = _step7.value;
+
+          if (current.has(tag.concept.label)) _excluded.add(tag);else release_color(tag);
+        }
+      } catch (err) {
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion7 && _iterator7['return']) {
+            _iterator7['return']();
+          }
+        } finally {
+          if (_didIteratorError7) {
+            throw _iteratorError7;
+          }
+        }
+      }
+
       filteredDomain = initialDomain = newDomain;
       recompute(true);
-    }
-
-    function check(domain, msg) {
-      for (var i = 0; i < domain.length; i++) {
-        if (domain[i] == undefined) console.log(msg, 'at', i);
-      }
     }
 
     /*
      * API
      */
-    var selection = Object.defineProperties({
+    return Object.defineProperties({
 
       reset: function reset(newDomain, currentTags) {
         _reset(newDomain, currentTags);
@@ -444,27 +464,27 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       },
 
       isAnySelected: function isAnySelected() {
-        var _iteratorNormalCompletion7 = true;
-        var _didIteratorError7 = false;
-        var _iteratorError7 = undefined;
+        var _iteratorNormalCompletion8 = true;
+        var _didIteratorError8 = false;
+        var _iteratorError8 = undefined;
 
         try {
-          for (var _iterator7 = arguments[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-            var tag = _step7.value;
+          for (var _iterator8 = arguments[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+            var tag = _step8.value;
 
             if (tags.has(tag)) return true;
           }
         } catch (err) {
-          _didIteratorError7 = true;
-          _iteratorError7 = err;
+          _didIteratorError8 = true;
+          _iteratorError8 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion7 && _iterator7['return']) {
-              _iterator7['return']();
+            if (!_iteratorNormalCompletion8 && _iterator8['return']) {
+              _iterator8['return']();
             }
           } finally {
-            if (_didIteratorError7) {
-              throw _iteratorError7;
+            if (_didIteratorError8) {
+              throw _iteratorError8;
             }
           }
         }
@@ -492,10 +512,15 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         },
         configurable: true,
         enumerable: true
+      },
+      domainMap: {
+        get: function () {
+          return domainMap;
+        },
+        configurable: true,
+        enumerable: true
       }
     });
-
-    return selection;
   };
 });
 

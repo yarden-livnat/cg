@@ -13,19 +13,20 @@ define(['exports', 'module', './info-tables', './info-charts', './info-detectors
 
     var tables = (0, _infoTables)();
     var charts = (0, _infoCharts)();
-    var detectors = undefined;
+    var detectors = (0, _Detectors['default'])();
 
     return {
       init: function init() {
         tables.init();
         charts.init();
-        detectors = (0, _Detectors['default'])();
+        detectors.init();
         return this;
       },
 
       selection: function selection(s) {
         tables.selection(s);
         charts.selection(s);
+        detectors.selection(s);
         return this;
       },
 

@@ -11,19 +11,20 @@ export default function () {
 
   let tables = Tables();
   let charts = Charts();
-  let detectors;
+  let detectors = Detectors();
 
   return {
     init() {
       tables.init();
       charts.init();
-      detectors = Detectors();
+      detectors.init();
       return this;
     },
 
     selection(s) {
       tables.selection(s);
       charts.selection(s);
+      detectors.selection(s);
       return this;
     },
 

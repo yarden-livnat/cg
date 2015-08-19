@@ -14,21 +14,20 @@ export default function() {
 
   postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
 
+  let selection;
   let detector = Detector();
   let detectorsData = [];
   let range = d3.range(0.5, 1, 0.5/N_BINS);
 
-
-
-
-  let enter = d3.select('#detectors').selectAll('div')
-    .data(data.detectors)
-    .enter()
-      .append('div')
-      .attr('id', d => 'detector-'+d.name)
-      .attr('class', 'detector')
-      .call(detector.build);
-
+  function init() {
+    d3.select('#detectors').selectAll('div')
+      .data(data.detectors)
+      .enter()
+        .append('div')
+        .attr('id', d => 'detector-'+d.name)
+        .attr('class', 'detector')
+        .call(detector.build);
+  }
 
   function dataChanged() {
     data.fetch('detectors',data.detectors.map(d => d.name), data.fromDate, data.toDate)
@@ -40,24 +39,36 @@ export default function() {
   }
 
   function update() {
+    let domain = selection.domainMap;
+
     let list = [];
     for (let d of detectorsData) {
       let hist = range.map(d => ({x: d, p: 0, s: 0}));
 
       for(let r of d.rows) {
-        if (r.prob > 0.5) {
-          hist[Math.min(Math.floor((r.prob - 0.5) / 0.5 * N_BINS), N_BINS - 1)].p++;
-        }
-        if (r.similar > 0.5) {
-          hist[Math.min(Math.floor((r.similar - 0.5) / 0.5 * N_BINS), N_BINS - 1)].s++;
+        if (domain.has(r.id)) {
+          if (r.prob > 0.5) {
+            hist[Math.min(Math.floor((r.prob - 0.5) / 0.5 * N_BINS), N_BINS - 1)].p++;
+          }
+          if (r.similar > 0.5) {
+            hist[Math.min(Math.floor((r.similar - 0.5) / 0.5 * N_BINS), N_BINS - 1)].s++;
+          }
         }
       }
       list.push( {id: d.name, data: hist} );
     }
 
+    console.log('detectors:', list);
     detector(d3.select('#detectors').selectAll('.detector').data(list));
   }
 
-  let api = function() {
+  return {
+    init() { init(); },
+
+    selection(s) {
+      selection = s;
+      selection.on('changed.info.detectors', update);
+      return this;
+    }
   }
 }
