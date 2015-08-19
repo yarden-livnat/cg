@@ -18,20 +18,20 @@ define(['exports', 'module', './info-tables', './info-charts', './info-detectors
     return {
       init: function init() {
         tables.init();
-        //charts.init();
+        charts.init();
         detectors = (0, _Detectors['default'])();
         return this;
       },
 
       selection: function selection(s) {
         tables.selection(s);
-        //charts.selection(s);
+        charts.selection(s);
         return this;
       },
 
       resize: function resize() {
         tables.resize();
-        //charts.resize();
+        charts.resize();
       }
     };
   };

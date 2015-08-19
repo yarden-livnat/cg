@@ -15,7 +15,7 @@ body {
 }
 
 #title {
-  font: bold 16pt Georgia; /* Arial; */
+  font: bold 14pt Georgia; /* Arial; */
   margin: 10px 0 10px 0;
 }
 
@@ -69,10 +69,29 @@ body {
 }
 
 #charts-area {
+  //display: inline-block;
+  //width: $info-width/2-5;
+  width: auto;
+  height: $chart-height+20;
+  margin-top: 18px;
+}
+
+#detectors-area {
   display: inline-block;
   width: $info-width/2-5;
   height: auto;
-  margin-top: 18px;
+  vertical-align: top;
+
+  #detectors-label {
+    //height: 24px;
+    margin: 5px 5px 10px 5px;
+  }
+
+  #detectors {
+    width: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 }
 
 #pathogens-area {

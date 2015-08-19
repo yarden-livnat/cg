@@ -37,18 +37,19 @@
     <div id="charts-area">
         <div id="summary-chart"></div>
         <div id="selected-chart"></div>
-
-        <!--<div id="detectors-charts">-->
-        <div id="detectors">
-            <label>Detectors</label>
-        </div>
     </div>
+
+    <div id="detectors-area">
+        <div id="detectors-label">Detectors</div>
+        <div id="detectors"></div>
+    </div>
+
     <div id="pathogens-area">
-        <div id="pathogens" class="dropdown-check-list" tabindex="100">
-          <span class="anchor">Pathogens</span>
+        <div id="pathogens-selection" class="dropdown-check-list" tabindex="100">
+            <span class="anchor">Pathogens</span>
           <ul id="items" class="items"></ul>
         </div>
-      <div id="pathogens-charts"></div>
+      <div id="pathogens"></div>
     </div>
 </div>
 
@@ -57,11 +58,11 @@
     <div id="map"></div>
 </div>
 
-<!--<script data-main="src/init" src="lib/requirejs/require.js"></script>-->
 <script src="jspm_packages/system.js"></script>
 <script src="config.js"></script>
 <script>
     System.import('src/app')
 </script>
+
 </body>
 </html>

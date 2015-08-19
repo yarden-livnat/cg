@@ -34,11 +34,12 @@ System.config({
     "formatter.js": "github:firstopinion/formatter.js@0.1.5",
     "jquery": "github:components/jquery@2.1.4",
     "leaflet": "github:Leaflet/Leaflet@0.7.3",
-    "lodash": "npm:lodash@3.10.0",
+    "lockr": "github:tsironis/lockr@0.8.2",
+    "lodash": "npm:lodash@3.10.1",
     "mbostock/queue": "github:mbostock/queue@1.0.7",
     "postal": "npm:postal@1.0.6",
     "queue": "github:mbostock/queue@1.0.7",
-    "lockr": "github:tsironis/lockr@0.8.2",
+    "tsironis/lockr": "github:tsironis/lockr@0.8.2",
     "github:jspm/nodelibs-process@0.1.1": {
       "process": "npm:process@0.10.1"
     },
@@ -56,11 +57,11 @@ System.config({
     "npm:font-awesome@4.4.0": {
       "css": "github:systemjs/plugin-css@0.1.13"
     },
-    "npm:lodash@3.10.0": {
+    "npm:lodash@3.10.1": {
       "process": "github:jspm/nodelibs-process@0.1.1"
     },
     "npm:postal@1.0.6": {
-      "lodash": "npm:lodash@3.10.0"
+      "lodash": "npm:lodash@3.10.1"
     }
   }
 });

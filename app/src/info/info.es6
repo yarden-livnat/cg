@@ -16,20 +16,20 @@ export default function () {
   return {
     init() {
       tables.init();
-      //charts.init();
+      charts.init();
       detectors = Detectors();
       return this;
     },
 
     selection(s) {
       tables.selection(s);
-      //charts.selection(s);
+      charts.selection(s);
       return this;
     },
 
     resize() {
       tables.resize();
-      //charts.resize();
+      charts.resize();
     }
   }
 }

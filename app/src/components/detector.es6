@@ -6,16 +6,16 @@ import d3 from 'd3'
 
 export default function(options) {
 
-  let margin = {top:5, right: 25, bottom: 15, left:5};
+  let margin = {top:5, left: 15, bottom: 20, right:5};
 
-  let width = 200 - margin.right - margin.left;
+  let width = 200 - margin.left - margin.right;
   let height = 100 - margin.top - margin.bottom;
 
   let stack = d3.layout.stack()
     .offset('wiggle')
     .values( d => d.values );
 
-  let color = ['#ff8c00', '#98abc5'];
+  let color = ['#ff8c00', '#e3e3e3'];
 
   let x = d3.scale.linear()
     .domain([0.5, 1])
@@ -27,12 +27,15 @@ export default function(options) {
   let xAxis = d3.svg.axis()
       .scale(x)
       .orient('bottom')
+      .tickSize(2)
       .ticks(5);
 
   let yAxis = d3.svg.axis()
       .scale(y)
       .orient('left')
-      .ticks(3);
+      .tickSize(2)
+      .tickFormat(d3.format(',.0f'))
+      .ticks(2);
 
 
   let detector = function(selection) {
@@ -40,17 +43,17 @@ export default function(options) {
       let num = d.data.length;
       let max = d3.max(d.data, v => v.p + v.s);
       y.domain([0, max]);
+      yAxis.ticks(max > 2 ? 4 : 2);
 
       let svg = d3.select(this).select('g');
+      svg.select('g.x.axis').call(xAxis);
+      svg.select('g.y.axis').call(yAxis);
 
-      svg.select('x.axis').call(xAxis);
-      svg.select('y.axis').call(yAxis);
-
-      let columns = svg.selectAll('.col')
+      let columns = svg.select('.data').selectAll('.col')
         .data(d.data)
         .enter().append('g')
           .attr('class', 'col')
-          .attr('transform', d => 'translate(' + x(d.x) + '0)');
+          .attr('transform', d => 'translate(' + x(d.x) + ',0)');
 
       let bars = columns.selectAll('rect')
         .data(d => [{y0: 0, y1: d.p}, {y0: d.p, y1: d.p + d.s}]);
@@ -58,15 +61,13 @@ export default function(options) {
       bars.enter()
         .append('rect')
         .attr('class', 'bar')
-        //.attr('x', d => x(d.x))
-        .attr('y', d => d.y1)
-        .attr('width', width/num)
+        .attr('y', d => y(d.y1))
+        .attr('width', width/num -1)
         .attr('height', d => y(d.y0) - y(d.y1))
         .attr('fill', (d, i) => color[i]);
 
       bars.transition()
-        .attr('y', d => y(d.y0+ d.y))
-        .attr('y', d => d.y1)
+        .attr('y', d => y(d.y1))
         .attr('height', d => y(d.y0) - y(d.y1));
     });
   };
@@ -75,12 +76,18 @@ export default function(options) {
     width= parseInt(selection.style('width')) - margin.left - margin.right;
     height = parseInt(selection.style('height')) - margin.top - margin.bottom;
 
+    x.range([0, width]);
+    y.range(([height, 0]));
+
     let g = selection
       .append('svg')
         .attr('width', width + margin.left + margin.right)
         .attr('height', height + margin.top + margin.bottom)
         .append('g')
           .attr('transform', 'translate(' + margin.left + ',' + margin.top+ ')');
+
+    g.append('g')
+      .attr('class', 'data');
 
     g.append('text')
         .attr('class', 'title')
@@ -89,17 +96,27 @@ export default function(options) {
         .text(d => d.name);
 
     g.append('g')
+      .attr('legend');
+
+    g.append('g')
       .attr('class', 'x axis')
       .attr('transform', 'translate(0,' + height + ')')
       .call(xAxis)
       .append('text')
-      .attr('dy', '0.7em')
-      .attr('text-anchor', 'end')
-      .text('probability');
+        .attr('x', width)
+        .attr('dy', '2.2em')
+        .attr('text-anchor', 'end')
+        .text('probability');
 
     g.append('g')
       .attr('class', 'y axis')
       .call(yAxis);
+      //.append('text')
+      //  .attr('transform', 'rotate(-90)')
+      //  .attr('y', 6)
+      //  .attr('dy', '-2.7em')
+      //  .attr('text-anchor', 'end')
+      //  .text('encounters');
 
     return this;
   };

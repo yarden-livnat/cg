@@ -10,7 +10,6 @@ import * as data from '../data'
 import chart from '../components/chart'
 import chart3 from '../components/chart3'
 
-
 export default function(opt) {
   const MIN_Y = 5;
   const CHART_MAX_WIDTH = 500;
@@ -39,13 +38,11 @@ export default function(opt) {
 
   let pathogens = new Map();
 
-  let detectors = [];
-
   function init() {
     postal.subscribe({channel: 'data', topic: 'changed', callback: dataChanged});
 
     /* pathogens */
-    let items = d3.select('#pathogens').select("ul").selectAll('li')
+    let items = d3.select('#pathogens-selection').select('ul').selectAll('li')
       .data(data.pathogens)
       .enter()
       .append('li');
@@ -61,8 +58,8 @@ export default function(opt) {
       .text(d => d.name);
 
 
-    let menu = d3.select('#pathogens .items');
-    d3.select('#pathogens').select('.anchor').on('click', function() {
+    let menu = d3.select('#pathogens-selection .items');
+    d3.select('#pathogens-selection').select('.anchor').on('click', function() {
       if (menu.classed('visible')) {
         menu.classed('visible', false).style('display', 'none');
       } else {
@@ -73,22 +70,6 @@ export default function(opt) {
     menu.on('blur', function() {
       menu.classed('visible', false).style('display', 'none');
     });
-
-    /* detectors */
-    d3.select('#detectors-charts').selectAll('div')
-      .data(data.detectors)
-      .enter()
-      .append('div')
-      .attr('id', d => 'detector-'+d.name);
-
-    detectors = new Map();
-    for (let d of data.detectors) {
-      detectors.set(d.name, {
-        name:  d.name,
-        chart: chart3('#detector-' + d.name).title(d.name).xscale(d3.scale.linear().domain([0.5, 1])),
-        data:  []
-      });
-    }
   }
 
   function dataChanged() {
@@ -110,21 +91,6 @@ export default function(opt) {
     summaryChart.data(summaryData);
 
     for (let name of pathogens.keys()) { updatePathogens(name); }
-
-    let names = [];
-    for (let d of detectors.values()) names.push(d.name);
-    data.fetch('detectors',names, data.fromDate, data.toDate)
-      .then( list => {
-        for (let d of list) {
-          let detector = detectors.get(d.name);
-          detector.data = new Map();
-          for (let r of d.rows) {
-            detector.data.set(r.id, r);
-          }
-        }
-        updateDetectors();
-      })
-      .catch( e => { console.error('Detectors error:', e); });
   }
 
   function selectionChanged() {
@@ -170,13 +136,11 @@ export default function(opt) {
 
     selectedSeries.push(summaryData[0]);
     summaryChart.data(selectedSeries);
-
-    updateDetectors();
   }
 
   function selectPathogen(name, show) {
     if (show) {
-      let div = d3.select('#pathogens-charts').append('div')
+      let div = d3.select('#pathogens').append('div')
         .attr('id', 'chart-'+name);
       let x = d3.time.scale()
         .nice(d3.time.week, 1);
@@ -188,7 +152,7 @@ export default function(opt) {
       updatePathogens(name);
     }
     else {
-      d3.select('#pathogens-charts').select('#chart-'+name).remove();
+      d3.select('#pathogens').select('#chart-'+name).remove();
       pathogens.delete(name);
     }
   }
@@ -241,63 +205,6 @@ export default function(opt) {
       });
   }
 
-  function updateDetectors() {
-
-    for (let detector of detectors.values()) {
-      let prob = [], similar = [];
-
-      let scale = d3.scale.linear().domain([0.5, 1]). rangeRound([0, 19]).clamp(true); // .ticks(5);
-      for (let j=0; j<20; j++) {
-        prob.push({x: 0.5 + j/40, value: 0, items:[]});
-        similar.push({x: 0.5 + j/40, value: 0, items: []});
-      }
-
-      if (detector.data.size > 0) {
-        for(let e of selection.domain) {
-          let entry = detector.data.get(e.id);
-          if (entry == undefined || entry == null) {
-            console.log('[Detector] missing prob', e.id);
-          } else {
-            if (entry.prob > 0.5) {
-              let p = prob[scale(entry.prob)];
-              p.value++;
-              p.items.push(entry);
-            }
-
-            if (entry.similar > 0.5) {
-              let s = similar[scale(entry.similar)];
-              s.value++;
-              s.items.push(entry);
-            }
-          }
-
-        }
-      }
-
-      // ignore zero probabilities
-      prob[0].value = 0;
-      similar[0].value = 0;
-
-      let series = [{
-        label: 'prob',
-        color: 'red',
-        type: 'line',
-        marker: 'solid',
-        interpolate: 'step-after',
-        values: prob
-      },
-        {
-          label: 'similar',
-          color: 'gray',
-          type: 'line',
-          marker: 'solid',
-          interpolate: 'step-after',
-          values: similar
-        }];
-      detector.chart.data(series);
-    }
-  }
-
   function toArray(iter) {
     let a = [];
     for (let entry of iter) {
@@ -305,6 +212,7 @@ export default function(opt) {
     }
     return a;
   }
+
   function histogram(items, range, scale) {
     let bins = range.map(function (d) { return {x: d, value: 0, items: []}; });
     for (let item of items) {
@@ -341,8 +249,8 @@ export default function(opt) {
         c.resize([w, h]);
       }
 
-      let h = parseInt(d3.select('#info-area').style('height')) - parseInt(d3.select('#pathogens').style('height'));
-      d3.select('#pathogens-charts').style('max-height', h + 'px');
+      let h = parseInt(d3.select('#pathogens-area').style('height')) - parseInt(d3.select('#pathogens-selection').style('height'));
+      d3.select('#pathogens').style('max-height', h + 'px');
       return this;
     }
   }

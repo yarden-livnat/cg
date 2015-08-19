@@ -169,7 +169,7 @@ table {
   height: 100px;
   border: 1px solid lightgrey;
   padding: 5px;
-  margin: 5px; }
+  margin: 0px; }
   .detector .axis text {
     font: 8px sans-serif; }
   .detector .axis path, .detector .axis line {
@@ -274,7 +274,7 @@ body {
   font: 9pt Arial; }
 
 #title {
-  font: bold 16pt Georgia;
+  font: bold 14pt Georgia;
   /* Arial; */
   margin: 10px 0 10px 0; }
 
@@ -321,10 +321,21 @@ body {
   width: 400px; }
 
 #charts-area {
+  width: auto;
+  height: 120px;
+  margin-top: 18px; }
+
+#detectors-area {
   display: inline-block;
   width: 195px;
   height: auto;
-  margin-top: 18px; }
+  vertical-align: top; }
+  #detectors-area #detectors-label {
+    margin: 5px 5px 10px 5px; }
+  #detectors-area #detectors {
+    width: auto;
+    overflow-x: hidden;
+    overflow-y: auto; }
 
 #pathogens-area {
   display: inline-block;
