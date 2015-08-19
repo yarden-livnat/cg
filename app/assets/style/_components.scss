@@ -231,3 +231,35 @@ table {
     font-size: 8pt;
   }
 }
+
+.detector {
+  width: $chart-width;
+  height: $chart-height;
+  border: 1px solid lightgrey ;
+  padding: 5px;
+  margin: 5px;
+
+  .axis text {
+    font: 8px sans-serif;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke: #333;
+    shape-rendering: crispEdges;
+  }
+
+
+  .tick {
+    font-size: 6pt;
+  }
+
+  .bar {
+    //fill: steelblue;
+    shape-rendering: crispEdges;
+  }
+
+  .title {
+    font-size: 8pt;
+  }
+}

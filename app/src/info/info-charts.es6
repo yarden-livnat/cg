@@ -2,8 +2,8 @@
  * Created by yarden on 8/6/15.
  */
 
-import d3 from 'd3'
-import postal from 'postal'
+import d3 from 'd3';
+import postal from 'postal';
 
 import {pathogens_duration} from '../config'
 import * as data from '../data'
