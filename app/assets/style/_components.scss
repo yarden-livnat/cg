@@ -235,9 +235,9 @@ table {
 .detector {
   width: $chart-width;
   height: $chart-height;
-  border: 1px solid lightgrey ;
+  //border: 1px solid lightgrey ;
   padding: 5px;
-  margin: 0px;
+  margin: 0;
 
   .axis text {
     font: 8px sans-serif;
@@ -249,17 +249,24 @@ table {
     shape-rendering: crispEdges;
   }
 
-
   .tick {
     font-size: 6pt;
   }
 
   .bar {
-    //fill: steelblue;
     shape-rendering: crispEdges;
   }
 
   .title {
     font-size: 8pt;
+  }
+
+  .brush .extent {
+    fill:  #ddd;
+    fill-opacity: 0.2;
+    stroke: #888;
+    stroke-width: 1px;
+    /*fill-opacity: .25;*/
+    shape-rendering: crispEdges;
   }
 }

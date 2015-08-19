@@ -15,12 +15,9 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var width = 200 - margin.left - margin.right;
     var height = 100 - margin.top - margin.bottom;
-
-    var stack = _d32['default'].layout.stack().offset('wiggle').values(function (d) {
-      return d.values;
-    });
-
-    var color = ['#ff8c00', '#e3e3e3'];
+    var color = ['#ff8c00', 'lightsteelblue'];
+    var dispatch = _d32['default'].dispatch('select');
+    var handle = undefined;
 
     var x = _d32['default'].scale.linear().domain([0.5, 1]).range([0, width]);
 
@@ -29,6 +26,10 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     var xAxis = _d32['default'].svg.axis().scale(x).orient('bottom').tickSize(2).ticks(5);
 
     var yAxis = _d32['default'].svg.axis().scale(y).orient('left').tickSize(2).tickFormat(_d32['default'].format(',.0f')).ticks(2);
+
+    var brush = _d32['default'].svg.brush().x(x).extent([0, 0]).on('brush', function () {
+      return dispatch.select(brush.extent());
+    });
 
     var detector = function detector(selection) {
       selection.each(function (d) {
@@ -96,6 +97,10 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       //  .attr('text-anchor', 'end')
       //  .text('encounters');
 
+      handle = g.append('g').attr('class', 'brush').call(brush);
+
+      handle.selectAll('rect').attr('height', height);
+
       return this;
     };
 
@@ -110,6 +115,11 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       if (!arguments.length) return height + margin.top + margin.bottom;
       height = h - margin.top - margin.bottom;
       y.range([height, 0]);
+      return this;
+    };
+
+    detector.on = function (type, listener) {
+      dispatch.on(type, listener);
       return this;
     };
 

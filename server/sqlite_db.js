@@ -125,9 +125,8 @@ function query(req, res, next) {
         res.send(JSON.stringify({enc: enc, associations: associations}));
       });
   });
-
-
 }
+
 
 exports.kb = kb;
 exports.query = query;

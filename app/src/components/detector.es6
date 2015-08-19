@@ -10,12 +10,9 @@ export default function(options) {
 
   let width = 200 - margin.left - margin.right;
   let height = 100 - margin.top - margin.bottom;
-
-  let stack = d3.layout.stack()
-    .offset('wiggle')
-    .values( d => d.values );
-
-  let color = ['#ff8c00', '#e3e3e3'];
+  let color = ['#ff8c00', 'lightsteelblue'];
+  let dispatch = d3.dispatch('select');
+  let handle;
 
   let x = d3.scale.linear()
     .domain([0.5, 1])
@@ -37,6 +34,11 @@ export default function(options) {
       .tickFormat(d3.format(',.0f'))
       .ticks(2);
 
+
+  let brush = d3.svg.brush()
+    .x(x)
+    .extent([0, 0])
+    .on('brush', () => dispatch.select(brush.extent()));
 
   let detector = function(selection) {
     selection.each( function(d) {
@@ -121,6 +123,13 @@ export default function(options) {
       //  .attr('text-anchor', 'end')
       //  .text('encounters');
 
+    handle = g.append('g')
+      .attr('class', 'brush')
+      .call(brush);
+
+    handle.selectAll('rect')
+      .attr('height', height);
+
     return this;
   };
 
@@ -135,6 +144,11 @@ export default function(options) {
     if (!arguments.length) return height + margin.top + margin.bottom;
     height = h - margin.top - margin.bottom;
     y.range([height, 0]);
+    return this;
+  };
+
+  detector.on = function(type, listener) {
+    dispatch.on(type, listener);
     return this;
   };
 
