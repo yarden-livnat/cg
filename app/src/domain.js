@@ -7,7 +7,7 @@ define(["exports", "module"], function (exports, module) {
 
   module.exports = function () {
 
-    var items = undefined;
+    var encounters = undefined;
 
     return {
       update: function update(list) {}

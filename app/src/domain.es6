@@ -5,7 +5,7 @@
 
 export default function() {
 
-  let items;
+  let encounters
 
   return {
     update(list) {
