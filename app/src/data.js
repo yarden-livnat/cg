@@ -23,7 +23,7 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
 
   exports.toDate = toDate;
   var tags = [];
-  exports.selected = tags;
+  exports.tags = tags;
   var domain = [];
   exports.domain = domain;
   var population = new Map();
@@ -74,7 +74,7 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
     startSpinner();
     _d3.json(uri, function (err, data) {
       var prevTagsMap = tagsMap;
-      exports.selected = tags = [];
+      exports.tags = tags = [];
       tagsMap = new Map();
       exports.domain = domain = data.enc;
 
@@ -84,7 +84,7 @@ define(['exports', 'd3', 'queue', 'postal'], function (exports, _d3, _queue, _po
       } else {
 
         data.enc.forEach(function (d) {
-          d.date = dateFormat.parse(d.date);
+          d.date = _d3.time.day.round(dateFormat.parse(d.date));
           items.set(d.id, d);
         });
 

@@ -1,7 +1,7 @@
 {
   "jspm": {
     "directories": {
-      "lib": "src"
+      "lib": "src2"
     },
     "dependencies": {
       "bootstrap": "github:twbs/bootstrap@^3.3.5",

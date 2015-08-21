@@ -1,1 +1,0 @@
-{"version":3,"sources":["domain.es6"],"names":[],"mappings":";;;;;;;mBAKe,YAAW;;AAExB,QAAI,UAAU,YAAA,CAAA;;AAEd,WAAO;AACL,YAAM,EAAA,gBAAC,IAAI,EAAE,EAEZ;KACF,CAAA;GACF","file":"domain.js","sourcesContent":["/**\n * Created by yarden on 8/19/15.\n */\n\n\nexport default function() {\n\n  let encounters\n\n  return {\n    update(list) {\n\n    }\n  }\n}"]}

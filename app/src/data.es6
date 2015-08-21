@@ -75,7 +75,7 @@ export function fetchAssociations(params) {
 
 
       data.enc.forEach(d  => {
-        d.date = dateFormat.parse(d.date);
+        d.date = d3.time.day.round(dateFormat.parse(d.date));
         items.set(d.id, d);
       });
 

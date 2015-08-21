@@ -122,7 +122,7 @@ function query(req, res, next) {
     association_stmt.all(query.from, query.to,
       function(err, rows) {
         associations = rows;
-        res.send(JSON.stringify({enc: enc, associations: associations}));
+        res.send(JSON.stringify({from: query.from, to: query.to, enc: enc, associations: associations}));
       });
   });
 }
