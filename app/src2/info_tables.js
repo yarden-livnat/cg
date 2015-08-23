@@ -98,6 +98,8 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
         return selected.has(v);
       });
       _patients.update(dimension);
+
+      // todo: should this be done in patients.update?
       _postal.publish({ channel: 'global', topic: 'render' });
     });
 

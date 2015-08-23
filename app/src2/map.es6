@@ -4,9 +4,12 @@
 
 import d3 from 'd3';
 import queue from 'queue';
+import postal from 'postal';
 import * as L from 'leaflet';
 
 import {MAP_DEFAULTS} from './config';
+import * as patients from './patients';
+
 
 export default function (opt) {
 
@@ -32,8 +35,13 @@ export default function (opt) {
   let active = new Map();
   let current = new Map();
   let svg, svgContainer;
+
+  let dirty = false;
+  let dimension = patients.enc_zipcode;
+  let features;
+
+
   let selectedZipcodes = new Set();
-  let selectionFilter = Filter();
 
   //let options = Object.assign({}, MAP_DEFAULTS, opt);
   let options = MAP_DEFAULTS;
@@ -43,6 +51,9 @@ export default function (opt) {
 
   let transform = d3.geo.transform({point: projectPoint});
   let path = d3.geo.path().projection(transform);
+
+
+  postal.subscribe({channel: 'global', topic: 'render', callback: render});
 
   /* Initialize the SVG layer */
   map._initPathRoot();
@@ -61,18 +72,20 @@ export default function (opt) {
           pop.forEach(function(d) { population.set(d.zipcode, +d.population);});
 
           // zipcodes
-          collection.features.forEach(d => {
-            zipcodes.set(d.properties.Zip_Code, d);
-            d.state = {n: 0, boundary_color: BOUNDARY_NON_ACTIVE_COLOR, boundary_width: BOUNDARY_NON_ACTIVE_WIDTH};
+          features = collection.features;
+          features.forEach(f => {
+            f.population = population.get(f.properties.Zip_Code) || 0;
+            f.pop_factor = f.population && POPULATION_FACTOR/f.population || 0;
+            f.active = 0;
           });
 
           let feature = svg.selectAll("path")
-            .data(collection.features, function(d) { return d.properties.Zip_Code;})
+            .data(features, function(d) { return d.properties.Zip_Code;})
             .enter()
             .append("path")
-              .on('mouseenter', d => { showInfo(d.properties.Zip_Code, true); })
-              .on('mouseout', d => { showInfo(d.properties.Zip_Code, false); })
-              .on('click', d => { selectZipcode(d.properties.Zip_Code, d3.event.metaKey);});
+              .on('mouseenter', d => { showInfo(d, true); })
+              .on('mouseout', d => { showInfo(d, false); })
+              .on('click', selectZipcode);
 
           function update() {
             feature.attr("d", path);
@@ -85,57 +98,42 @@ export default function (opt) {
       });
   }
 
-  function showInfo(zipcode, show) {
-    let cases = current.get(zipcode);
-    if (show && cases) {
-      let rate = format(cases * POPULATION_FACTOR/population.get(zipcode));
-      d3.select('#map-info').text(`Zipcode: ${zipcode} cases:${cases}  rate:${rate}`);
+  function showInfo(d, show) {
+    if (show) {
+      d3.select('#map-info').text(`Zipcode: ${d.properties.Zip_Code} cases:${d.active}  rate:${format(d.rate)}`);
     } else {
       d3.select('#map-info').text('');
     }
-
-    let feature = zipcodes.get(zipcode);
-    feature.state.highlight = show;
-    feature.state.boundary_width = show && cases ? BOUNDARY_HIGHLIGHT_WIDTH : cases ? BOUNDARY_ACTIVE_WIDTH : BOUNDARY_NON_ACTIVE_WIDTH;
-
-    svg.selectAll('path').filter( d => { return d.properties.Zip_Code == zipcode;})
-      .style('stroke-width', feature.state.boundary_width);
   }
 
-  function selectZipcode(zipcode, append) {
+  function selectZipcode(d) {
     d3.event.preventDefault();
 
-    let updated = new Set();
+    let zipcode = d.properties.Zip_Code;
     let active = selectedZipcodes.has(zipcode);
-    if (append) {
-      if (active) selectedZipcodes.delete(zipcode);
-      else  selectedZipcodes.add(zipcode);
+    let add = false;
 
-      update(zipcode, !active);
-    } else {
-      for (let z of selectedZipcodes) {
-        update(z, false);
-      }
+    if (!d3.event.metaKey) {
       selectedZipcodes.clear();
-      if (!active) {
-        selectedZipcodes.add(zipcode);
-        update(zipcode, true);
-      }
+      add = !active;
+    } else {
+      add  = !selectedZipcodes.delete(zipcode);
     }
 
-    svg.selectAll('path').filter( d => updated.has(d.properties.Zip_Code) )
-      .style('stroke', d => d.state.boundary_color );
-
-    selectionFilter.domain(selectedZipcodes);
-
-    function update(zipcode, on) {
-      let feature = zipcodes.get(zipcode);
-      feature.state.selected = on;
-      feature.state.boundary_color = on ? BOUNDARY_SELECTED_COLOR :
-        feature.n > 0 ? BOUNDARY_ACTIVE_COLOR :
-          BOUNDARY_NON_ACTIVE_COLOR;
-      updated.add(zipcode);
+    if (add) {
+      selectedZipcodes.add(zipcode);
     }
+
+    svg.selectAll("path").data(features)
+      .classed('selected', d => selectedZipcodes.has(d.properties.Zip_Code) );
+
+    if (selectedZipcodes.size > 0)
+      dimension.filter( d => selectedZipcodes.has(d));
+    else
+      dimension.filterAll();
+
+    patients.update(dimension);
+    postal.publish({channel: 'global', topic: 'render'});
   }
 
   function projectPoint(x, y) {
@@ -143,73 +141,37 @@ export default function (opt) {
     this.stream.point(point.x, point.y);
   }
 
-  function assignColor(zipcode, n) {
-    let f =  Math.min(n * POPULATION_FACTOR/population.get(zipcode), 1);
-    return colorScale(f);
-  }
 
-  function selectionChanged() {
-    current = new Map();
-    selection.domain.forEach(enc => {
-      if (population.has(enc.zipcode)) {
-        let count = current.get(enc.zipcode) || 0;
-        current.set(enc.zipcode, count+1);
+  function render() {
+    if (dirty) dirty = false;
+    else {
+      let active = new Map();
+      for(let z of dimension.group().top(Infinity)) {
+        active.set(z.key, z.value);
       }
-    });
 
-    let update = [];
-    current.forEach((n, zipcode) => {
-      let feature = zipcodes.get(zipcode);
-      if (feature) {
-        feature.state.alpha = AREA_ALPHA;
-        feature.state.color = assignColor(zipcode, n);
-        feature.state.active = true;
-        feature.state.boundary_width = BOUNDARY_ACTIVE_WIDTH;
-        feature.state.boundary_color = feature.state.selected ? BOUNDARY_SELECTED_COLOR : BOUNDARY_ACTIVE_COLOR;
-        update.push(feature);
+      let list = [];
+      for(let f of features) {
+        f.active = active.get(f.properties.Zip_Code) || 0;
+        f.rate = f.active * f.pop_factor;
+        if (f.active) list.push(f);
       }
-    });
-    active.forEach((n, zipcode) => {
-      if (!current.has(zipcode)) {
-        let feature = zipcodes.get(zipcode);
-        feature.state.color = '#fff';
-        feature.state.alpha = 0;
-        feature.state.active = false;
-        feature.state.boundary_width = BOUNDARY_NON_ACTIVE_WIDTH;
-        update.push(feature);
-      }
-    });
 
-    let s = svg.selectAll('path')
-      .data(update, d => {return d.properties.Zip_Code;})
-      .transition()
-      .duration(DURATION)
-      .style('fill-opacity', d => { return d.state.alpha})
-      .style('fill', d => { return d.state.color})
-      .style('stroke', d => { return d.state.boundary_color; })
-      .style('stroke-width', d => { return d.state.boundary_width; });
+      let paths = svg.selectAll("path")
+        .data(list, function (d) { return d.properties.Zip_Code;});
 
-    active = current;
-  }
+      paths
+        .transition()
+        .duration(DURATION)
+        .style('fill-opacity', d => AREA_ALPHA )
+        .style('fill', function (d) { return colorScale(Math.min(d.rate, 1)); });
 
-  function Filter() {
-    let dispatch = d3.dispatch('change');
-    let items;
-
-    let f = function(list) {
-      return !items || items.size == 0 ? list: list.filter( item => items.has(item.zipcode));
-    };
-
-    f.domain = function(d) {
-      items = d;
-      dispatch.change();
-    };
-
-    f.on = function(type, cb) {
-      dispatch.on(type, cb);
-    };
-
-    return f;
+      paths.exit()
+        .transition()
+        .duration(DURATION)
+          .style('fill-opacity', 0)
+          .style('fill', '#fff');
+    }
   }
 
   return {

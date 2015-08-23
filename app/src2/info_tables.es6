@@ -82,6 +82,8 @@ function Table(div) {
       else
         dimension.filter( v => selected.has(v) );
       patients.update(dimension);
+
+      // todo: should this be done in patients.update?
       postal.publish({channel: 'global', topic: 'render'});
     });
 

@@ -43,7 +43,7 @@ function updateData(err, data) {
       relations: data.associations
     });
 
-    // todo: reset filters
+    // todo: reapply filters
     postal.publish({channel: 'global', topic: 'render'});
   }
 }

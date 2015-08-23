@@ -384,11 +384,14 @@ body {
   border: solid gray 1px; }
   #map path {
     fill: #fff;
-    fill-opacity: 0;
+    fill-opacity: 1;
     stroke: #ccc;
-    stroke-width: 0px; }
+    stroke-width: 1px; }
   #map path:hover {
     stroke-width: 1.5px;
     stroke: #000; }
+  #map path.selected {
+    stroke-width: 2px;
+    stroke: green; }
 
 /*# sourceMappingURL=app.css.map */

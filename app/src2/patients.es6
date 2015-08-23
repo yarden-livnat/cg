@@ -63,19 +63,18 @@ export function addDetector(name) {
 
 export function update(dimension) {
   if (dimension.name === 'encounters') {
-    let currentEncounters = enc_eid.top(Infinity);
+    let currentEncounters = collect(enc_eid, 'id');
 
-    for (let detector of detectors.values()) detector.eid.filter(currentEncounters);
+    //for (let detector of detectors.values()) detector.eid.filter(currentEncounters);
 
-    rel_eid.filter(currentEncounters);
+    rel_eid_p.filter( e => currentEncounters.has(e));
 
-    let currentTopics = rel_tid.top(Infinity);
-    topics_tid.filter(currentTopics);
+    let currentTopics = collect(rel_tid_p, 'tag_id');
+    topics_tid.filter( t => currentTopics.has(t) );
 
     updateTags();
   } else if (dimension.name == 'topics') {
     let currentTopics = collect(topics_tid, 'id');
-    git
     rel_tid_p.filter( t => currentTopics.has(t) );
 
     let currentEncounters = collect(rel_eid_p, 'enc_id');

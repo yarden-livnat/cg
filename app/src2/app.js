@@ -42,7 +42,7 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
         relations: data.associations
       });
 
-      // todo: reset filters
+      // todo: reapply filters
       _postal2['default'].publish({ channel: 'global', topic: 'render' });
     }
   }
