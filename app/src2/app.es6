@@ -23,6 +23,7 @@ queue()
     else {
       patients.init(service.topics);
       query.init(updateData);
+      infoTables.init();
     }
   });
 

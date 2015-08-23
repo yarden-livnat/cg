@@ -27,6 +27,7 @@ System.config({
     "bootstrap": "github:twbs/bootstrap@3.3.5",
     "bootstrap-multiselect": "github:davidstutz/bootstrap-multiselect@0.9.13",
     "core-js": "npm:core-js@0.9.18",
+    "crossfilter": "github:square/crossfilter@1.3.12",
     "d3": "github:mbostock/d3@3.5.6",
     "davidstutz/bootstrap-multiselect": "github:davidstutz/bootstrap-multiselect@0.9.13",
     "firstopinion/formatter.js": "github:firstopinion/formatter.js@0.1.5",
@@ -39,7 +40,8 @@ System.config({
     "mbostock/queue": "github:mbostock/queue@1.0.7",
     "postal": "npm:postal@1.0.6",
     "queue": "github:mbostock/queue@1.0.7",
-    "crossfilter": "github:square/crossfilter@1.3.12",
+    "square/crossfilter": "github:square/crossfilter@1.3.12",
+    "tsironis/lockr": "github:tsironis/lockr@0.8.2",
     "github:jspm/nodelibs-process@0.1.1": {
       "process": "npm:process@0.10.1"
     },

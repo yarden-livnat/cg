@@ -12,13 +12,15 @@ export default function(container, id) {
 
   container = container instanceof Array && container || d3.select(container);
 
-  let table = container.append('table').attr('id', id),
+  let table = container.append('table'),
       thead = table.append('thead').append('tr'),
       tbody = table.append('tbody'),
       dispatch = d3.dispatch('click', 'mouseover', 'mouseout'),
       columns,
       sortCol, sortHeader,
       data;
+
+  if (id) { table.attr('id', id);}
 
   function capitalize(str, def = "") {
     return str && str.length > 0 && str[0].toUpperCase() + str.substr(1) || def;
@@ -52,6 +54,10 @@ export default function(container, id) {
   }
 
   return {
+    id(_) {
+      table.attr('id', _);
+    },
+
     header(columnsDef) {
       columnsDef = typeof columnsDef == 'string' && columnsDef.split(',') || columnsDef;
       columns = columnsDef.map( col => {
@@ -98,9 +104,9 @@ export default function(container, id) {
       cells.enter().append('td')
         .attr('class', d => d.col.attr)
         .attr('width', d => d.col.minWidth)
-        .on('click', function(d)  {dispatch.click(d); })
-        .on('mouseover', function(d) { dispatch.mouseover(d); })
-        .on('mouseout', function(d) { dispatch.mouseout(d); });
+        .on('click', function(d)  {dispatch.click.apply(this, arguments); })
+        .on('mouseover', function(d) { dispatch.mouseover.apply(this, arguments); })
+        .on('mouseout', function(d) { dispatch.mouseout.apply(this, arguments); });
 
       cells.filter(d => d.col.render == 'text')
         .text( d => d.value)

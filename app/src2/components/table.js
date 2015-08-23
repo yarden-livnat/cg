@@ -10,7 +10,7 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
 
     container = container instanceof Array && container || _d3.select(container);
 
-    var table = container.append("table").attr("id", id),
+    var table = container.append("table"),
         thead = table.append("thead").append("tr"),
         tbody = table.append("tbody"),
         dispatch = _d3.dispatch("click", "mouseover", "mouseout"),
@@ -18,6 +18,10 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
         sortCol = undefined,
         sortHeader = undefined,
         _data = undefined;
+
+    if (id) {
+      table.attr("id", id);
+    }
 
     function capitalize(str) {
       var def = arguments[1] === undefined ? "" : arguments[1];
@@ -57,6 +61,10 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
     }
 
     return {
+      id: function id(_) {
+        table.attr("id", _);
+      },
+
       header: function header(columnsDef) {
         columnsDef = typeof columnsDef == "string" && columnsDef.split(",") || columnsDef;
         columns = columnsDef.map(function (col) {
@@ -108,11 +116,11 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
         }).attr("width", function (d) {
           return d.col.minWidth;
         }).on("click", function (d) {
-          dispatch.click(d);
+          dispatch.click.apply(this, arguments);
         }).on("mouseover", function (d) {
-          dispatch.mouseover(d);
+          dispatch.mouseover.apply(this, arguments);
         }).on("mouseout", function (d) {
-          dispatch.mouseout(d);
+          dispatch.mouseout.apply(this, arguments);
         });
 
         cells.filter(function (d) {

@@ -22,7 +22,7 @@ function submit() {
 
   Lockr.set('query.date', to);
   Lockr.set('query.duration', duration);
-
+ 
   let from = dateFormat(d3.time.day.offset(d3.time.week.offset(dateFormat.parse(to), -duration), 1));
 
   let url = '/query?from='+from+'&to='+to;

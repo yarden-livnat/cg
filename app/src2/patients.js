@@ -21,69 +21,54 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
   var enc_eid = encounters.dimension(function (d) {
     return d.id;
   });exports.enc_eid = enc_eid;
-  enc_eid.cf = encounters;
+  enc_eid.name = 'encounters';
   var enc_date = encounters.dimension(function (d) {
     return d.date;
   });exports.enc_date = enc_date;
-  enc_date.cf = encounters;
+  enc_date.name = 'encounters';
   var enc_zipcode = encounters.dimension(function (d) {
     return d.zipcode;
   });exports.enc_zipcode = enc_zipcode;
-  enc_zipcode.cf = encounters;
+  enc_zipcode.name = 'encounters';
 
   var topics = (0, _crossfilter2['default'])();
   var topics_tid = topics.dimension(function (d) {
     return d.id;
   });exports.topics_tid = topics_tid;
-  topics_tid.cf = topics;
+  topics_tid.name = 'topics';
   var topics_cat = topics.dimension(function (d) {
     return d.category;
   });exports.topics_cat = topics_cat;
-  topics_cat.cf = topics;
+  topics_cat.name = 'topics';
   var topics_sys = topics.dimension(function (d) {
     return d.system;
   });exports.topics_sys = topics_sys;
-  topics_sys.cf = topics;
+  topics_sys.name = 'topics';
 
   var relations = (0, _crossfilter2['default'])();
-  var rel_eid = relations.dimension(function (r) {
+  var rel_eid_p = relations.dimension(function (r) {
     return r.enc_id;
+  });
+  var rel_tid_p = relations.dimension(function (r) {
+    return r.tag_id;
   });
   var rel_tid = relations.dimension(function (r) {
     return r.tag_id;
-  });
-  var rel_eid_g = rel_eid.group();
-  var rel_tid_g = rel_tid.group();
+  });exports.rel_tid = rel_tid;
+  rel_tid.name = 'relations';
 
   var detectors = new Map();
 
-  function init(topics_) {
-    topics.add(topics_);
-  }
-
-  function set(data) {
-    enc_eid.filterAll();
-    enc_date.filterAll();
-    enc_zipcode.filterAll();
-    encounters.remove();
-    encounters.add(data.encounters);
-
-    rel_eid.filterAll();
-    rel_tid.filterAll();
-    relations.remove();
-    relations.add(data.relations);
-
-    //enc_date.filter( d => d.date >= data.fromDate && d.date <= data.toDate);
-    var tid = new Set();
+  function collect(dim, key) {
+    var s = new Set();
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;
 
     try {
-      for (var _iterator = rel_tid_g.top(Infinity)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+      for (var _iterator = dim.top(Infinity)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
         var g = _step.value;
-
-        tid.add(g.key);
+        s.add(g[key]);
       }
     } catch (err) {
       _didIteratorError = true;
@@ -100,6 +85,26 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
       }
     }
 
+    return s;
+  }
+
+  function init(topics_) {
+    topics.add(topics_);
+  }
+
+  function set(data) {
+    enc_eid.filterAll();
+    enc_date.filterAll();
+    enc_zipcode.filterAll();
+    encounters.remove();
+    encounters.add(data.encounters);
+
+    rel_eid_p.filterAll();
+    rel_tid_p.filterAll();
+    relations.remove();
+    relations.add(data.relations);
+
+    var tid = collect(rel_tid, 'tag_id');
     topics_tid.filter(function (t) {
       return tid.has(t);
     });
@@ -124,7 +129,7 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
   }
 
   function update(dimension) {
-    if (dimension.cf === encounters) {
+    if (dimension.name === 'encounters') {
       var currentEncounters = enc_eid.top(Infinity);
 
       var _iteratorNormalCompletion2 = true;
@@ -157,13 +162,23 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
       topics_tid.filter(currentTopics);
 
       updateTags();
-    } else if (dimension.cf == topics) {
+    } else if (dimension.name == 'topics') {
       (function () {
-        rel_tid.filter(dimension.top(Infinity));
-        enc_eid.filter(rel_eid.top(Infinity));
-        var activeEncounters = enc_eid.top(Infinity);
+        var currentTopics = collect(topics_tid, 'id');
+        git;
+        rel_tid_p.filter(function (t) {
+          return currentTopics.has(t);
+        });
+
+        var currentEncounters = collect(rel_eid_p, 'enc_id');
+        enc_eid.filter(function (e) {
+          return currentEncounters.has(e);
+        });
+
         detectors.forEach(function (detector) {
-          detector.eid.filter(activeEncounters);
+          detector.eid.filter(function (e) {
+            return currentEncounters.has(e);
+          });
         });
 
         updateTags();

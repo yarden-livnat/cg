@@ -24,6 +24,7 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
     if (err) error(err);else {
       _patients.init(_service.topics);
       _query.init(updateData);
+      _info_tables.init();
     }
   });
 
