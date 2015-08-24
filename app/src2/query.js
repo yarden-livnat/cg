@@ -17,7 +17,7 @@ define(['exports', 'd3', 'lockr'], function (exports, _d3, _lockr) {
   var _Lockr = _interopRequireDefault(_lockr);
 
   var dateFormat = _d32['default'].time.format('%Y-%m-%d');
-  var report = undefined;
+  var report = function report() {};
 
   function startSpinner() {
     _d32['default'].select('#submit-spinner').classed('fa-pulse', true).style('visibility', 'visible');

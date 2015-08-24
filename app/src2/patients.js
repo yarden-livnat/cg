@@ -17,19 +17,30 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
   var _crossfilter2 = _interopRequireDefault(_crossfilter);
 
-  var encounters = (0, _crossfilter2['default'])();
-  var enc_eid = encounters.dimension(function (d) {
+  var encounters = undefined;
+  exports.encounters = encounters;
+  var encountersMap = undefined;
+  exports.encountersMap = encountersMap;
+  var relations = undefined;
+
+  exports.relations = relations;
+  var encounters_cf = (0, _crossfilter2['default'])();
+  var enc_eid = encounters_cf.dimension(function (d) {
     return d.id;
   });exports.enc_eid = enc_eid;
   enc_eid.name = 'encounters';
-  var enc_date = encounters.dimension(function (d) {
+  var enc_date = encounters_cf.dimension(function (d) {
     return d.date;
   });exports.enc_date = enc_date;
   enc_date.name = 'encounters';
-  var enc_zipcode = encounters.dimension(function (d) {
+  var enc_zipcode = encounters_cf.dimension(function (d) {
     return d.zipcode;
   });exports.enc_zipcode = enc_zipcode;
   enc_zipcode.name = 'encounters';
+  var enc_tags = encounters_cf.dimension(function (d) {
+    return d.id;
+  });exports.enc_tags = enc_tags;
+  enc_tags.name = 'encounters';
 
   var topics = (0, _crossfilter2['default'])();
   var topics_tid = topics.dimension(function (d) {
@@ -45,19 +56,17 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
   });exports.topics_sys = topics_sys;
   topics_sys.name = 'topics';
 
-  var relations = (0, _crossfilter2['default'])();
-  var rel_eid_p = relations.dimension(function (r) {
+  var relations_cf = (0, _crossfilter2['default'])();
+  var rel_eid_p = relations_cf.dimension(function (r) {
     return r.enc_id;
   });
-  var rel_tid_p = relations.dimension(function (r) {
+  var rel_tid_p = relations_cf.dimension(function (r) {
     return r.tag_id;
   });
-  var rel_tid = relations.dimension(function (r) {
+  var rel_tid = relations_cf.dimension(function (r) {
     return r.tag_id;
   });exports.rel_tid = rel_tid;
   rel_tid.name = 'relations';
-
-  var rels = undefined;
 
   var detectors = new Map();
 
@@ -67,21 +76,38 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     }, new Set());
   }
 
+  function setup(data) {
+    exports.encounters = encounters = data.encounters;
+    exports.relations = relations = data.relations;
+
+    exports.encountersMap = encountersMap = new Map();
+    encounters.forEach(function (e) {
+      e.tags = new Set();
+      encountersMap.set(e.id, e);
+    });
+
+    relations.forEach(function (r) {
+      return encountersMap.get(r.enc_id).tags.add(r.tag_id);
+    });
+  }
+
   function init(topics_) {
     topics.add(topics_);
   }
 
   function set(data) {
+    setup(data);
+
     enc_eid.filterAll();
     enc_date.filterAll();
     enc_zipcode.filterAll();
-    encounters.remove();
-    encounters.add(data.encounters);
+    encounters_cf.remove();
+    encounters_cf.add(data.encounters);
 
     rel_eid_p.filterAll();
     rel_tid_p.filterAll();
-    relations.remove();
-    relations.add(data.relations);
+    relations_cf.remove();
+    relations_cf.add(data.relations);
 
     var tid = collect(rel_tid);
     topics_tid.filter(function (t) {
@@ -112,8 +138,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
       (function () {
         var currentEncounters = collect(enc_eid);
 
-        //for (let detector of detectors.values()) detector.eid.filter(currentEncounters);
-
         rel_eid_p.filter(function (e) {
           return currentEncounters.has(e);
         });
@@ -123,6 +147,7 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
           return currentTopics.has(t);
         });
 
+        //for (let detector of detectors.values()) detector.eid.filter(currentEncounters);
         updateTags();
       })();
     } else if (dimension.name == 'topics') {

@@ -34,13 +34,11 @@ let tags = RelTable(container)
   .header([
     {name: 'topic', title: 'Topic', cellAttr: r => r.attr && r.attr.name},
     {name: 'value', title: 'Encounters', render: bars}])
-  .dimension(patients.rel_tid);
+  .in_dimension(patients.rel_tid)
+  .out_dimension(patients.enc_tags);
   //.on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
   //.on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); })
-  //.on('click', function(d) {
-  //  if (d3.event.shiftKey) selection.exclude(d.row.tag);
-  //  else selection.select(d.row.tag);
-  //});
+
 
 postal.subscribe({channel: 'global', topic: 'render', callback: render});
 
@@ -116,7 +114,8 @@ function Table(div) {
 function RelTable(div) {
   let selected = new Set();
   let excluded = new Set();
-  let dimension;
+  let in_dimension;
+  let out_dimension;
   let dirty = false;
   let inner = table(div)
     .on('click',  function click(d) {
@@ -135,14 +134,22 @@ function RelTable(div) {
           .classed('excluded', excluded.has(key));
 
       if (selected.size == 0 && excluded.size == 0)
-        dimension.filterAll();
-      else
-        dimension.filter( v => selected.has(v) );
-      patients.update(dimension);
+        out_dimension.filterAll();
+      else {
+        out_dimension.filter( filter );
+      }
+      patients.update(out_dimension);
 
       // todo: should this be done in patients.update?
       postal.publish({channel: 'global', topic: 'render'});
     });
+
+  function filter(eid) {
+    let enc = patients.encountersMap.get(eid);
+    for (let s of selected) if (!enc.tags.has(s)) return false;
+    for (let e of excluded) if (enc.tags.has(e)) return false;
+    return true;
+  }
 
   function api(selection) {
     return this;
@@ -158,15 +165,20 @@ function RelTable(div) {
     return this;
   };
 
-  api.dimension = function(_) {
-    dimension = _;
+  api.in_dimension = function(_) {
+    in_dimension = _;
+    return this;
+  };
+
+  api.out_dimension = function(_) {
+    out_dimension = _;
     return this;
   };
 
   api.render = function() {
     if (dirty) { dirty = false; }
     else {
-      let items = dimension.group().top(Infinity);
+      let items = in_dimension.group().top(Infinity);
       items.forEach( item => item.topic = topicsMap.get(item.key) );
       inner.data( items );
     }

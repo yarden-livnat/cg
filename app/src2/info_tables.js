@@ -28,13 +28,9 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
   var bars = (0, _bar['default'])();
   var tags = RelTable(container).id('tags-table').header([{ name: 'topic', title: 'Topic', cellAttr: function cellAttr(r) {
       return r.attr && r.attr.name;
-    } }, { name: 'value', title: 'Encounters', render: bars }]).dimension(_patients.rel_tid);
+    } }, { name: 'value', title: 'Encounters', render: bars }]).in_dimension(_patients.rel_tid).out_dimension(_patients.enc_tags);
   //.on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
   //.on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); })
-  //.on('click', function(d) {
-  //  if (d3.event.shiftKey) selection.exclude(d.row.tag);
-  //  else selection.select(d.row.tag);
-  //});
 
   _postal.subscribe({ channel: 'global', topic: 'render', callback: render });
 
@@ -128,7 +124,8 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
   function RelTable(div) {
     var selected = new Set();
     var excluded = new Set();
-    var dimension = undefined;
+    var in_dimension = undefined;
+    var out_dimension = undefined;
     var dirty = false;
     var inner = (0, _table['default'])(div).on('click', function click(d) {
       dirty = true;
@@ -143,14 +140,67 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
 
       _d32['default'].select(this).classed('selected', selected.has(key)).classed('excluded', excluded.has(key));
 
-      if (selected.size == 0 && excluded.size == 0) dimension.filterAll();else dimension.filter(function (v) {
-        return selected.has(v);
-      });
-      _patients.update(dimension);
+      if (selected.size == 0 && excluded.size == 0) out_dimension.filterAll();else {
+        out_dimension.filter(filter);
+      }
+      _patients.update(out_dimension);
 
       // todo: should this be done in patients.update?
       _postal.publish({ channel: 'global', topic: 'render' });
     });
+
+    function filter(eid) {
+      var enc = _patients.encountersMap.get(eid);
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = selected[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var s = _step2.value;
+          if (!enc.tags.has(s)) return false;
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = excluded[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var e = _step3.value;
+          if (enc.tags.has(e)) return false;
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      return true;
+    }
 
     function api(selection) {
       return this;
@@ -166,8 +216,13 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
       return this;
     };
 
-    api.dimension = function (_) {
-      dimension = _;
+    api.in_dimension = function (_) {
+      in_dimension = _;
+      return this;
+    };
+
+    api.out_dimension = function (_) {
+      out_dimension = _;
       return this;
     };
 
@@ -175,7 +230,7 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
       if (dirty) {
         dirty = false;
       } else {
-        var items = dimension.group().top(Infinity);
+        var items = in_dimension.group().top(Infinity);
         items.forEach(function (item) {
           return item.topic = topicsMap.get(item.key);
         });

@@ -6,7 +6,7 @@ import d3 from 'd3';
 import Lockr from 'lockr';
 
 let dateFormat = d3.time.format('%Y-%m-%d');
-let report;
+let report = () => {} ;
 
 function startSpinner() {
   d3.select('#submit-spinner').classed('fa-pulse', true).style('visibility', 'visible');
