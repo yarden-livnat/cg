@@ -19,12 +19,12 @@ let rel_eid_p = relations.dimension(r => r.enc_id);
 let rel_tid_p = relations.dimension(r => r.tag_id);
 export let rel_tid = relations.dimension(r => r.tag_id); rel_tid.name = 'relations';
 
+let rels;
+
 let detectors = new Map();
 
-function collect(dim, key) {
-  let s = new Set();
-  for (let g of dim.top(Infinity)) s.add(g[key]);
-  return s;
+function collect(dim) {
+ return dim.group().top(Infinity).reduce( (p, v) => v.value ? p.add(v.key) : p, new Set() );
 }
 
 export function init(topics_) {
@@ -43,7 +43,7 @@ export function set(data) {
   relations.remove();
   relations.add(data.relations);
 
-  let tid = collect(rel_tid, 'tag_id');
+  let tid = collect(rel_tid);
   topics_tid.filter(t => tid.has(t));
 }
 
@@ -63,21 +63,21 @@ export function addDetector(name) {
 
 export function update(dimension) {
   if (dimension.name === 'encounters') {
-    let currentEncounters = collect(enc_eid, 'id');
+    let currentEncounters = collect(enc_eid);
 
     //for (let detector of detectors.values()) detector.eid.filter(currentEncounters);
 
     rel_eid_p.filter( e => currentEncounters.has(e));
 
-    let currentTopics = collect(rel_tid_p, 'tag_id');
+    let currentTopics = collect(rel_tid_p);
     topics_tid.filter( t => currentTopics.has(t) );
 
     updateTags();
   } else if (dimension.name == 'topics') {
-    let currentTopics = collect(topics_tid, 'id');
+    let currentTopics = collect(topics_tid);
     rel_tid_p.filter( t => currentTopics.has(t) );
 
-    let currentEncounters = collect(rel_eid_p, 'enc_id');
+    let currentEncounters = collect(rel_eid_p);
     enc_eid.filter( e => currentEncounters.has(e) );
 
     detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
@@ -85,6 +85,11 @@ export function update(dimension) {
     updateTags();
     //} else if ( /* is a detector */) {
     //
-    //} else { /* it's a tags action */
+  } else if (dimension.name == 'relations' ) {
+      let currentTopics = collect(rel_tid_p);
+      topics_tid.filter( t => currentTopics.has(t) );
+
+      let currentEncounters = collect(rel_eid_p);
+      enc_eid.filter( e => currentEncounters.has(e) );
   }
 }

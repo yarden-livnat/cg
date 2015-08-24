@@ -26,13 +26,9 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
   var sys = Table(container).id('sys-table').header([{ name: 'key', title: 'System' }, { name: 'value', title: '#tags', attr: 'numeric' }]).dimension(_patients.topics_sys);
 
   var bars = (0, _bar['default'])();
-  var tags = Table(container).id('tags-table').header([{ name: 'key', title: 'Concept', cellAttr: function cellAttr(r) {
+  var tags = RelTable(container).id('tags-table').header([{ name: 'topic', title: 'Topic', cellAttr: function cellAttr(r) {
       return r.attr && r.attr.name;
-    } }, { name: 'value', title: 'Encounters', render: bars }]).dimension(_patients.rel_tid).update(function (list) {
-    return list.map(function (d) {
-      return { key: topicsMap.get(d.key), value: d.value };
-    });
-  });
+    } }, { name: 'value', title: 'Encounters', render: bars }]).dimension(_patients.rel_tid);
   //.on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
   //.on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); })
   //.on('click', function(d) {
@@ -81,12 +77,7 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
     var excluded = new Set();
     var dimension = undefined;
     var dirty = false;
-    var inner = (0, _table['default'])(div);
-    var update = function update(v) {
-      return v;
-    };
-
-    inner.on('click', function (d) {
+    var inner = (0, _table['default'])(div).on('click', function click(d) {
       dirty = true;
       if (selected['delete'](d.value)) {
         _d32['default'].select(this).classed('selected', false);
@@ -126,13 +117,70 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
       if (dirty) {
         dirty = false;
       } else {
-        inner.data(update(dimension.group().top(Infinity)));
+        inner.data(dimension.group().top(Infinity));
       }
       return this;
     };
 
-    api.update = function (f) {
-      update = f;
+    return api;
+  }
+
+  function RelTable(div) {
+    var selected = new Set();
+    var excluded = new Set();
+    var dimension = undefined;
+    var dirty = false;
+    var inner = (0, _table['default'])(div).on('click', function click(d) {
+      dirty = true;
+      var key = d.row.key;
+      if (_d32['default'].event.ctrlKey) {
+        if (!excluded['delete'](key)) excluded.add(key);
+        selected['delete'](key);
+      } else {
+        if (!selected['delete'](key)) selected.add(key);
+        excluded['delete'](key);
+      }
+
+      _d32['default'].select(this).classed('selected', selected.has(key)).classed('excluded', excluded.has(key));
+
+      if (selected.size == 0 && excluded.size == 0) dimension.filterAll();else dimension.filter(function (v) {
+        return selected.has(v);
+      });
+      _patients.update(dimension);
+
+      // todo: should this be done in patients.update?
+      _postal.publish({ channel: 'global', topic: 'render' });
+    });
+
+    function api(selection) {
+      return this;
+    }
+
+    api.id = function (_) {
+      inner.id(_);
+      return this;
+    };
+
+    api.header = function (_) {
+      inner.header(_);
+      return this;
+    };
+
+    api.dimension = function (_) {
+      dimension = _;
+      return this;
+    };
+
+    api.render = function () {
+      if (dirty) {
+        dirty = false;
+      } else {
+        var items = dimension.group().top(Infinity);
+        items.forEach(function (item) {
+          return item.topic = topicsMap.get(item.key);
+        });
+        inner.data(items);
+      }
       return this;
     };
 

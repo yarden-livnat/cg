@@ -30,17 +30,15 @@ export default function (opt) {
   let colorScale = d3.interpolateLab('#fff', '#f00');
   let width, height;
   let population = new Map();
-  let selection;
-  let zipcodes = new Map();
-  let active = new Map();
-  let current = new Map();
+
+  //let zipcodes = new Map();
+  //let active = new Map();
+  //let current = new Map();
   let svg, svgContainer;
 
   let dirty = false;
   let dimension = patients.enc_zipcode;
   let features;
-
-
   let selectedZipcodes = new Set();
 
   //let options = Object.assign({}, MAP_DEFAULTS, opt);

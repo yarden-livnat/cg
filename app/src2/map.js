@@ -33,17 +33,16 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
     var width = undefined,
         height = undefined;
     var population = new Map();
-    var selection = undefined;
-    var zipcodes = new Map();
-    var active = new Map();
-    var current = new Map();
+
+    //let zipcodes = new Map();
+    //let active = new Map();
+    //let current = new Map();
     var svg = undefined,
         svgContainer = undefined;
 
     var dirty = false;
     var dimension = _patients.enc_zipcode;
     var features = undefined;
-
     var selectedZipcodes = new Set();
 
     //let options = Object.assign({}, MAP_DEFAULTS, opt);
@@ -143,7 +142,7 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
 
     function render() {
       if (dirty) dirty = false;else {
-        var _active = new Map();
+        var active = new Map();
         var _iteratorNormalCompletion = true;
         var _didIteratorError = false;
         var _iteratorError = undefined;
@@ -152,7 +151,7 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
           for (var _iterator = dimension.group().top(Infinity)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
             var z = _step.value;
 
-            _active.set(z.key, z.value);
+            active.set(z.key, z.value);
           }
         } catch (err) {
           _didIteratorError = true;
@@ -178,7 +177,7 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
           for (var _iterator2 = features[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
             var f = _step2.value;
 
-            f.active = _active.get(f.properties.Zip_Code) || 0;
+            f.active = active.get(f.properties.Zip_Code) || 0;
             f.rate = f.active * f.pop_factor;
             if (f.active) list.push(f);
           }
