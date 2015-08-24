@@ -121,7 +121,7 @@ function RelTable(div) {
     .on('click',  function click(d) {
       dirty = true;
       let key = d.row.key;
-      if (d3.event.ctrlKey) {
+      if (d3.event.metaKey) {
         if (!excluded.delete(key)) excluded.add(key);
         selected.delete(key);
       } else {

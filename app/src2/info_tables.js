@@ -130,7 +130,7 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
     var inner = (0, _table['default'])(div).on('click', function click(d) {
       dirty = true;
       var key = d.row.key;
-      if (_d32['default'].event.ctrlKey) {
+      if (_d32['default'].event.metaKey) {
         if (!excluded['delete'](key)) excluded.add(key);
         selected['delete'](key);
       } else {
