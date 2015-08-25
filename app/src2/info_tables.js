@@ -14,12 +14,13 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
 
   var _d32 = _interopRequireDefault(_d3);
 
+  var _postal2 = _interopRequireDefault(_postal);
+
   var _table = _interopRequireDefault(_componentsTable);
 
   var _bar = _interopRequireDefault(_componentsBar);
 
   var container = _d32['default'].select('#details-tables');
-  var topicsMap = new Map();
 
   var cat = Table(container).id('cat-table').header([{ name: 'key', title: 'Category' }, { name: 'value', title: '#tags', attr: 'numeric' }]).dimension(_patients.topics_cat);
 
@@ -32,33 +33,9 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
   //.on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
   //.on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); })
 
-  _postal.subscribe({ channel: 'global', topic: 'render', callback: render });
+  _postal2['default'].subscribe({ channel: 'global', topic: 'render', callback: render });
 
-  function init() {
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
-
-    try {
-      for (var _iterator = _service.topics[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var topic = _step.value;
-        topicsMap.set(topic.id, topic.label);
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator['return']) {
-          _iterator['return']();
-        }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
-      }
-    }
-  }
+  function init() {}
 
   function reset() {}
 
@@ -87,7 +64,7 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
       _patients.update(dimension);
 
       // todo: should this be done in patients.update?
-      _postal.publish({ channel: 'global', topic: 'render' });
+      _postal2['default'].publish({ channel: 'global', topic: 'render' });
     });
 
     function api(selection) {
@@ -146,19 +123,43 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
       _patients.update(out_dimension);
 
       // todo: should this be done in patients.update?
-      _postal.publish({ channel: 'global', topic: 'render' });
+      _postal2['default'].publish({ channel: 'global', topic: 'render' });
     });
 
     function filter(eid) {
       var enc = _patients.encountersMap.get(eid);
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = selected[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var s = _step.value;
+          if (!enc.tags.has(s)) return false;
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = selected[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var s = _step2.value;
-          if (!enc.tags.has(s)) return false;
+        for (var _iterator2 = excluded[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var e = _step2.value;
+          if (enc.tags.has(e)) return false;
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -171,30 +172,6 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
         } finally {
           if (_didIteratorError2) {
             throw _iteratorError2;
-          }
-        }
-      }
-
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
-
-      try {
-        for (var _iterator3 = excluded[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var e = _step3.value;
-          if (enc.tags.has(e)) return false;
-        }
-      } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-            _iterator3['return']();
-          }
-        } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
           }
         }
       }
@@ -232,7 +209,7 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
       } else {
         var items = in_dimension.group().top(Infinity);
         items.forEach(function (item) {
-          return item.topic = topicsMap.get(item.key);
+          return item.topic = _service.topicsMap.get(item.key).label;
         });
         inner.data(items);
       }
@@ -242,5 +219,7 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
     return api;
   }
 });
+
+//for (let topic of topics) topicsMap.set(topic.id, topic.label);
 
 //# sourceMappingURL=info_tables.js.map

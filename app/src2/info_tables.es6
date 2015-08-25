@@ -3,16 +3,15 @@
  */
 
 import d3 from 'd3';
-import * as postal from 'postal'
+import postal from 'postal'
 
 import * as patients from './patients';
-import {topics} from './service';
+import {topicsMap} from './service';
 
 import table from './components/table';
 import bar from './components/bar';
 
 let container = d3.select('#details-tables');
-let topicsMap = new Map();
 
 let cat = Table(container)
     .id('cat-table')
@@ -43,7 +42,7 @@ let tags = RelTable(container)
 postal.subscribe({channel: 'global', topic: 'render', callback: render});
 
 export function init() {
-  for (let topic of topics) topicsMap.set(topic.id, topic.label);
+  //for (let topic of topics) topicsMap.set(topic.id, topic.label);
 }
 
 function reset() {
@@ -179,7 +178,7 @@ function RelTable(div) {
     if (dirty) { dirty = false; }
     else {
       let items = in_dimension.group().top(Infinity);
-      items.forEach( item => item.topic = topicsMap.get(item.key) );
+      items.forEach( item => item.topic = topicsMap.get(item.key).label );
       inner.data( items );
     }
     return this;

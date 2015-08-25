@@ -8,6 +8,7 @@ import queue from 'queue';
 let dateFormat = d3.time.format('%Y-%m-%d');
 
 export let topics = [];
+export let topicsMap = new Map();
 export let pathogens = [];
 export let detectors = [];
 
@@ -20,6 +21,7 @@ export function init(cb) {
         if (!err) {
           kb.forEach(d => {
             d.label = d.details == '' ? d.name : d.name+'['+d.details+']';
+            topicsMap.set(d.id, d);
           });
 
           topics = kb;

@@ -9,10 +9,13 @@ import * as service from './service';
 import * as query from './query';
 import * as patients from './patients';
 import * as infoTables from './info_tables';
+import CG from './cg/cg';
 
 import Map from './map';
 
 let geomap = Map();
+let cg = CG().dimension(patients.rel_tid);
+
 let dateFormat = d3.time.format('%Y-%m-%d');
 
 queue()
@@ -24,6 +27,7 @@ queue()
       patients.init(service.topics);
       query.init(updateData);
       infoTables.init();
+      cg(d3.select('#cg'));
     }
   });
 
@@ -51,6 +55,13 @@ function updateData(err, data) {
 function error(err) {
   console.error(err);
 }
+
+function getSize(el) {
+  let d3el = d3.select(el);
+  return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
+}
+
 window.addEventListener('resize', function() {
   console.log('window resize');
+  cg.resize(getSize('#cg'));
 });

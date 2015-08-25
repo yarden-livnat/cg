@@ -20,6 +20,8 @@ define(['exports', 'd3', 'queue'], function (exports, _d3, _queue) {
 
   var topics = [];
   exports.topics = topics;
+  var topicsMap = new Map();
+  exports.topicsMap = topicsMap;
   var pathogens = [];
   exports.pathogens = pathogens;
   var detectors = [];
@@ -31,6 +33,7 @@ define(['exports', 'd3', 'queue'], function (exports, _d3, _queue) {
       if (!err) {
         kb.forEach(function (d) {
           d.label = d.details == '' ? d.name : d.name + '[' + d.details + ']';
+          topicsMap.set(d.id, d);
         });
 
         exports.topics = topics = kb;

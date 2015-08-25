@@ -19,7 +19,7 @@ export let MAP_DEFAULTS =  {
 
 export let pathogens_duration = 4;
 
-export let cg = {
+export let cgOptions = {
   canvas: {
     colors: {},
 

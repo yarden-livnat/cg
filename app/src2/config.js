@@ -30,7 +30,7 @@ define(['exports', 'd3'], function (exports, _d3) {
   var pathogens_duration = 4;
 
   exports.pathogens_duration = pathogens_duration;
-  var cg = {
+  var cgOptions = {
     canvas: {
       colors: {},
 
@@ -71,7 +71,7 @@ define(['exports', 'd3'], function (exports, _d3) {
       linkDistanceFactor: 100
     }
   };
-  exports.cg = cg;
+  exports.cgOptions = cgOptions;
 });
 
 //# sourceMappingURL=config.js.map
