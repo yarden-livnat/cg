@@ -59,14 +59,15 @@ define(['exports', 'module'], function (exports, module) {
     function update() {
       // domain
       domain = new Set();
+      var max = 0;
       nodes.forEach(function (node) {
-        return node.items.forEach(function (item) {
+        node.items.forEach(function (item) {
           return domain.add(item);
         });
+        max = Math.max(max, node.items.length);
       });
 
       // scale nodes
-      var max = domain.length;
       nodes.forEach(function (node) {
         return node.scale = node.items.length / max;
       });

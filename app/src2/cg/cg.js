@@ -21,7 +21,13 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     var dimension = undefined;
     var group = undefined;
 
+    var x = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
+
+    var y = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
+
     var nodeRenderer = (0, _renderers.NodeRenderer)().radius(_config.cgOptions.canvas.nodeRadius).scaleFunc(_config.cgOptions.canvas.nodeScale);
+    //.x(x)
+    //.y(y);
 
     var graph = (0, _Graph['default'])();
     var drag = _d32['default'].behavior.drag().origin(function (d) {
@@ -64,10 +70,6 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
     var force = _d32['default'].layout.force().on('tick', updatePosition).on('end', forceDone);
 
-    var x = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
-
-    var y = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
-
     var nodesRange = [0, 1],
         edgesRange = [0.7, 1];
 
@@ -85,9 +87,30 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
     function update() {
       var prev = new Map();
-      graph.nodes().forEach(function (node) {
-        return prev.set(node.id, node);
-      });
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = graph.nodes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var node = _step.value;
+
+          prev.set(node.id, node);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
 
       graph.nodes(group.top(Infinity).map(function (item) {
         var topic = _service.topicsMap.get(item.key);
@@ -115,14 +138,32 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     function updatePosition() {}
     function forceDone() {}
 
+    function f(s) {
+      console.log(s);
+    }
+    function h(s) {
+      s.call(nodeRenderer);
+      s.each(f);
+    }
+
     function render(duration) {
       var d3Nodes = svgNodes.selectAll('.node').data(graph.nodes(), function (d) {
         return d.id;
       });
 
-      d3Nodes.enter().call(nodeRenderer);
+      var a = d3Nodes.enter()
+      //.call(nodeRenderer)
+      .call(h);
 
-      d3Nodes.transition().duration(duration).style('opacity', 1).select('.scaledTag').call(nodeRenderer.scale);
+      d3Nodes.enter().call(nodeRenderer).select('g').attr('transform', function (d) {
+        return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
+      });
+      //.call(drag);
+
+      //d3Nodes
+      //  .transition().duration(duration)
+      //    .style('opacity', 1)
+      //      .call(nodeRenderer.scale);
 
       d3Nodes.exit().transition().duration(duration).style('opacity', 0.000001).remove();
     }
@@ -164,12 +205,14 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     cg.width = function (_) {
       if (!arguments.length) return width;
       width = _;
+      x.domain([0, width]).range([0, width]);
       return this;
     };
 
     cg.height = function (_) {
       if (!arguments.length) return height;
       height = _;
+      y.domain([0, height]).range([0, height]);
       return this;
     };
 
@@ -187,8 +230,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     };
 
     cg.resize = function (size) {
-      width = size[0];
-      height = size[1];
+      cg.width(size[0]).height(size[1]);
+      // todo: render
     };
 
     return cg;

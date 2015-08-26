@@ -6,9 +6,10 @@
 export function NodeRenderer() {
   let scaleFunc;
   let radius;
+  let x, y;
 
-  function render() {
-    let g = this.append('g')
+  function render(selection) {
+    let g = selection.append('g')
         .attr('class', 'node')
         .style('opacity', 0.1)
     //.on('mousedown', mousedown)
@@ -69,12 +70,10 @@ export function NodeRenderer() {
 
     });
 
-    scaled.call(render.scale);
+    //scaled.call(render.scale);
 
-    g.attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
-    g.call(drag);
-
-    return this;
+    //g.attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
+    //g.call(drag);
   }
 
   render.scale = function(node) {
@@ -82,7 +81,6 @@ export function NodeRenderer() {
         return 'translate(7, 0) scale(' + scaleFunc(d.scale) + ')';
       }
     );
-    return this;
   };
 
   render.scaleFunc = function(_) {
@@ -94,6 +92,18 @@ export function NodeRenderer() {
   render.radius = function(_) {
     if (!arguments.length) return radius;
     radius = _;
+    return this;
+  };
+
+  render.x = function(_) {
+    if (!arguments.length) return x;
+    x = _;
+    return this;
+  };
+
+  render.y = function(_) {
+    if (!arguments.length) return y;
+    y = _;
     return this;
   };
 

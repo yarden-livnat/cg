@@ -43,10 +43,13 @@ export default function() {
   function update() {
     // domain
     domain = new Set();
-    nodes.forEach( node => node.items.forEach( item => domain.add(item)) );
+    let max = 0;
+    nodes.forEach( node => {
+      node.items.forEach( item => domain.add(item));
+      max = Math.max(max, node.items.length);
+    });
 
     // scale nodes
-    let max = domain.length;
     nodes.forEach( node => node.scale = node.items.length/max );
 
     // create edges

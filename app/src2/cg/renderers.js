@@ -13,9 +13,11 @@ define(['exports'], function (exports) {
   function NodeRenderer() {
     var scaleFunc = undefined;
     var radius = undefined;
+    var x = undefined,
+        y = undefined;
 
-    function render() {
-      var g = this.append('g').attr('class', 'node').style('opacity', 0.1)
+    function render(selection) {
+      var g = selection.append('g').attr('class', 'node').style('opacity', 0.1)
       //.on('mousedown', mousedown)
       //.on('mouseup', mouseup)
       //.on("dblclick", dblclick)
@@ -55,21 +57,16 @@ define(['exports'], function (exports) {
         d3.select(this).select('.border').attr('width', bbox.width).attr('height', bbox.height).attr('y', bbox.y);
       });
 
-      scaled.call(render.scale);
+      //scaled.call(render.scale);
 
-      g.attr('transform', function (d) {
-        return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
-      });
-      g.call(drag);
-
-      return this;
+      //g.attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
+      //g.call(drag);
     }
 
     render.scale = function (node) {
       node.attr('transform', function (d) {
         return 'translate(7, 0) scale(' + scaleFunc(d.scale) + ')';
       });
-      return this;
     };
 
     render.scaleFunc = function (_) {
@@ -81,6 +78,18 @@ define(['exports'], function (exports) {
     render.radius = function (_) {
       if (!arguments.length) return radius;
       radius = _;
+      return this;
+    };
+
+    render.x = function (_) {
+      if (!arguments.length) return x;
+      x = _;
+      return this;
+    };
+
+    render.y = function (_) {
+      if (!arguments.length) return y;
+      y = _;
       return this;
     };
 

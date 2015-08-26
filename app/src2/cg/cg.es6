@@ -18,9 +18,20 @@ export default function() {
   let dimension;
   let group;
 
+  let x = d3.scale.linear()
+    .domain([0, 1])
+    .range([0, 1]);
+
+  let y = d3.scale.linear()
+    .domain([0, 1])
+    .range([0, 1]);
+
   let nodeRenderer = NodeRenderer()
       .radius(cgOptions.canvas.nodeRadius)
       .scaleFunc(cgOptions.canvas.nodeScale);
+      //.x(x)
+      //.y(y);
+
 
   let graph = Graph();
   let drag = d3.behavior.drag()
@@ -65,14 +76,6 @@ export default function() {
     .on('tick', updatePosition)
     .on('end', forceDone);
 
-  let x = d3.scale.linear()
-    .domain([0, 1])
-    .range([0, 1]);
-
-  let y = d3.scale.linear()
-    .domain([0, 1])
-    .range([0, 1]);
-
   let nodesRange = [0, 1],
       edgesRange = [0.7, 1];
 
@@ -94,7 +97,9 @@ export default function() {
 
   function update() {
     let prev = new Map();
-    graph.nodes().forEach(node => prev.set(node.id, node));
+    for (let node of graph.nodes()) {
+      prev.set(node.id, node);
+    }
 
     graph.nodes( group.top(Infinity).map( item => {
       let topic = topicsMap.get(item.key);
@@ -121,18 +126,32 @@ export default function() {
   function updatePosition() {}
   function forceDone() {}
 
+  function f(s) {
+    console.log(s);
+  }
+  function h(s) {
+    s.call(nodeRenderer)
+    s.each(f);
+  }
+
   function render(duration) {
     let d3Nodes = svgNodes.selectAll('.node')
       .data(graph.nodes(), d => d.id);
 
-    d3Nodes.enter()
-      .call(nodeRenderer);
+    let a = d3Nodes.enter()
+      //.call(nodeRenderer)
+      .call(h);
 
-    d3Nodes
-      .transition().duration(duration)
-        .style('opacity', 1)
-        .select('.scaledTag')
-          .call(nodeRenderer.scale);
+    d3Nodes.enter()
+      .call(nodeRenderer)
+      .select('g').attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; })
+      //.call(drag);
+
+
+    //d3Nodes
+    //  .transition().duration(duration)
+    //    .style('opacity', 1)
+    //      .call(nodeRenderer.scale);
 
     d3Nodes.exit()
       .transition().duration(duration)
@@ -191,12 +210,14 @@ export default function() {
   cg.width = function(_) {
     if (!arguments.length) return width;
     width = _;
+    x.domain([0, width]).range([0, width]);
     return this;
   };
 
   cg.height = function(_) {
     if (!arguments.length) return height;
     height = _;
+    y.domain([0, height]).range([0, height]);
     return this;
   };
 
@@ -211,9 +232,8 @@ export default function() {
   };
 
   cg.resize = function(size) {
-    width = size[0];
-    height = size[1];
-
+    cg.width(size[0]).height(size[1]);
+    // todo: render
   };
 
 
