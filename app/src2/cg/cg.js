@@ -21,10 +21,11 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     var dimension = undefined;
     var group = undefined;
 
-    var container = undefined;
-    var svg = undefined,
+    var container = undefined,
+        svg = undefined,
         svgLinks = undefined,
-        svgNodes = undefined;
+        svgNodes = undefined,
+        overlay = undefined;
     var d3Nodes = undefined,
         d3Links = undefined;
 
@@ -77,13 +78,14 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     }
 
     function onDrag(d) {
+      console.log('on drag');
       _d32['default'].select(this).classed('fixed', d.fixed |= 3);
       d.x = d.px = x.invert(_d32['default'].event.sourceEvent.layerX - offsetX);
       d.y = d.py = y.invert(_d32['default'].event.sourceEvent.layerY - offsetY);
       _d32['default'].select(this).attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       });
-      svgLinks.call(edgeRenderer.update);
+      d3Links.call(edgeRenderer.update);
     }
 
     function onDragEnd(d) {
@@ -92,6 +94,25 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
     function dblclick(d) {
       _d32['default'].select(this).classed('fixed', d.fixed = false);
+    }
+
+    /* zoom */
+    var zoom = undefined;
+
+    function disableZoom() {
+      overlay.on('mousedown.zoom', null).on('wheel.zoom', null);
+    }
+    function enableZoom() {
+      overlay.call(zoom);
+    }
+
+    function onZoom() {
+      console.log('onZoom');
+      d3Nodes.attr('transform', function (d) {
+        console.log('zoom: ', d, x(d.x), y(d.y));
+        return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
+      });
+      d3Links.call(edgeRenderer.update);
     }
 
     function update() {
@@ -186,9 +207,9 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
       // x(), y() to account for zoom
       d3Nodes.attr('transform', function (d) {
-        //if (d.label == 'Cough' && d.tag.positive) console.log('cough: ',x(d.x), y(d.y));
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       });
+
       d3Links.call(edgeRenderer.update);
 
       // early termination
@@ -271,10 +292,12 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     function build(selection) {
       svg = selection.append('svg').attr('class', 'cg');
 
-      svg.append('rect').attr('class', 'overlay').attr('width', width).attr('height', Math.max(0, height - edgesSelector.height() - 10));
+      var g = svg.append('g');
+
+      overlay = g.append('rect').attr('class', 'overlay').attr('width', width).attr('height', Math.max(0, height - edgesSelector.height() - 10));
 
       /* selectors */
-      var sg = svg.append('g').attr('class', 'cgSelectors');
+      var sg = g.append('g').attr('class', 'cgSelectors');
 
       nodesSelector(sg.append('g').attr('class', 'nodesSelector'));
 
@@ -286,10 +309,13 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
         showEdges = !showEdges;render();
       });
 
-      var g = svg.append('g');
-
+      /* graph */
       svgLinks = g.append('g').attr('class', 'links');
       svgNodes = g.append('g').attr('class', 'nodes');
+
+      /* behavior */
+      zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 20]).on('zoom', onZoom);
+      overlay.call(zoom);
 
       addListeners();
 
@@ -307,8 +333,10 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       if (!arguments.length) return width;
       width = _;
       x.domain([0, width]).range([0, width]);
+      zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
       svg.attr('width', width);
-      svg.select('rect').attr('width', width);
+      overlay.attr('width', width).call(zoom);
+
       return this;
     };
 
@@ -316,10 +344,14 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       if (!arguments.length) return height;
       height = _;
       y.domain([0, height]).range([0, height]);
+      zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
+
       var h = Math.max(0, height - edgesSelector.height() - 10);
       svg.attr('height', height);
       svg.select('.cgSelectors').attr('transform', 'translate(10,' + h + ')');
-      svg.select('rect').attr('height', h);
+
+      overlay.attr('height', h).call(zoom);
+
       return this;
     };
 

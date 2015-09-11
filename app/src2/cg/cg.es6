@@ -18,8 +18,7 @@ export default function() {
   let dimension;
   let group;
 
-  let container;
-  let svg, svgLinks, svgNodes;
+  let container, svg, svgLinks, svgNodes, overlay;
   let d3Nodes, d3Links;
 
   let x = d3.scale.linear()
@@ -81,6 +80,8 @@ export default function() {
     .select(edgesRange)
     .on('select',  r => { edgesRange = r; render(cgOptions.canvas.fastDuration); });
 
+
+
   postal.subscribe({channel: 'global', topic: 'render', callback: update});
 
   function onDragStart(d, mx, my) {
@@ -90,13 +91,14 @@ export default function() {
   }
 
   function onDrag(d) {
+    console.log('on drag');
     d3.select(this).classed("fixed", d.fixed |= 3);
     d.x = d.px = x.invert(d3.event.sourceEvent.layerX-offsetX);
     d.y = d.py = y.invert(d3.event.sourceEvent.layerY-offsetY);
     d3.select(this).attr('transform', function (d) {
       return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
     });
-    svgLinks.call(edgeRenderer.update);
+    d3Links.call(edgeRenderer.update);
   }
 
   function onDragEnd(d) {
@@ -105,6 +107,24 @@ export default function() {
 
   function dblclick(d) {
     d3.select(this).classed("fixed", d.fixed = false);
+  }
+
+  /* zoom */
+  let zoom;
+
+  function disableZoom() {
+    overlay
+      .on('mousedown.zoom', null)
+      .on('wheel.zoom', null);
+  }
+  function enableZoom() { overlay.call(zoom); }
+
+  function onZoom() {
+    console.log('onZoom');
+    d3Nodes.attr('transform', function(d) {
+      console.log('zoom: ',d,x(d.x), y(d.y));
+      return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
+    d3Links.call(edgeRenderer.update)
   }
 
   function update() {
@@ -160,8 +180,8 @@ export default function() {
 
     // x(), y() to account for zoom
     d3Nodes.attr('transform', function (d) {
-      //if (d.label == 'Cough' && d.tag.positive) console.log('cough: ',x(d.x), y(d.y));
       return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
+
     d3Links.call(edgeRenderer.update);
 
     // early termination
@@ -200,9 +220,10 @@ export default function() {
       .call(drag);
 
     d3Nodes
-      .transition().duration(duration)
+      .transition()
+        .duration(duration)
         .style('opacity', 1)
-          .call(nodeRenderer.scale);
+        .call(nodeRenderer.scale);
 
     d3Nodes.exit()
       .transition().duration(duration)
@@ -221,9 +242,9 @@ export default function() {
 
     d3Links.exit()
       .transition()
-      .duration(duration)
-      .style('opacity', 1e-6)
-      .remove();
+        .duration(duration)
+        .style('opacity', 1e-6)
+        .remove();
   }
 
 
@@ -232,13 +253,15 @@ export default function() {
       .append('svg')
       .attr('class', 'cg');
 
-    svg.append('rect')
+    let g = svg.append('g');
+
+    overlay = g.append('rect')
       .attr('class', 'overlay')
       .attr('width', width)
       .attr('height', Math.max(0, height - edgesSelector.height() -10));
 
     /* selectors */
-    let sg = svg.append('g')
+    let sg = g.append('g')
       .attr('class', 'cgSelectors');
 
     nodesSelector(sg.append('g').attr('class', 'nodesSelector'));
@@ -257,10 +280,13 @@ export default function() {
       .on('click', () => { showEdges = !showEdges; render(); });
 
 
-    let g = svg.append('g');
-
+    /* graph */
     svgLinks = g.append('g').attr('class', 'links');
     svgNodes = g.append('g').attr('class', 'nodes');
+
+    /* behavior */
+    zoom = d3.behavior.zoom().x(x).y(y).scaleExtent([.5, 20]).on("zoom", onZoom);
+    overlay.call(zoom);
 
     addListeners();
 
@@ -279,9 +305,12 @@ export default function() {
     if (!arguments.length) return width;
     width = _;
     x.domain([0, width]).range([0, width]);
+    zoom = d3.behavior.zoom().x(x).y(y).scaleExtent([.5, 8]).on("zoom", onZoom);
     svg.attr('width', width);
-    svg.select('rect')
-      .attr('width', width);
+    overlay
+      .attr('width', width)
+      .call(zoom);
+
     return this;
   };
 
@@ -289,12 +318,17 @@ export default function() {
     if (!arguments.length) return height;
     height = _;
     y.domain([0, height]).range([0, height]);
+    zoom = d3.behavior.zoom().x(x).y(y).scaleExtent([.5, 8]).on("zoom", onZoom);
+
     let h = Math.max(0, height - edgesSelector.height() -10);
     svg.attr('height', height);
     svg.select('.cgSelectors')
       .attr('transform', 'translate(10,'+h+')');
-    svg.select('rect')
-      .attr('height', h);
+
+    overlay
+      .attr('height', h)
+      .call(zoom);
+
     return this;
   };
 

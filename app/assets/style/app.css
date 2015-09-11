@@ -247,7 +247,8 @@ input[type=date]::-webkit-inner-spin-button {
 .cg .node .scaledTag .bg {
   fill: #f0f0f0; }
 .cg .node .scaledTag .tag {
-  font: 24pt Arial normal;
+  font-size: 2em;
+  font-weight: normal;
   stroke: none; }
 .cg .node.excluded .scaledTag .bg {
   fill: #fafafa; }
