@@ -24,10 +24,10 @@ export function NodeRenderer() {
       //.on('mouseout', mouseout)
     ;
 
-    let tag = g.append('g')
-      .attr('class', 'tag');
+    //let tag = g.append('g');
+    //  //.attr('class', 'tag');
 
-    let scaled = tag.append('g')
+    let scaled = g.append('g')
       .attr('class', 'scaledTag');
 
     let frame = scaled.append('g')

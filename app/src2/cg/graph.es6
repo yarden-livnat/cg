@@ -50,7 +50,8 @@ export default function() {
     });
 
     // scale nodes
-    nodes.forEach( node => node.scale = node.items.length/max );
+    nodes.forEach( node =>
+      node.scale = node.items.length/max );
 
     // create edges
     let n = nodes.length, n1 = n-1,

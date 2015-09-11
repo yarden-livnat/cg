@@ -196,7 +196,7 @@ export default function() {
 
     let e = nodeRenderer(d3Nodes.enter());
     e.each(function(d) { console.log('f', d);})
-      .select('g').attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; })
+      .attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; })
       .call(drag);
 
     d3Nodes
@@ -229,7 +229,8 @@ export default function() {
 
   function build(selection) {
     svg = selection
-      .append('svg');
+      .append('svg')
+      .attr('class', 'cg');
 
     svg.append('rect')
       .attr('class', 'overlay')
@@ -302,7 +303,7 @@ export default function() {
     dimension = _;
     group = dimension.group().reduce(
       (p,v) => { p.push(v); return p; },
-      (p,v) => { p.splice(p.index(v), 1); return p; },
+      (p,v) => { p.splice(p.indexOf(v), 1); return p; },
       () => []);
     return this;
   };

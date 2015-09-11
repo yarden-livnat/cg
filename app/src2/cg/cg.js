@@ -249,7 +249,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       var e = nodeRenderer(d3Nodes.enter());
       e.each(function (d) {
         console.log('f', d);
-      }).select('g').attr('transform', function (d) {
+      }).attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       }).call(drag);
 
@@ -269,7 +269,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     }
 
     function build(selection) {
-      svg = selection.append('svg');
+      svg = selection.append('svg').attr('class', 'cg');
 
       svg.append('rect').attr('class', 'overlay').attr('width', width).attr('height', Math.max(0, height - edgesSelector.height() - 10));
 
@@ -329,7 +329,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       group = dimension.group().reduce(function (p, v) {
         p.push(v);return p;
       }, function (p, v) {
-        p.splice(p.index(v), 1);return p;
+        p.splice(p.indexOf(v), 1);return p;
       }, function () {
         return [];
       });

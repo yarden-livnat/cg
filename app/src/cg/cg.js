@@ -818,7 +818,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       });
 
       ctrl.subscribe('layout', function () {
-        updateForce();
+        updates();
         relayout();
         render(_config.cg.canvas.fastDuration);
       });

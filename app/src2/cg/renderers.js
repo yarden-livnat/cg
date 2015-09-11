@@ -26,9 +26,10 @@ define(['exports'], function (exports) {
 
       g.append('circle').attr('class', 'circle').attr('r', radius);
 
-      var tag = g.append('g').attr('class', 'tag');
+      //let tag = g.append('g');
+      //  //.attr('class', 'tag');
 
-      var scaled = tag.append('g').attr('class', 'scaledTag');
+      var scaled = g.append('g').attr('class', 'scaledTag');
 
       var frame = scaled.append('g').classed('frame', true).style('opacity', 0)
       //.attr('visibility', 'hidden')
