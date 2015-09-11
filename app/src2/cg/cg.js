@@ -108,9 +108,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     }
 
     function onZoom() {
-      console.log('onZoom');
       d3Nodes.attr('transform', function (d) {
-        console.log('zoom: ', d, x(d.x), y(d.y));
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       });
       d3Links.call(edgeRenderer.update);

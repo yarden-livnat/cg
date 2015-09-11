@@ -121,10 +121,7 @@ export default function() {
   function enableZoom() { overlay.call(zoom); }
 
   function onZoom() {
-    console.log('onZoom');
-    d3Nodes.attr('transform', function(d) {
-      console.log('zoom: ',d,x(d.x), y(d.y));
-      return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
+    d3Nodes.attr('transform', function(d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
     d3Links.call(edgeRenderer.update)
   }
 

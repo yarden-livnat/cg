@@ -56,7 +56,7 @@ define(['exports', 'd3'], function (exports, _d3) {
     layout: {
       // layout
       clampToWindow: false,
-      initIterations: 250,
+      initIterations: 0, //250,
       onlyVisibleNodes: false,
 
       minSpeed: 2,
