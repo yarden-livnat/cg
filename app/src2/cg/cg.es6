@@ -44,9 +44,9 @@ export default function() {
 
   let drag = d3.behavior.drag()
     .origin(function (d) { return {x: d.x, y: d.y}; })
-    .on('dragstart', onDragStart)
-    .on('drag', onDrag)
-    .on('dragend', onDragEnd);
+    .on('dragstart', onNodeDragStart)
+    .on('drag', onNodeDrag)
+    .on('dragend', onNodeDragEnd);
 
   let offsetX, offsetY;
 
@@ -84,13 +84,14 @@ export default function() {
 
   postal.subscribe({channel: 'global', topic: 'render', callback: update});
 
-  function onDragStart(d, mx, my) {
+  /* nodes behavior */
+  function onNodeDragStart(d, mx, my) {
     d.fixed |= 2;
     offsetX = d3.event.sourceEvent.layerX - x(d.x);
     offsetY = d3.event.sourceEvent.layerY - y(d.y);
   }
 
-  function onDrag(d) {
+  function onNodeDrag(d) {
     console.log('on drag');
     d3.select(this).classed("fixed", d.fixed |= 3);
     d.x = d.px = x.invert(d3.event.sourceEvent.layerX-offsetX);
@@ -101,7 +102,7 @@ export default function() {
     d3Links.call(edgeRenderer.update);
   }
 
-  function onDragEnd(d) {
+  function onNodeDragEnd(d) {
     d.fixed &= ~6;
   }
 
@@ -109,7 +110,7 @@ export default function() {
     d3.select(this).classed("fixed", d.fixed = false);
   }
 
-  /* zoom */
+  /* zoom behavior*/
   let zoom;
 
   function disableZoom() {
@@ -126,6 +127,7 @@ export default function() {
       return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
     d3Links.call(edgeRenderer.update)
   }
+
 
   function update() {
     force.stop();

@@ -41,7 +41,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
     var drag = _d32['default'].behavior.drag().origin(function (d) {
       return { x: d.x, y: d.y };
-    }).on('dragstart', onDragStart).on('drag', onDrag).on('dragend', onDragEnd);
+    }).on('dragstart', onNodeDragStart).on('drag', onNodeDrag).on('dragend', onNodeDragEnd);
 
     var offsetX = undefined,
         offsetY = undefined;
@@ -71,13 +71,14 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
     _postal2['default'].subscribe({ channel: 'global', topic: 'render', callback: update });
 
-    function onDragStart(d, mx, my) {
+    /* nodes behavior */
+    function onNodeDragStart(d, mx, my) {
       d.fixed |= 2;
       offsetX = _d32['default'].event.sourceEvent.layerX - x(d.x);
       offsetY = _d32['default'].event.sourceEvent.layerY - y(d.y);
     }
 
-    function onDrag(d) {
+    function onNodeDrag(d) {
       console.log('on drag');
       _d32['default'].select(this).classed('fixed', d.fixed |= 3);
       d.x = d.px = x.invert(_d32['default'].event.sourceEvent.layerX - offsetX);
@@ -88,7 +89,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       d3Links.call(edgeRenderer.update);
     }
 
-    function onDragEnd(d) {
+    function onNodeDragEnd(d) {
       d.fixed &= ~6;
     }
 
@@ -96,7 +97,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       _d32['default'].select(this).classed('fixed', d.fixed = false);
     }
 
-    /* zoom */
+    /* zoom behavior*/
     var zoom = undefined;
 
     function disableZoom() {

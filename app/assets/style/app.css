@@ -257,11 +257,11 @@ input[type=date]::-webkit-inner-spin-button {
 .cg .node.highlight {
   fill: red; }
 
-.cg > .link {
+.cg .link {
   fill: none;
   stroke: #666;
   stroke-width: 1.5px; }
-  .cg > .link.highlight {
+  .cg .link.highlight {
     stroke: red;
     stroke-opacity: 1; }
 
