@@ -13,8 +13,9 @@
   bottom: 0;
   left: 200px;
   right: 0;
+}
 
-  .node {
+.cg .node {
     .circle {
       fill: lightgray;
       stroke: green; //#fff;
@@ -74,7 +75,7 @@
     }
   }
 
-  .link {
+.cg .link {
     fill: none;
     stroke: #666;
     stroke-width: 1.5px;
@@ -85,4 +86,3 @@
     }
 
   }
-}

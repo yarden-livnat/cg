@@ -29,7 +29,7 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
       _patients.init(_service.topics);
       _query.init(updateData);
       _info_tables.init();
-      cg(d3.select('#cg'));
+      cg(d3.select('#cg')).resize(getSize('#cg'));
     }
   });
 

@@ -70,14 +70,12 @@ export function NodeRenderer() {
 
     });
 
-    //scaled.call(render.scale);
-
-    //g.attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
-    //g.call(drag);
+    return g;
   }
 
-  render.scale = function(node) {
-    node.attr('transform', function (d) {
+  render.scale = function(selection) {
+    selection.select('.scaledTag')
+      .attr('transform', function (d) {
         return 'translate(7, 0) scale(' + scaleFunc(d.scale) + ')';
       }
     );
@@ -110,4 +108,66 @@ export function NodeRenderer() {
   return render;
 }
 
+
+export function EdgeRenderer() {
+  let scale = d => d;
+  let opacity = 0.1;
+  let duration = 0;
+  let x = d => d;
+  let y = d => d;
+
+  function renderer(selection) {
+      selection.append('line')
+        .attr('class', 'link')
+        .style('stroke-width', function (d) { return scale(d.value) + '1px'; })
+        //.on('mouseover', highlightEdge)
+        //.on('mouseout', unhighlightEdge)
+        .style('opacity', 0)
+        .transition()
+        .duration(duration)
+          .style('opacity', opacity)
+      ;
+  }
+
+  renderer.update = function(selection) {
+    this
+      .attr('x1', function(d) { return x(d.source.x); })
+      .attr('y1', function(d) { return y(d.source.y); })
+      .attr('x2', function(d) { return x(d.target.x); })
+      .attr('y2', function(d) { return y(d.target.y); });
+
+  };
+
+  renderer.scale = function(_) {
+    if (!arguments.length) return scale;
+    scale = _;
+    return this;
+  };
+
+  renderer.opacity = function (_) {
+    if (!arguments.length) return opacity;
+    opacity = _;
+    return this;
+  };
+
+  renderer.duration = function(_) {
+    if (!arguments.length) return duration;
+    duration = _;
+    return this;
+  };
+
+  renderer.x = function(_) {
+    if (!arguments.length) return x;
+    x = _;
+    return this;
+  };
+
+  renderer.y = function(_) {
+    if (!arguments.length) return y;
+    y = _;
+    return this;
+  };
+
+  return renderer;
+}
 

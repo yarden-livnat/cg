@@ -792,7 +792,7 @@ export default function() {
     });
 
    ctrl.subscribe('layout', () => {
-      updateForce();
+      updates();
       relayout();
       render(opt.canvas.fastDuration);
     });

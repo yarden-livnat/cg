@@ -27,7 +27,7 @@ queue()
       patients.init(service.topics);
       query.init(updateData);
       infoTables.init();
-      cg(d3.select('#cg'));
+      cg(d3.select('#cg')).resize(getSize('#cg'));
     }
   });
 
