@@ -63,6 +63,10 @@ export default function() {
     .on('tick', updatePosition)
     .on('end', forceDone);
 
+  /*
+   * Nodes and Edge Selectors
+   */
+
   let nodesRange = [0, 1],
       edgesRange = [0.7, 1];
 
@@ -72,17 +76,37 @@ export default function() {
     .on('select', r => {
       nodesRange = r;
       render(cgOptions.canvas.fastDuration);
-      //updateEdgesSelector();
+      updateEdgesSelector();
     });
 
   let edgesSelector = Selector()
     .width(100).height(50)
     .select(edgesRange)
-    .on('select',  r => { edgesRange = r; render(cgOptions.canvas.fastDuration); });
+    .on('select',  r => {
+      edgesRange = r;
+      render(cgOptions.canvas.fastDuration);
+    });
 
+
+  function updateNodesSelector() {
+    let values = [];
+    for (let node of graph.nodes()) {
+      if (node.items.length > 0) values.push(node.scale);
+    }
+    nodesSelector.data(values);
+  }
+
+  function updateEdgesSelector() {
+    let active = [];
+    for (let edge of graph.edges()) {
+      if (edge.source.visible && edge.target.visible) active.push(edge.value);
+    }
+    edgesSelector.data(active);
+  }
 
 
   postal.subscribe({channel: 'global', topic: 'render', callback: update});
+  postal.subscribe({channel: 'global', topic: 'data.changed', callback: onDataChanged});
 
   /* nodes behavior */
   function onNodeDragStart(d, mx, my) {
@@ -152,6 +176,11 @@ export default function() {
     }));
 
     render(cgOptions.canvas.duration);
+    updateNodesSelector();
+    updateEdgesSelector();
+  }
+
+  function onDataChanged() {
     layout(cgOptions.layout.initIterations);
   }
 
@@ -210,8 +239,16 @@ export default function() {
   }
 
   function render(duration) {
+
+    let activeNodes = [];
+    for (let node of graph.nodes()) {
+      node.visible = node.items.length > 0 &&
+        node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
+      if (node.visible) activeNodes.push(node);
+    }
+
     d3Nodes = svgNodes.selectAll('.node')
-      .data(graph.nodes(), d => d.id);
+      .data(activeNodes, d => d.id);
 
     let e = nodeRenderer(d3Nodes.enter());
     e.each(function(d) { console.log('f', d);})
@@ -230,8 +267,10 @@ export default function() {
         .remove();
 
 
+    let activeEdges = graph.edges().filter( edge => edge.source.visible && edge.target.visible
+                                                    && edge.value >= edgesRange[0] && edge.value <= edgesRange[1]);
     d3Links = svgLinks.selectAll('.link')
-      .data(graph.edges(), d => d.id);
+      .data(activeEdges, d => d.id);
 
     d3Links.enter()
       .call(edgeRenderer);
@@ -245,6 +284,7 @@ export default function() {
         .style('opacity', 1e-6)
         .remove();
   }
+
 
 
   function build(selection) {

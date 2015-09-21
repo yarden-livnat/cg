@@ -49,6 +49,7 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
 
       // todo: reapply filters
       _postal2['default'].publish({ channel: 'global', topic: 'render' });
+      _postal2['default'].publish({ channel: 'global', topic: 'data.changed' });
     }
   }
 

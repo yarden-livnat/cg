@@ -56,20 +56,86 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       /*return cgOptions.layout.distScale(d.value); */return 40;
     }).on('tick', updatePosition).on('end', forceDone);
 
+    /*
+     * Nodes and Edge Selectors
+     */
+
     var nodesRange = [0, 1],
         edgesRange = [0.7, 1];
 
     var nodesSelector = (0, _Selector['default'])().width(100).height(50).select(nodesRange).on('select', function (r) {
       nodesRange = r;
       render(_config.cgOptions.canvas.fastDuration);
-      //updateEdgesSelector();
+      updateEdgesSelector();
     });
 
     var edgesSelector = (0, _Selector['default'])().width(100).height(50).select(edgesRange).on('select', function (r) {
-      edgesRange = r;render(_config.cgOptions.canvas.fastDuration);
+      edgesRange = r;
+      render(_config.cgOptions.canvas.fastDuration);
     });
 
+    function updateNodesSelector() {
+      var values = [];
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = graph.nodes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var node = _step.value;
+
+          if (node.items.length > 0) values.push(node.scale);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      nodesSelector.data(values);
+    }
+
+    function updateEdgesSelector() {
+      var active = [];
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = graph.edges()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var edge = _step2.value;
+
+          if (edge.source.visible && edge.target.visible) active.push(edge.value);
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      edgesSelector.data(active);
+    }
+
     _postal2['default'].subscribe({ channel: 'global', topic: 'render', callback: update });
+    _postal2['default'].subscribe({ channel: 'global', topic: 'data.changed', callback: onDataChanged });
 
     /* nodes behavior */
     function onNodeDragStart(d, mx, my) {
@@ -118,27 +184,27 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       force.stop();
 
       var prev = new Map();
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator = graph.nodes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var node = _step.value;
+        for (var _iterator3 = graph.nodes()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var node = _step3.value;
 
           prev.set(node.id, node);
         }
       } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion && _iterator['return']) {
-            _iterator['return']();
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
           }
         } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
+          if (_didIteratorError3) {
+            throw _iteratorError3;
           }
         }
       }
@@ -164,6 +230,11 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       }));
 
       render(_config.cgOptions.canvas.duration);
+      updateNodesSelector();
+      updateEdgesSelector();
+    }
+
+    function onDataChanged() {
       layout(_config.cgOptions.layout.initIterations);
     }
 
@@ -177,28 +248,28 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
     function updatePosition() {
       if (_config.cgOptions.layout.clampToWindow) {
-        var _iteratorNormalCompletion2 = true;
-        var _didIteratorError2 = false;
-        var _iteratorError2 = undefined;
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
 
         try {
-          for (var _iterator2 = activeNodes[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-            var node = _step2.value;
+          for (var _iterator4 = activeNodes[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var node = _step4.value;
 
             node.x = clamp(node.x, 0, width - node.w);
             node.y = clamp(node.y, 0, height - node.h);
           }
         } catch (err) {
-          _didIteratorError2 = true;
-          _iteratorError2 = err;
+          _didIteratorError4 = true;
+          _iteratorError4 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-              _iterator2['return']();
+            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+              _iterator4['return']();
             }
           } finally {
-            if (_didIteratorError2) {
-              throw _iteratorError2;
+            if (_didIteratorError4) {
+              throw _iteratorError4;
             }
           }
         }
@@ -216,13 +287,13 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
           sum = 0,
           zero = 0,
           one = 0;
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
 
       try {
-        for (var _iterator3 = activeNodes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var node = _step3.value;
+        for (var _iterator5 = activeNodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var node = _step5.value;
 
           var dx = Math.abs(node.x - node.px);
           var dy = Math.abs(node.y - node.py);
@@ -233,16 +304,16 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
           if (speed < 1) one++;
         }
       } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-            _iterator3['return']();
+          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+            _iterator5['return']();
           }
         } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
+          if (_didIteratorError5) {
+            throw _iteratorError5;
           }
         }
       }
@@ -262,7 +333,35 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     }
 
     function render(duration) {
-      d3Nodes = svgNodes.selectAll('.node').data(graph.nodes(), function (d) {
+
+      var activeNodes = [];
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = graph.nodes()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var node = _step6.value;
+
+          node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
+          if (node.visible) activeNodes.push(node);
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+            _iterator6['return']();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
+      }
+
+      d3Nodes = svgNodes.selectAll('.node').data(activeNodes, function (d) {
         return d.id;
       });
 
@@ -277,7 +376,10 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
       d3Nodes.exit().transition().duration(duration).style('opacity', 0.000001).remove();
 
-      d3Links = svgLinks.selectAll('.link').data(graph.edges(), function (d) {
+      var activeEdges = graph.edges().filter(function (edge) {
+        return edge.source.visible && edge.target.visible && edge.value >= edgesRange[0] && edge.value <= edgesRange[1];
+      });
+      d3Links = svgLinks.selectAll('.link').data(activeEdges, function (d) {
         return d.id;
       });
 

@@ -49,6 +49,7 @@ function updateData(err, data) {
 
     // todo: reapply filters
     postal.publish({channel: 'global', topic: 'render'});
+    postal.publish({channel: 'global', topic: 'data.changed'});
   }
 }
 
