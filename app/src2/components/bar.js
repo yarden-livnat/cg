@@ -36,9 +36,13 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
         var range = svg.select('g').selectAll('rect').data([d.value]);
 
-        range.enter().append('rect').attr('width', w0).attr('height', height).transition().duration(duration).attr('width', w1);
+        range.enter().append('rect').attr('width', 0).attr('height', height);
+        //.transition()
+        //.duration(duration)
+        //.attr('width', w1);
 
-        range.transition().duration(duration).attr('width', w1).attr('height', height);
+        range.transition().duration(duration).attr('width', w1);
+        //.attr('height', height);
 
         var labels = svg.select('g').selectAll('text').data([d.value]);
         labels.enter().append('text').attr('y', 10).attr('x', function (d, i) {

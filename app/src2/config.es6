@@ -30,7 +30,9 @@ export let cgOptions = {
     edgeStrength: 0,
     edgeScale: d3.scale.log()
       .domain([0.1, 1])
-      .range([0.4, 2.5]),
+      //.range([0.4, 2.5]),
+      .range([1, 0.5])
+      .clamp(true),
 
     // nodes
     nodeRadius: 3,

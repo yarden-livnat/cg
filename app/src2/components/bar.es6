@@ -39,16 +39,16 @@ export default function() {
       let range = svg.select('g').selectAll('rect').data([d.value]);
 
       range.enter().append('rect')
-        .attr('width', w0)
-        .attr('height', height)
-        .transition()
-        .duration(duration)
-        .attr('width', w1);
+        .attr('width', 0)
+        .attr('height', height);
+        //.transition()
+        //.duration(duration)
+        //.attr('width', w1);
 
       range.transition()
         .duration(duration)
-        .attr('width', w1)
-        .attr('height', height);
+        .attr('width', w1);
+        //.attr('height', height);
 
       let labels = svg.select('g').selectAll('text').data([d.value]);
       labels.enter().append('text')

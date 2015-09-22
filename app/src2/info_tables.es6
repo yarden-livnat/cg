@@ -178,7 +178,12 @@ function RelTable(div) {
     if (dirty) { dirty = false; }
     else {
       let items = in_dimension.group().top(Infinity);
-      items.forEach( item => item.topic = topicsMap.get(item.key).label );
+      let max = 0;
+      for (let item of items) {
+        item.topic = topicsMap.get(item.key).label;
+        max = Math.max(max, item.value);
+      }
+      bars.max(max);
       inner.data( items );
     }
     return this;

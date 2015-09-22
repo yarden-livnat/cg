@@ -112,7 +112,7 @@ export function NodeRenderer() {
 
 export function EdgeRenderer() {
   let scale = d => d;
-  let opacity = 0.1;
+  let opacity = 0.5;
   let duration = 0;
   let x = d => d;
   let y = d => d;
@@ -120,13 +120,18 @@ export function EdgeRenderer() {
   function renderer(selection) {
       selection.append('line')
         .attr('class', 'link')
-        .style('stroke-width', function (d) { return scale(d.value) + '1px'; })
+        .style('stroke-width', '0.5px') //function (d) { return scale(d.value) + '1px'; })
+        .style('stroke', d3.hsl(0, 1, 1))
         //.on('mouseover', highlightEdge)
         //.on('mouseout', unhighlightEdge)
-        .style('opacity', 1)
+        .style('opacity', 0)
+        //.each( function(d)  { console.log('edge:',d, ' value:', d.value, scale(d.value), d3.hsl(0, 0.8, scale(d.value)))})
         .transition()
         .duration(duration)
           .style('opacity', opacity)
+          //.style('stroke', function(d) { return d3.hsl(0, 80, scale(d.value)); })
+          .styleTween('stroke', function(d, a) { return d3.interpolateHsl(d3.hsl(0, 1, 1), d3.hsl(0, 0.8, scale(d.value))); })
+
       ;
   }
 

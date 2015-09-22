@@ -208,9 +208,34 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
         dirty = false;
       } else {
         var items = in_dimension.group().top(Infinity);
-        items.forEach(function (item) {
-          return item.topic = _service.topicsMap.get(item.key).label;
-        });
+        var max = 0;
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = items[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var item = _step3.value;
+
+            item.topic = _service.topicsMap.get(item.key).label;
+            max = Math.max(max, item.value);
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+              _iterator3['return']();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+
+        bars.max(max);
         inner.data(items);
       }
       return this;

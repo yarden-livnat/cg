@@ -39,7 +39,9 @@ define(['exports', 'd3'], function (exports, _d3) {
       edgeValueSelection: [0, 1],
       edgeOpacity: 0.2,
       edgeStrength: 0,
-      edgeScale: _d32['default'].scale.log().domain([0.1, 1]).range([0.4, 2.5]),
+      edgeScale: _d32['default'].scale.log().domain([0.1, 1])
+      //.range([0.4, 2.5]),
+      .range([1, 0.5]).clamp(true),
 
       // nodes
       nodeRadius: 3,

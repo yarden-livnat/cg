@@ -99,7 +99,7 @@ define(['exports'], function (exports) {
     var scale = function scale(d) {
       return d;
     };
-    var opacity = 0.1;
+    var opacity = 0.5;
     var duration = 0;
     var x = function x(d) {
       return d;
@@ -109,12 +109,17 @@ define(['exports'], function (exports) {
     };
 
     function renderer(selection) {
-      selection.append('line').attr('class', 'link').style('stroke-width', function (d) {
-        return scale(d.value) + '1px';
-      })
+      selection.append('line').attr('class', 'link').style('stroke-width', '0.5px') //function (d) { return scale(d.value) + '1px'; })
+      .style('stroke', d3.hsl(0, 1, 1))
       //.on('mouseover', highlightEdge)
       //.on('mouseout', unhighlightEdge)
-      .style('opacity', 1).transition().duration(duration).style('opacity', opacity);
+      .style('opacity', 0)
+      //.each( function(d)  { console.log('edge:',d, ' value:', d.value, scale(d.value), d3.hsl(0, 0.8, scale(d.value)))})
+      .transition().duration(duration).style('opacity', opacity)
+      //.style('stroke', function(d) { return d3.hsl(0, 80, scale(d.value)); })
+      .styleTween('stroke', function (d, a) {
+        return d3.interpolateHsl(d3.hsl(0, 1, 1), d3.hsl(0, 0.8, scale(d.value)));
+      });
     }
 
     renderer.update = function (selection) {
