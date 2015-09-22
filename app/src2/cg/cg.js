@@ -334,6 +334,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
     function render(duration) {
 
+      console.log('render');
+
       var activeNodes = [];
       var _iteratorNormalCompletion6 = true;
       var _didIteratorError6 = false;
@@ -366,9 +368,9 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       });
 
       var e = nodeRenderer(d3Nodes.enter());
-      e.each(function (d) {
-        console.log('f', d);
-      }).attr('transform', function (d) {
+      e
+      //.each(function(d) { console.log('new node:', d, x(d.x), y(d.y));})
+      .attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       }).call(drag);
 
@@ -376,9 +378,10 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
 
       d3Nodes.exit().transition().duration(duration).style('opacity', 0.000001).remove();
 
-      var activeEdges = graph.edges().filter(function (edge) {
+      var activeEdges = showEdges && graph.edges().filter(function (edge) {
         return edge.source.visible && edge.target.visible && edge.value >= edgesRange[0] && edge.value <= edgesRange[1];
-      });
+      }) || [];
+
       d3Links = svgLinks.selectAll('.link').data(activeEdges, function (d) {
         return d.id;
       });
@@ -407,7 +410,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       edgesSelector(sg.append('g').attr('class', 'edgesSelector').attr('transform', 'translate(' + (nodesSelector.width() + 10) + ',0)'));
 
       sg.append('text').attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) + ',' + (nodesSelector.height() + 5) + ')').text('relations').on('click', function () {
-        showEdges = !showEdges;render();
+        showEdges = !showEdges;render(_config.cgOptions.canvas.fastDuration);
       });
 
       /* graph */

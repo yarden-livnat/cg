@@ -28,7 +28,8 @@ export function NodeRenderer() {
     //  //.attr('class', 'tag');
 
     let scaled = g.append('g')
-      .attr('class', 'scaledTag');
+      .attr('class', 'scaledTag')
+      .attr('transform', 'translate(7, 0) scale(0.1)');
 
     let frame = scaled.append('g')
         .classed('frame', true)
@@ -122,7 +123,7 @@ export function EdgeRenderer() {
         .style('stroke-width', function (d) { return scale(d.value) + '1px'; })
         //.on('mouseover', highlightEdge)
         //.on('mouseout', unhighlightEdge)
-        .style('opacity', 0)
+        .style('opacity', 1)
         .transition()
         .duration(duration)
           .style('opacity', opacity)

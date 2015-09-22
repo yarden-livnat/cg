@@ -29,7 +29,7 @@ define(['exports'], function (exports) {
       //let tag = g.append('g');
       //  //.attr('class', 'tag');
 
-      var scaled = g.append('g').attr('class', 'scaledTag');
+      var scaled = g.append('g').attr('class', 'scaledTag').attr('transform', 'translate(7, 0) scale(0.1)');
 
       var frame = scaled.append('g').classed('frame', true).style('opacity', 0)
       //.attr('visibility', 'hidden')
@@ -114,7 +114,7 @@ define(['exports'], function (exports) {
       })
       //.on('mouseover', highlightEdge)
       //.on('mouseout', unhighlightEdge)
-      .style('opacity', 0).transition().duration(duration).style('opacity', opacity);
+      .style('opacity', 1).transition().duration(duration).style('opacity', opacity);
     }
 
     renderer.update = function (selection) {

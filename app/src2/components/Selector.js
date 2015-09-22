@@ -28,11 +28,6 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var xAxis = _d32['default'].svg.axis().scale(x).orient('bottom').ticks(0);
 
-    //let yAxis = d3.svg.axis()
-    //  .scale(y)
-    //  .orient("left")
-    //  .ticks(4);
-
     var brush = _d32['default'].svg.brush().x(x).extent([0, 1]).on('brush', brushed);
 
     function brushed() {
@@ -44,10 +39,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
       svg.select('.x').call(xAxis);
 
-      //svg.select('.y')
-      //  .call(yAxis);
-
-      var bar = svg.selectAll('.bar').data(data, function (d, i) {
+      var bar = svg.select('#bars').selectAll('.bar').data(data, function (d, i) {
         return d.x;
       });
 
@@ -67,6 +59,8 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     function selector(selection) {
       svg = selection.append('g').attr('class', 'selector').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
+      svg.append('g').attr('id', 'bars');
+
       svg.append('g').append('rect').attr('width', width).attr('height', height).style('fill', 'steelblue').style('opacity', 0);
 
       handle = svg.append('g').attr('class', 'brush').call(brush);
@@ -74,10 +68,6 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       handle.selectAll('rect').attr('height', height);
 
       svg.append('g').attr('class', 'x axis').attr('transform', 'translate(0,' + height + ')').call(xAxis);
-
-      //svg.append('g')
-      //  .attr('class', 'y axis')
-      //  .call(yAxis);
     }
 
     selector.width = function (w) {

@@ -240,6 +240,8 @@ export default function() {
 
   function render(duration) {
 
+    console.log('render');
+
     let activeNodes = [];
     for (let node of graph.nodes()) {
       node.visible = node.items.length > 0 &&
@@ -251,7 +253,8 @@ export default function() {
       .data(activeNodes, d => d.id);
 
     let e = nodeRenderer(d3Nodes.enter());
-    e.each(function(d) { console.log('f', d);})
+    e
+      //.each(function(d) { console.log('new node:', d, x(d.x), y(d.y));})
       .attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; })
       .call(drag);
 
@@ -267,8 +270,10 @@ export default function() {
         .remove();
 
 
-    let activeEdges = graph.edges().filter( edge => edge.source.visible && edge.target.visible
-                                                    && edge.value >= edgesRange[0] && edge.value <= edgesRange[1]);
+    let activeEdges = showEdges && graph.edges().filter( edge => edge.source.visible && edge.target.visible
+                                                    && edge.value >= edgesRange[0] && edge.value <= edgesRange[1])
+                                || [];
+
     d3Links = svgLinks.selectAll('.link')
       .data(activeEdges, d => d.id);
 
@@ -284,7 +289,6 @@ export default function() {
         .style('opacity', 1e-6)
         .remove();
   }
-
 
 
   function build(selection) {
@@ -316,7 +320,7 @@ export default function() {
     sg.append('text')
       .attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) +',' + (nodesSelector.height() + 5) + ')')
       .text('relations')
-      .on('click', () => { showEdges = !showEdges; render(); });
+      .on('click', () => { showEdges = !showEdges; render(cgOptions.canvas.fastDuration); });
 
 
     /* graph */

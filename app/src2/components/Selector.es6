@@ -27,11 +27,6 @@ export default function() {
     .orient("bottom")
     .ticks(0);
 
-  //let yAxis = d3.svg.axis()
-  //  .scale(y)
-  //  .orient("left")
-  //  .ticks(4);
-
   let brush = d3.svg.brush()
     .x(x)
     .extent([0, 1])
@@ -47,10 +42,7 @@ export default function() {
     svg.select('.x')
       .call(xAxis);
 
-    //svg.select('.y')
-    //  .call(yAxis);
-
-    let bar = svg.selectAll('.bar')
+    let bar = svg.select('#bars').selectAll('.bar')
       .data(data, function (d, i) { return d.x; });
 
     let enter = bar.enter().append('rect')
@@ -76,6 +68,9 @@ export default function() {
       .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
 
     svg.append('g')
+      .attr('id', 'bars');
+
+    svg.append('g')
       .append('rect')
       .attr('width', width)
       .attr('height', height)
@@ -93,10 +88,6 @@ export default function() {
       .attr('class', 'x axis')
       .attr('transform', 'translate(0,' + height + ')')
       .call(xAxis);
-
-    //svg.append('g')
-    //  .attr('class', 'y axis')
-    //  .call(yAxis);
   }
 
   selector.width = function(w) {
