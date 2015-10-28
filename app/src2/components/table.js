@@ -111,9 +111,9 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
           });
         });
 
-        cells.enter().append("td").attr("class", function (d) {
-          return d.col.attr;
-        }).attr("width", function (d) {
+        cells.enter().append("td")
+        //.attr('class', d => d.col.attr)
+        .attr("width", function (d) {
           return d.col.minWidth;
         }).on("click", function (d) {
           dispatch.click.apply(this, arguments);
@@ -127,8 +127,15 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
           return d.col.render == "text";
         }).text(function (d) {
           return d.value;
-        }).classed(function (d) {
-          return d.attr;
+        })
+        //.classed( d => d.attr );
+        .classed({
+          selected: function selected(d) {
+            return d.row.classes && d.row.classes.selected;
+          },
+          excluded: function excluded(d) {
+            return d.row.classes && d.row.classes.excluded;
+          }
         });
 
         var _iteratorNormalCompletion = true;

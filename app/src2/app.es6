@@ -64,5 +64,5 @@ function getSize(el) {
 
 window.addEventListener('resize', function() {
   console.log('window resize');
-  cg.resize(getSize('#cg'));
+  cg.resize(getSize('#cg-area'));
 });

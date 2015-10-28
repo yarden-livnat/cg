@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../components/selector', './graph', './renderers'], function (exports, module, _d3, _postal, _config, _service, _componentsSelector, _graph, _renderers) {
+define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_selection', '../components/selector', './graph', './renderers'], function (exports, module, _d3, _postal, _config, _service, _tag_selection, _componentsSelector, _graph, _renderers) {
   /**
    * Created by yarden on 8/24/15.
    */
@@ -53,7 +53,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     var force = _d32['default'].layout.force().charge(_config.cgOptions.layout.charge).friction(_config.cgOptions.layout.friction).gravity(_config.cgOptions.layout.gravity).linkStrength(function (d) {
       return d.value * _config.cgOptions.layout.linkStrength;
     }).linkDistance(function (d) {
-      /*return cgOptions.layout.distScale(d.value); */return 40;
+      /*return cgOptions.layout.distScale(d.value); */
+      return 40;
     }).on('tick', updatePosition).on('end', forceDone);
 
     /*
@@ -159,9 +160,9 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       d.fixed &= ~6;
     }
 
-    function dblclick(d) {
-      _d32['default'].select(this).classed('fixed', d.fixed = false);
-    }
+    //function onNodeDblclick(d) {
+    //  d3.select(this).classed("fixed", d.fixed = false);
+    //}
 
     /* zoom behavior*/
     var zoom = undefined;
@@ -169,6 +170,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
     function disableZoom() {
       overlay.on('mousedown.zoom', null).on('wheel.zoom', null);
     }
+
     function enableZoom() {
       overlay.call(zoom);
     }
@@ -346,6 +348,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
           var node = _step6.value;
 
           node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
+          node.selected = _tag_selection.isSelected(node.id);
+          node.excluded = _tag_selection.isExcluded(node.id);
           if (node.visible) activeNodes.push(node);
         }
       } catch (err) {
@@ -367,14 +371,20 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
         return d.id;
       });
 
-      var e = nodeRenderer(d3Nodes.enter());
-      e
+      var newNodes = nodeRenderer(d3Nodes.enter());
+      node_behavior(newNodes);
+
+      newNodes
       //.each(function(d) { console.log('new node:', d, x(d.x), y(d.y));})
       .attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       }).call(drag);
 
-      d3Nodes.transition().duration(duration).style('opacity', 1).call(nodeRenderer.scale);
+      d3Nodes.select('text').classed('excluded', function (d) {
+        return d.excluded;
+      });
+
+      d3Nodes.transition().duration(duration).style('opacity', 1).call(nodeRenderer.update);
 
       d3Nodes.exit().transition().duration(duration).style('opacity', 0.000001).remove();
 
@@ -393,6 +403,38 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../comp
       d3Links.exit().transition().duration(duration).style('opacity', 0.000001).remove();
     }
 
+    /* interactions */
+    var mouse_time = Date.now();
+
+    function node_behavior(selection) {
+      selection.on('mousedown', node_mousedown).on('mouseup', node_mouseup).on('dblclick', node_dblclick);
+    }
+
+    function node_mousedown(d) {
+      mouse_time = Date.now();
+      disableZoom();
+    }
+
+    function node_mouseup(d) {
+      enableZoom();
+
+      var dt = Date.now() - mouse_time;
+      if (dt < 200) {
+        force.stop();
+        //if (d3.event.metaKey)       { d3.select(this).classed("fixed", d.fixed = false); }
+        if (_d32['default'].event.metaKey) {
+          _tag_selection.exclude(d.topic.id);
+        } else {
+          _tag_selection.select(d.topic.id);
+        }
+      }
+    }
+
+    function node_dblclick(d) {
+      _d32['default'].select(this).classed('fixed', d.fixed = false);
+    }
+
+    /* init */
     function build(selection) {
       svg = selection.append('svg').attr('class', 'cg');
 

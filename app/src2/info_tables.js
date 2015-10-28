@@ -1,4 +1,4 @@
-define(['exports', 'd3', 'postal', './patients', './service', './components/table', './components/bar'], function (exports, _d3, _postal, _patients, _service, _componentsTable, _componentsBar) {
+define(['exports', 'd3', 'postal', './patients', './service', './tag_selection', './components/table', './components/bar'], function (exports, _d3, _postal, _patients, _service, _tag_selection, _componentsTable, _componentsBar) {
   /**
    * Created by yarden on 8/21/15.
    */
@@ -99,31 +99,18 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
   }
 
   function RelTable(div) {
-    var selected = new Set();
-    var excluded = new Set();
+    //let selected = new Set();
+    //let excluded = new Set();
     var in_dimension = undefined;
     var out_dimension = undefined;
     var dirty = false;
     var inner = (0, _table['default'])(div).on('click', function click(d) {
       dirty = true;
       var key = d.row.key;
-      if (_d32['default'].event.metaKey) {
-        if (!excluded['delete'](key)) excluded.add(key);
-        selected['delete'](key);
-      } else {
-        if (!selected['delete'](key)) selected.add(key);
-        excluded['delete'](key);
-      }
 
-      _d32['default'].select(this).classed('selected', selected.has(key)).classed('excluded', excluded.has(key));
+      if (_d32['default'].event.metaKey) _tag_selection.exclude(key);else _tag_selection.select(key);
 
-      if (selected.size == 0 && excluded.size == 0) out_dimension.filterAll();else {
-        out_dimension.filter(filter);
-      }
-      _patients.update(out_dimension);
-
-      // todo: should this be done in patients.update?
-      _postal2['default'].publish({ channel: 'global', topic: 'render' });
+      _d32['default'].select(this).classed('selected', _tag_selection.isSelected(key)).classed('excluded', _tag_selection.isExcluded(key));
     });
 
     function filter(eid) {
@@ -218,6 +205,10 @@ define(['exports', 'd3', 'postal', './patients', './service', './components/tabl
             var item = _step3.value;
 
             item.topic = _service.topicsMap.get(item.key).label;
+            item.classes = {
+              'selected': _tag_selection.isSelected(item.key),
+              'excluded': _tag_selection.isExcluded(item.key)
+            };
             max = Math.max(max, item.value);
           }
         } catch (err) {

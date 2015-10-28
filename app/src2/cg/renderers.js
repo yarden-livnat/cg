@@ -18,11 +18,7 @@ define(['exports'], function (exports) {
         y = undefined;
 
     function render(selection) {
-      var g = selection.append('g').attr('class', 'node').style('opacity', 0.1)
-      //.on('mousedown', mousedown)
-      //.on('mouseup', mouseup)
-      //.on("dblclick", dblclick)
-      ;
+      var g = selection.append('g').attr('class', 'node').style('opacity', 0.1);
 
       g.append('circle').attr('class', 'circle').attr('r', radius);
 
@@ -62,9 +58,12 @@ define(['exports'], function (exports) {
       return g;
     }
 
-    render.scale = function (selection) {
+    render.update = function (selection) {
       selection.select('.scaledTag').attr('transform', function (d) {
         return 'translate(7, 0) scale(' + scaleFunc(d.scale) + ')';
+      });
+      selection.select('.frame').style('opacity', function (d) {
+        return d.selected && 1 || 0;
       });
     };
 

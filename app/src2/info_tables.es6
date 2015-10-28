@@ -7,6 +7,7 @@ import postal from 'postal'
 
 import * as patients from './patients';
 import {topicsMap} from './service';
+import * as tagSelection from './tag_selection';
 
 import table from './components/table';
 import bar from './components/bar';
@@ -111,8 +112,8 @@ function Table(div) {
 }
 
 function RelTable(div) {
-  let selected = new Set();
-  let excluded = new Set();
+  //let selected = new Set();
+  //let excluded = new Set();
   let in_dimension;
   let out_dimension;
   let dirty = false;
@@ -120,27 +121,13 @@ function RelTable(div) {
     .on('click',  function click(d) {
       dirty = true;
       let key = d.row.key;
-      if (d3.event.metaKey) {
-        if (!excluded.delete(key)) excluded.add(key);
-        selected.delete(key);
-      } else {
-        if (!selected.delete(key)) selected.add(key);
-        excluded.delete(key);
-      }
+
+      if (d3.event.metaKey) tagSelection.exclude(key);
+      else  tagSelection.select(key);
 
       d3.select(this)
-          .classed('selected', selected.has(key))
-          .classed('excluded', excluded.has(key));
-
-      if (selected.size == 0 && excluded.size == 0)
-        out_dimension.filterAll();
-      else {
-        out_dimension.filter( filter );
-      }
-      patients.update(out_dimension);
-
-      // todo: should this be done in patients.update?
-      postal.publish({channel: 'global', topic: 'render'});
+        .classed('selected', tagSelection.isSelected(key))
+        .classed('excluded', tagSelection.isExcluded(key));
     });
 
   function filter(eid) {
@@ -181,6 +168,10 @@ function RelTable(div) {
       let max = 0;
       for (let item of items) {
         item.topic = topicsMap.get(item.key).label;
+        item.classes = {
+          'selected': tagSelection.isSelected(item.key),
+          'excluded': tagSelection.isExcluded(item.key)
+        };
         max = Math.max(max, item.value);
       }
       bars.max(max);

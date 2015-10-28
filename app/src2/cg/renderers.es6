@@ -12,9 +12,6 @@ export function NodeRenderer() {
     let g = selection.append('g')
         .attr('class', 'node')
         .style('opacity', 0.1)
-    //.on('mousedown', mousedown)
-    //.on('mouseup', mouseup)
-    //.on("dblclick", dblclick)
       ;
 
     g.append('circle')
@@ -68,18 +65,19 @@ export function NodeRenderer() {
         .attr('width', bbox.width)
         .attr('height', bbox.height)
         .attr('y', bbox.y);
-
     });
 
     return g;
   }
 
-  render.scale = function(selection) {
+  render.update = function(selection) {
     selection.select('.scaledTag')
       .attr('transform', function (d) {
         return 'translate(7, 0) scale(' + scaleFunc(d.scale) + ')';
       }
     );
+    selection.select('.frame')
+      .style('opacity', d => d.selected && 1 || 0);
   };
 
   render.scaleFunc = function(_) {

@@ -64,7 +64,7 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
 
   window.addEventListener('resize', function () {
     console.log('window resize');
-    cg.resize(getSize('#cg'));
+    cg.resize(getSize('#cg-area'));
   });
 });
 

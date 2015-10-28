@@ -32,7 +32,7 @@ export let cgOptions = {
       .domain([0.1, 1])
       //.range([0.4, 2.5]),
       .range([1, 0.5])
-      .clamp(true),
+                 .clamp(true),
 
     // nodes
     nodeRadius: 3,

@@ -7,6 +7,8 @@ import postal from 'postal'
 
 import {cgOptions} from '../config';
 import {topicsMap} from '../service';
+import * as tagSelection from '../tag_selection';
+
 
 import Selector from '../components/selector';
 
@@ -30,8 +32,8 @@ export default function() {
     .range([0, 1]);
 
   let nodeRenderer = NodeRenderer()
-      .radius(cgOptions.canvas.nodeRadius)
-      .scaleFunc(cgOptions.canvas.nodeScale);
+    .radius(cgOptions.canvas.nodeRadius)
+    .scaleFunc(cgOptions.canvas.nodeScale);
 
   let edgeRenderer = EdgeRenderer()
     .scale(cgOptions.canvas.edgeScale)
@@ -59,7 +61,10 @@ export default function() {
     .friction(cgOptions.layout.friction)
     .gravity(cgOptions.layout.gravity)
     .linkStrength(function (d) { return d.value * cgOptions.layout.linkStrength; })
-    .linkDistance(function (d) { /*return cgOptions.layout.distScale(d.value); */ return 40; })
+    .linkDistance(function (d) { /*return cgOptions.layout.distScale(d.value); */
+      return 40;
+    }
+  )
     .on('tick', updatePosition)
     .on('end', forceDone);
 
@@ -77,20 +82,22 @@ export default function() {
       nodesRange = r;
       render(cgOptions.canvas.fastDuration);
       updateEdgesSelector();
-    });
+    }
+  );
 
   let edgesSelector = Selector()
     .width(100).height(50)
     .select(edgesRange)
-    .on('select',  r => {
+    .on('select', r => {
       edgesRange = r;
       render(cgOptions.canvas.fastDuration);
-    });
+    }
+  );
 
 
   function updateNodesSelector() {
     let values = [];
-    for (let node of graph.nodes()) {
+    for(let node of graph.nodes()) {
       if (node.items.length > 0) values.push(node.scale);
     }
     nodesSelector.data(values);
@@ -98,7 +105,7 @@ export default function() {
 
   function updateEdgesSelector() {
     let active = [];
-    for (let edge of graph.edges()) {
+    for(let edge of graph.edges()) {
       if (edge.source.visible && edge.target.visible) active.push(edge.value);
     }
     edgesSelector.data(active);
@@ -118,11 +125,12 @@ export default function() {
   function onNodeDrag(d) {
     console.log('on drag');
     d3.select(this).classed("fixed", d.fixed |= 3);
-    d.x = d.px = x.invert(d3.event.sourceEvent.layerX-offsetX);
-    d.y = d.py = y.invert(d3.event.sourceEvent.layerY-offsetY);
+    d.x = d.px = x.invert(d3.event.sourceEvent.layerX - offsetX);
+    d.y = d.py = y.invert(d3.event.sourceEvent.layerY - offsetY);
     d3.select(this).attr('transform', function (d) {
       return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
-    });
+    }
+    );
     d3Links.call(edgeRenderer.update);
   }
 
@@ -130,9 +138,9 @@ export default function() {
     d.fixed &= ~6;
   }
 
-  function dblclick(d) {
-    d3.select(this).classed("fixed", d.fixed = false);
-  }
+  //function onNodeDblclick(d) {
+  //  d3.select(this).classed("fixed", d.fixed = false);
+  //}
 
   /* zoom behavior*/
   let zoom;
@@ -142,11 +150,12 @@ export default function() {
       .on('mousedown.zoom', null)
       .on('wheel.zoom', null);
   }
+
   function enableZoom() { overlay.call(zoom); }
 
   function onZoom() {
-    d3Nodes.attr('transform', function(d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
-    d3Links.call(edgeRenderer.update)
+    d3Nodes.attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
+    d3Links.call(edgeRenderer.update);
   }
 
 
@@ -154,26 +163,28 @@ export default function() {
     force.stop();
 
     let prev = new Map();
-    for (let node of graph.nodes()) {
+    for(let node of graph.nodes()) {
       prev.set(node.id, node);
     }
 
-    graph.nodes( group.top(Infinity).map( item => {
+    graph.nodes(group.top(Infinity).map(item => {
       let topic = topicsMap.get(item.key);
       let node = prev.get(topic)
         || {
-          id: item.key,
+          id:    item.key,
           label: topic.label,
           topic: topic,
-          x: Math.random() * width,
-          y: Math.random() * height,
+          x:     Math.random() * width,
+          y:     Math.random() * height,
           scale: 1
         };
 
-      node.items = item.value.map( entry => entry.enc_id);
-      node.items.sort( (a,b) => a - b);
+      node.items = item.value.map(entry => entry.enc_id);
+      node.items.sort((a, b) => a - b);
       return node;
-    }));
+    }
+    )
+    );
 
     render(cgOptions.canvas.duration);
     updateNodesSelector();
@@ -194,31 +205,33 @@ export default function() {
 
   function clamp(v, min, max) {
     return v < min ? min :
-           v > max ? max :
-           v;
+      v > max ? max :
+        v;
   }
 
   function updatePosition() {
     if (cgOptions.layout.clampToWindow) {
-      for (let node of activeNodes) {
-        node.x = clamp(node.x,  0, width - node.w);
-        node.y = clamp(node.y,  0, height - node.h);
+      for(let node of activeNodes) {
+        node.x = clamp(node.x, 0, width - node.w);
+        node.y = clamp(node.y, 0, height - node.h);
       }
     }
 
     // x(), y() to account for zoom
     d3Nodes.attr('transform', function (d) {
-      return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
+      return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
+    }
+    );
 
     d3Links.call(edgeRenderer.update);
 
     // early termination
-    var max = 0, sum = 0, zero = 0, one=0;
-    for (let node of activeNodes) {
-      let dx = Math.abs(node.x -node.px);
+    var max = 0, sum = 0, zero = 0, one = 0;
+    for(let node of activeNodes) {
+      let dx = Math.abs(node.x - node.px);
       let dy = Math.abs(node.y - node.py);
-      let speed = Math.sqrt(dx*dx + dy+dy);
-      max = Math.max(speed,  max);
+      let speed = Math.sqrt(dx * dx + dy + dy);
+      max = Math.max(speed, max);
       sum += speed;
       if (speed == 0) zero++;
       if (speed < 1) one++;
@@ -243,36 +256,44 @@ export default function() {
     console.log('render');
 
     let activeNodes = [];
-    for (let node of graph.nodes()) {
+    for(let node of graph.nodes()) {
       node.visible = node.items.length > 0 &&
         node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
+      node.selected = tagSelection.isSelected(node.id);
+      node.excluded = tagSelection.isExcluded(node.id);
       if (node.visible) activeNodes.push(node);
     }
 
     d3Nodes = svgNodes.selectAll('.node')
       .data(activeNodes, d => d.id);
 
-    let e = nodeRenderer(d3Nodes.enter());
-    e
+    let newNodes = nodeRenderer(d3Nodes.enter());
+    node_behavior(newNodes);
+
+    newNodes
       //.each(function(d) { console.log('new node:', d, x(d.x), y(d.y));})
       .attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; })
       .call(drag);
 
+    d3Nodes.select('text')
+      .classed('excluded', d => d.excluded);
+
     d3Nodes
       .transition()
-        .duration(duration)
-        .style('opacity', 1)
-        .call(nodeRenderer.scale);
+      .duration(duration)
+      .style('opacity', 1)
+      .call(nodeRenderer.update);
 
     d3Nodes.exit()
       .transition().duration(duration)
-        .style('opacity', 1e-6)
-        .remove();
+      .style('opacity', 1e-6)
+      .remove();
 
 
-    let activeEdges = showEdges && graph.edges().filter( edge => edge.source.visible && edge.target.visible
-                                                    && edge.value >= edgesRange[0] && edge.value <= edgesRange[1])
-                                || [];
+    let activeEdges = showEdges && graph.edges().filter(edge => edge.source.visible && edge.target.visible
+      && edge.value >= edgesRange[0] && edge.value <= edgesRange[1]
+      )
+      || [];
 
     d3Links = svgLinks.selectAll('.link')
       .data(activeEdges, d => d.id);
@@ -285,12 +306,42 @@ export default function() {
 
     d3Links.exit()
       .transition()
-        .duration(duration)
-        .style('opacity', 1e-6)
-        .remove();
+      .duration(duration)
+      .style('opacity', 1e-6)
+      .remove();
   }
 
+  /* interactions */
+  var mouse_time = Date.now();
 
+  function node_behavior(selection) {
+    selection.on('mousedown', node_mousedown)
+      .on('mouseup', node_mouseup)
+      .on("dblclick", node_dblclick);
+  }
+
+  function node_mousedown(d) {
+    mouse_time = Date.now();
+    disableZoom();
+  }
+
+  function node_mouseup(d) {
+    enableZoom();
+
+    var dt = Date.now() - mouse_time;
+    if (dt < 200) {
+      force.stop();
+      //if (d3.event.metaKey)       { d3.select(this).classed("fixed", d.fixed = false); }
+      if (d3.event.metaKey) { tagSelection.exclude(d.topic.id); }
+      else                  { tagSelection.select(d.topic.id); }
+    }
+  }
+
+  function node_dblclick(d) {
+    d3.select(this).classed("fixed", d.fixed = false);
+  }
+
+  /* init */
   function build(selection) {
     svg = selection
       .append('svg')

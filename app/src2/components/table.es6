@@ -102,7 +102,7 @@ export default function(container, id) {
         .data(row => columns.map(c => ({ col: c, value: c.cellValue(row), attr: c.cellAttr(row), row:row })));
 
       cells.enter().append('td')
-        .attr('class', d => d.col.attr)
+        //.attr('class', d => d.col.attr)
         .attr('width', d => d.col.minWidth)
         .on('click', function(d)  {dispatch.click.apply(this, arguments); })
         .on('mouseover', function(d) { dispatch.mouseover.apply(this, arguments); })
@@ -110,7 +110,12 @@ export default function(container, id) {
 
       cells.filter(d => d.col.render == 'text')
         .text( d => d.value)
-        .classed( d => d.attr );
+        //.classed( d => d.attr );
+        .classed( {
+          selected: d => d.row.classes && d.row.classes.selected,
+          excluded: d => d.row.classes && d.row.classes.excluded
+        });
+
 
       for (let col of columns) {
         if (col.render != 'text') {
