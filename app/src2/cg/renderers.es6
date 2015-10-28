@@ -77,7 +77,7 @@ export function NodeRenderer() {
       }
     );
     selection.select('.frame')
-      .style('opacity', d => d.selected && 1 || 0);
+      .style('opacity', d => (d.selected || d.excluded) ? 1: 0);
   };
 
   render.scaleFunc = function(_) {

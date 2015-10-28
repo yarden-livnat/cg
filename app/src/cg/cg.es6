@@ -266,7 +266,8 @@ export default function() {
             node.selected = node.excluded = false;
             changed.push(node);
           }
-        } if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
+        }
+        if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
           if (!node.selected && s == 'selected' && partialLayout.delete(node.tag)) {
             prevVisible = _.filter(graph.nodes, function(node) { return node.visible; });
           }

@@ -167,6 +167,7 @@ export default function() {
       prev.set(node.id, node);
     }
 
+    // todo: cache unused nodes?
     graph.nodes(group.top(Infinity).map(item => {
       let topic = topicsMap.get(item.key);
       let node = prev.get(topic)
@@ -180,11 +181,18 @@ export default function() {
         };
 
       node.items = item.value.map(entry => entry.enc_id);
-      node.items.sort((a, b) => a - b);
+      node.items.sort((a, b) => a - b); // todo: why are we sorting them here?
+
+      node.selected = tagSelection.isSelected(node.id);
+      if (tagSelection.isExcluded(node.id)) {
+        if (!node.excluded) {
+          node.lastScale = node.scale;
+          node.excluded = true;
+        }
+      }
+
       return node;
-    }
-    )
-    );
+    }));
 
     render(cgOptions.canvas.duration);
     updateNodesSelector();
@@ -252,15 +260,16 @@ export default function() {
   }
 
   function render(duration) {
-
     console.log('render');
-
     let activeNodes = [];
     for(let node of graph.nodes()) {
-      node.visible = node.items.length > 0 &&
-        node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
-      node.selected = tagSelection.isSelected(node.id);
-      node.excluded = tagSelection.isExcluded(node.id);
+      if (node.excluded) {
+        node.visible = true;
+        node.scale = node.lastScale;
+      } else {
+        node.visible = node.items.length > 0 &&
+          node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
+      }
       if (node.visible) activeNodes.push(node);
     }
 
@@ -268,11 +277,10 @@ export default function() {
       .data(activeNodes, d => d.id);
 
     let newNodes = nodeRenderer(d3Nodes.enter());
-    node_behavior(newNodes);
-
     newNodes
-      .attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
-      //.call(drag);
+      .attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; })
+      .call(node_behavior);
+
 
     d3Nodes.select('text')
       .classed('excluded', d => d.excluded);

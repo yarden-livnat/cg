@@ -63,7 +63,7 @@ define(['exports'], function (exports) {
         return 'translate(7, 0) scale(' + scaleFunc(d.scale) + ')';
       });
       selection.select('.frame').style('opacity', function (d) {
-        return d.selected && 1 || 0;
+        return d.selected || d.excluded ? 1 : 0;
       });
     };
 

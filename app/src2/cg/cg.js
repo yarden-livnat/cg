@@ -211,6 +211,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
         }
       }
 
+      // todo: cache unused nodes?
       graph.nodes(group.top(Infinity).map(function (item) {
         var topic = _service.topicsMap.get(item.key);
         var node = prev.get(topic) || {
@@ -227,7 +228,16 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
         });
         node.items.sort(function (a, b) {
           return a - b;
-        });
+        }); // todo: why are we sorting them here?
+
+        node.selected = _tag_selection.isSelected(node.id);
+        if (_tag_selection.isExcluded(node.id)) {
+          if (!node.excluded) {
+            node.lastScale = node.scale;
+            node.excluded = true;
+          }
+        }
+
         return node;
       }));
 
@@ -335,9 +345,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     }
 
     function render(duration) {
-
       console.log('render');
-
       var activeNodes = [];
       var _iteratorNormalCompletion6 = true;
       var _didIteratorError6 = false;
@@ -347,9 +355,12 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
         for (var _iterator6 = graph.nodes()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
           var node = _step6.value;
 
-          node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
-          node.selected = _tag_selection.isSelected(node.id);
-          node.excluded = _tag_selection.isExcluded(node.id);
+          if (node.excluded) {
+            node.visible = true;
+            node.scale = node.lastScale;
+          } else {
+            node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
+          }
           if (node.visible) activeNodes.push(node);
         }
       } catch (err) {
@@ -372,12 +383,9 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       });
 
       var newNodes = nodeRenderer(d3Nodes.enter());
-      node_behavior(newNodes);
-
       newNodes.attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
-      });
-      //.call(drag);
+      }).call(node_behavior);
 
       d3Nodes.select('text').classed('excluded', function (d) {
         return d.excluded;
