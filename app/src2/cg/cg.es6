@@ -271,9 +271,8 @@ export default function() {
     node_behavior(newNodes);
 
     newNodes
-      //.each(function(d) { console.log('new node:', d, x(d.x), y(d.y));})
-      .attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; })
-      .call(drag);
+      .attr('transform', function (d) { return 'translate(' + x(d.x) + ',' + y(d.y) + ')'; });
+      //.call(drag);
 
     d3Nodes.select('text')
       .classed('excluded', d => d.excluded);
@@ -317,7 +316,8 @@ export default function() {
   function node_behavior(selection) {
     selection.on('mousedown', node_mousedown)
       .on('mouseup', node_mouseup)
-      .on("dblclick", node_dblclick);
+      .on("dblclick", node_dblclick)
+      .call(drag);
   }
 
   function node_mousedown(d) {

@@ -374,11 +374,10 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       var newNodes = nodeRenderer(d3Nodes.enter());
       node_behavior(newNodes);
 
-      newNodes
-      //.each(function(d) { console.log('new node:', d, x(d.x), y(d.y));})
-      .attr('transform', function (d) {
+      newNodes.attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
-      }).call(drag);
+      });
+      //.call(drag);
 
       d3Nodes.select('text').classed('excluded', function (d) {
         return d.excluded;
@@ -407,7 +406,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     var mouse_time = Date.now();
 
     function node_behavior(selection) {
-      selection.on('mousedown', node_mousedown).on('mouseup', node_mouseup).on('dblclick', node_dblclick);
+      selection.on('mousedown', node_mousedown).on('mouseup', node_mouseup).on('dblclick', node_dblclick).call(drag);
     }
 
     function node_mousedown(d) {

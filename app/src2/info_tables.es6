@@ -112,8 +112,6 @@ function Table(div) {
 }
 
 function RelTable(div) {
-  //let selected = new Set();
-  //let excluded = new Set();
   let in_dimension;
   let out_dimension;
   let dirty = false;

@@ -99,8 +99,6 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
   }
 
   function RelTable(div) {
-    //let selected = new Set();
-    //let excluded = new Set();
     var in_dimension = undefined;
     var out_dimension = undefined;
     var dirty = false;
