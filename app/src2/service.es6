@@ -31,3 +31,21 @@ export function init(cb) {
         cb(err);
       });
 }
+
+export function fetch(type, names, from, to) {
+  if (typeof names == 'string') names = [names];
+  if (from instanceof Date) from = dateFormat(from);
+  if (to instanceof Date) to = dateFormat(to);
+
+  return new Promise(
+    function (resolve, reject) {
+      //startSpinner();
+      d3.json('/'+type)
+        .header("Content-Type", "application/json")
+        .post(JSON.stringify({ names: names, from: from, to: to }),
+        function(error, data) {
+          if (error) reject(error);
+          else resolve(data);
+        })
+    });
+}

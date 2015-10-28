@@ -24,8 +24,6 @@ let rel_eid_p = relations_cf.dimension(r => r.enc_id);
 let rel_tid_p = relations_cf.dimension(r => r.tag_id);
 export let rel_tid = relations_cf.dimension(r => r.tag_id); rel_tid.name = 'relations';
 
-let detectors = new Map();
-
 function collect(dim) {
  return dim.group().top(Infinity).reduce( (p, v) => v.value ? p.add(v.key) : p, new Set() );
 }
@@ -69,17 +67,25 @@ function updateTags() {
   console.log('update tags');
 }
 
-export function addDetector(name) {
+/* detectors */
+
+let detectors = new Map();
+
+export function addDetector(d) {
   let cf = crossfilter();
-  let detector = {name: name, cf: cf, eid: cf.dimension(d => d.eid), prob: cf.dimension(d => d.prob)};
+  let detector = {name: d.name, cf: cf, eid: cf.dimension(d => d.id), prob: cf.dimension(d => d.prob), similar: cf.dimension(d => d.similar)};
   detector.eid.cf = cf;
   detector.prob.cf = cf;
+  detector.similar.cf = cf;
   detectors.set(name, detector);
 
-  // todo: what to return?
+  return detector;
 }
 
+/* update */
+
 export function update(dimension) {
+  let t = Date.now(); // performance measure
   if (dimension.name === 'encounters') {
     let currentEncounters = collect(enc_eid);
 
@@ -88,9 +94,9 @@ export function update(dimension) {
     let currentTopics = collect(rel_tid_p);
     topics_tid.filter( t => currentTopics.has(t) );
 
-    //for (let detector of detectors.values()) detector.eid.filter(currentEncounters);
-    updateTags();
-  } else if (dimension.name == 'topics') {
+    detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+  }
+  else if (dimension.name == 'topics') {
     let currentTopics = collect(topics_tid);
     rel_tid_p.filter( t => currentTopics.has(t) );
 
@@ -99,14 +105,15 @@ export function update(dimension) {
 
     detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
 
-    updateTags();
-    //} else if ( /* is a detector */) {
-    //
-  } else if (dimension.name == 'relations' ) {
+  } else if (false /* is a detector */) {
+
+  }
+  else if (dimension.name == 'relations' ) {
       let currentTopics = collect(rel_tid_p);
       topics_tid.filter( t => currentTopics.has(t) );
 
       let currentEncounters = collect(rel_eid_p);
       enc_eid.filter( e => currentEncounters.has(e) );
   }
+  console.log('patient: update ', Date.now()-t);
 }

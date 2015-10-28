@@ -9,6 +9,7 @@ define(['exports', 'd3', 'queue'], function (exports, _d3, _queue) {
     value: true
   });
   exports.init = init;
+  exports.fetch = fetch;
 
   function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
@@ -41,6 +42,19 @@ define(['exports', 'd3', 'queue'], function (exports, _d3, _queue) {
         exports.detectors = detectors = detectorsList;
       }
       cb(err);
+    });
+  }
+
+  function fetch(type, names, from, to) {
+    if (typeof names == 'string') names = [names];
+    if (from instanceof Date) from = dateFormat(from);
+    if (to instanceof Date) to = dateFormat(to);
+
+    return new Promise(function (resolve, reject) {
+      //startSpinner();
+      _d32['default'].json('/' + type).header('Content-Type', 'application/json').post(JSON.stringify({ names: names, from: from, to: to }), function (error, data) {
+        if (error) reject(error);else resolve(data);
+      });
     });
   }
 });

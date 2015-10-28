@@ -86,8 +86,10 @@ function detectors(req, res, next) {
     ' and encounter.date between ? and ? ' +
     ' order by enc_id');
 
+  console.log('>> detector');
   db.parallelize(function() {
     list.forEach(function(detector) {
+      console.log('detector:',detector,from, to);
       stmt.all(detector, from, to,
         function(err, rows) {
           if (err) next(err);

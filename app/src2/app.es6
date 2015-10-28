@@ -9,12 +9,14 @@ import * as service from './service';
 import * as query from './query';
 import * as patients from './patients';
 import * as infoTables from './info_tables';
+import Detectors from './info_detectors';
 import CG from './cg/cg';
 
 import Map from './map';
 
 let geomap = Map();
 let cg = CG().dimension(patients.rel_tid);
+let detectors = Detectors();
 
 let dateFormat = d3.time.format('%Y-%m-%d');
 
@@ -27,6 +29,7 @@ queue()
       patients.init(service.topics);
       query.init(updateData);
       infoTables.init();
+      detectors.init(service.detectors.map(patients.addDetector));
       cg(d3.select('#cg-area')).resize(getSize('#cg-area'));
     }
   });
@@ -49,7 +52,7 @@ function updateData(err, data) {
 
     // todo: reapply filters
     postal.publish({channel: 'global', topic: 'render'});
-    postal.publish({channel: 'global', topic: 'data.changed'});
+    postal.publish({channel: 'global', topic: 'data.changed', data: {from: data.from, to: data.to}});
   }
 }
 

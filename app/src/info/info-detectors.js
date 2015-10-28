@@ -124,4 +124,4 @@ define(['exports', 'module', 'd3', 'postal', '../data', '../components/detector'
   };
 });
 
-//# sourceMappingURL=info-detectors.js.map
+//# sourceMappingURL=info_detectors.js.map

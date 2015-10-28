@@ -68,8 +68,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
   });exports.rel_tid = rel_tid;
   rel_tid.name = 'relations';
 
-  var detectors = new Map();
-
   function collect(dim) {
     return dim.group().top(Infinity).reduce(function (p, v) {
       return v.value ? p.add(v.key) : p;
@@ -119,21 +117,31 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     console.log('update tags');
   }
 
-  function addDetector(name) {
+  /* detectors */
+
+  var detectors = new Map();
+
+  function addDetector(d) {
     var cf = (0, _crossfilter2['default'])();
-    var detector = { name: name, cf: cf, eid: cf.dimension(function (d) {
-        return d.eid;
+    var detector = { name: d.name, cf: cf, eid: cf.dimension(function (d) {
+        return d.id;
       }), prob: cf.dimension(function (d) {
         return d.prob;
+      }), similar: cf.dimension(function (d) {
+        return d.similar;
       }) };
     detector.eid.cf = cf;
     detector.prob.cf = cf;
+    detector.similar.cf = cf;
     detectors.set(name, detector);
 
-    // todo: what to return?
+    return detector;
   }
 
+  /* update */
+
   function update(dimension) {
+    var t = Date.now(); // performance measure
     if (dimension.name === 'encounters') {
       (function () {
         var currentEncounters = collect(enc_eid);
@@ -147,8 +155,11 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
           return currentTopics.has(t);
         });
 
-        //for (let detector of detectors.values()) detector.eid.filter(currentEncounters);
-        updateTags();
+        detectors.forEach(function (detector) {
+          detector.eid.filter(function (e) {
+            return currentEncounters.has(e);
+          });
+        });
       })();
     } else if (dimension.name == 'topics') {
       (function () {
@@ -167,12 +178,8 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
             return currentEncounters.has(e);
           });
         });
-
-        updateTags();
-        //} else if ( /* is a detector */) {
-        //
       })();
-    } else if (dimension.name == 'relations') {
+    } else if (false /* is a detector */) {} else if (dimension.name == 'relations') {
       (function () {
         var currentTopics = collect(rel_tid_p);
         topics_tid.filter(function (t) {
@@ -185,6 +192,7 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
         });
       })();
     }
+    console.log('patient: update ', Date.now() - t);
   }
 });
 
