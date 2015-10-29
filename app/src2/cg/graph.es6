@@ -37,21 +37,37 @@ export default function() {
   let nodes = [];
   let edges = [];
   let domain = [];
+  let prob = null;
+  let max = 0;
 
   let edgeFunc = jaccard;
 
-  function update() {
-    // domain
-    domain = new Set();
-    let max = 0;
-    nodes.forEach( node => {
-      node.items.forEach( item => domain.add(item));
-      max = Math.max(max, node.items.length);
-    });
+  function updateNodes() {
+    max = 0;
+    if (prob) {
+      for(let node of nodes) {
+        node.scale = 0;
+        for(let item of node.items) {
+          node.scale += prob.get(item);
+        }
+        max = Math.max(max, node.scale);
+      }
+    } else {
+      for(let node of nodes) {
+        node.scale = node.items.length;
+        max = Math.max(max, node.scale);
+      }
+    }
 
     // scale nodes
-    nodes.forEach( node =>
-      node.scale = node.items.length/max );
+    for (let node of nodes)
+      node.scale /= max;
+    //nodes.forEach( node => node.scale /= max );
+  }
+
+  function recalculate() {
+    updateNodes();
+
 
     // create edges
     let n = nodes.length, n1 = n-1,
@@ -77,12 +93,17 @@ export default function() {
     }
   }
 
-  let graph = {};
+  let graph = {};;
+
+  graph.prob = function(_) {
+    prob = _;
+    updateNodes();
+  };
 
   graph.nodes = function(_) {
     if (!arguments.length) return nodes;
     nodes = _;
-    update();
+    recalculate();
     return this;
   };
 

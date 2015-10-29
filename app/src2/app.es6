@@ -38,7 +38,7 @@ queue()
 function updateData(err, data) {
   if (err) error(err);
   else {
-    // clean up the data
+    // clean the data
     data.enc.forEach(d  => {
       d.date = d3.time.day.round(dateFormat.parse(d.date));
     });

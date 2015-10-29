@@ -11,7 +11,7 @@ export default function(options) {
   let width = 200 - margin.left - margin.right;
   let height = 100 - margin.top - margin.bottom;
   let color = ['#ff8c00', 'lightsteelblue'];
-  let dispatch = d3.dispatch('select');
+  let dispatch = d3.dispatch('select', 'range');
   let handle;
 
   let x = d3.scale.linear()
@@ -38,7 +38,7 @@ export default function(options) {
   let brush = d3.svg.brush()
     .x(x)
     .extent([0, 0])
-    .on('brush', () => dispatch.select(brush.extent()));
+    .on('brushend', () => dispatch.range(brush.extent()));
 
   let detector = function(selection) {
     selection.each( function(d) {
@@ -94,11 +94,7 @@ export default function(options) {
     g.append('g')
       .attr('class', 'data');
 
-    g.append('text')
-        .attr('class', 'title')
-        .attr('x', 5)
-        .attr('y', 5)
-        .text(d => d.name);
+
 
     g.append('g')
       .attr('legend');
@@ -130,7 +126,21 @@ export default function(options) {
     handle.selectAll('rect')
       .attr('height', height);
 
-    return this;
+
+    g.append('text')
+      .attr('class', 'title')
+      .attr('x', 5)
+      .attr('y', 5)
+      .text(d => d.name)
+      .on('click', function(d) {
+        dispatch.select(d);
+      });
+
+    return g;
+  };
+
+  detector.select = function(selection, state) {
+    selection.select('.title').classed('selected', state);
   };
 
   detector.width = function(w) {

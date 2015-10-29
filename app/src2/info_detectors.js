@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', './service', './components/detector'], function (exports, module, _d3, _postal, _service, _componentsDetector) {
+define(['exports', 'module', 'd3', 'postal', './patients', './service', './components/detector'], function (exports, module, _d3, _postal, _patients, _service, _componentsDetector) {
   /**
    * Created by yarden on 8/18/15.
    */
@@ -11,7 +11,7 @@ define(['exports', 'module', 'd3', 'postal', './service', './components/detector
 
   var _postal2 = _interopRequireDefault(_postal);
 
-  var _Detector = _interopRequireDefault(_componentsDetector);
+  var _DetectorClass = _interopRequireDefault(_componentsDetector);
 
   module.exports = function () {
 
@@ -21,16 +21,52 @@ define(['exports', 'module', 'd3', 'postal', './service', './components/detector
     _postal2['default'].subscribe({ channel: 'global', topic: 'render', callback: render });
 
     var selection = undefined;
-    var detectorClass = (0, _Detector['default'])();
+    var Detector = (0, _DetectorClass['default'])();
     var detectors = [];
     var detectorsData = [];
     var range = _d32['default'].range(0.5, 1, 0.5 / N_BINS);
+    var current = null;
+    var dirty = false;
+
+    function elem(id) {
+      return _d32['default'].select('#detectors').select('#detector-' + id);
+    }
 
     function init(list) {
       detectors = list;
+      detectors.forEach(function (d) {
+        d.probGroup = d.prob.group(function (p) {
+          return Math.floor((p - 0.5) / 0.5 * N_BINS);
+        });
+        d.similarGroup = d.similar.group(function (p) {
+          return Math.floor((p - 0.5) / 0.5 * N_BINS);
+        });
+      });
+
       _d32['default'].select('#detectors').selectAll('div').data(list).enter().append('div').attr('id', function (d) {
         return 'detector-' + d.name;
-      }).attr('class', 'detector').call(detectorClass.build);
+      }).attr('class', 'detector').call(Detector.build);
+      Detector.on('select', select);
+      Detector.on('range', update);
+    }
+
+    function select(d) {
+      if (current) Detector.select(elem(current.name), false);
+      current = current != d ? d : null;
+      if (current) Detector.select(elem(current.name), true);
+      _postal2['default'].publish({ channel: 'detector', topic: 'changed', data: current && current.prob });
+    }
+
+    function update(ext) {
+      if (!current) return;
+      dirty = true;
+      current.prob.filter(function (p) {
+        return ext[0] <= p && p <= ext[1];
+      });
+      _patients.update(current.eid);
+
+      // todo: should this be done in patients.update?
+      _postal2['default'].publish({ channel: 'global', topic: 'render' });
     }
 
     function dataChanged(data) {
@@ -43,6 +79,7 @@ define(['exports', 'module', 'd3', 'postal', './service', './components/detector
           var _data = reply[i];
           detector.eid.filterAll();
           detector.prob.filterAll();
+          detector.similar.filterAll();
           detector.cf.remove();
           detector.cf.add(_data.rows);
         }
@@ -53,7 +90,10 @@ define(['exports', 'module', 'd3', 'postal', './service', './components/detector
     }
 
     function render() {
-      var list = [];
+      if (dirty) {
+        dirty = false;
+        return;
+      }
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -66,19 +106,11 @@ define(['exports', 'module', 'd3', 'postal', './service', './components/detector
             return { x: d, p: 0, s: 0 };
           });
 
-          detector.prob.group(function (p) {
-            return Math.floor((p - 0.5) / 0.5 * N_BINS);
-          }).top(Infinity).forEach(function (d) {
+          detector.probGroup.all().forEach(function (d) {
             if (d.key >= 0) hist[d.key].p = d.value;
           });
-
-          detector.similar.group(function (p) {
-            return Math.floor((p - 0.5) / 0.5 * N_BINS);
-          }).top(Infinity).forEach(function (d) {
-            if (d.key >= 0) hist[d.key].s = d.value;
-          });
-
-          list.push({ id: detector.name, data: hist });
+          //detector.similarGroup.all().forEach( d => { if (d.key >= 0) hist[d.key].s = d.value; });
+          detector.data = hist;
         };
 
         for (var _iterator = detectors[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
@@ -99,7 +131,7 @@ define(['exports', 'module', 'd3', 'postal', './service', './components/detector
         }
       }
 
-      detectorClass(_d32['default'].select('#detectors').selectAll('.detector').data(list));
+      Detector(_d32['default'].select('#detectors').selectAll('.detector'));
     }
 
     return {
@@ -107,7 +139,5 @@ define(['exports', 'module', 'd3', 'postal', './service', './components/detector
     };
   };
 });
-
-//import * as data from '../data'
 
 //# sourceMappingURL=info_detectors.js.map

@@ -16,7 +16,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     var width = 200 - margin.left - margin.right;
     var height = 100 - margin.top - margin.bottom;
     var color = ['#ff8c00', 'lightsteelblue'];
-    var dispatch = _d32['default'].dispatch('select');
+    var dispatch = _d32['default'].dispatch('select', 'range');
     var handle = undefined;
 
     var x = _d32['default'].scale.linear().domain([0.5, 1]).range([0, width]);
@@ -27,8 +27,8 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var yAxis = _d32['default'].svg.axis().scale(y).orient('left').tickSize(2).tickFormat(_d32['default'].format(',.0f')).ticks(2);
 
-    var brush = _d32['default'].svg.brush().x(x).extent([0, 0]).on('brush', function () {
-      return dispatch.select(brush.extent());
+    var brush = _d32['default'].svg.brush().x(x).extent([0, 0]).on('brushend', function () {
+      return dispatch.range(brush.extent());
     });
 
     var detector = function detector(selection) {
@@ -81,10 +81,6 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
       g.append('g').attr('class', 'data');
 
-      g.append('text').attr('class', 'title').attr('x', 5).attr('y', 5).text(function (d) {
-        return d.name;
-      });
-
       g.append('g').attr('legend');
 
       g.append('g').attr('class', 'x axis').attr('transform', 'translate(0,' + height + ')').call(xAxis).append('text').attr('x', width).attr('dy', '2.2em').attr('text-anchor', 'end').text('probability');
@@ -101,7 +97,17 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
       handle.selectAll('rect').attr('height', height);
 
-      return this;
+      g.append('text').attr('class', 'title').attr('x', 5).attr('y', 5).text(function (d) {
+        return d.name;
+      }).on('click', function (d) {
+        dispatch.select(d);
+      });
+
+      return g;
+    };
+
+    detector.select = function (selection, state) {
+      selection.select('.title').classed('selected', state);
     };
 
     detector.width = function (w) {

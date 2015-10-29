@@ -111,9 +111,22 @@ export default function() {
     edgesSelector.data(active);
   }
 
+  // Cache
+  let cache = new Map();
 
   postal.subscribe({channel: 'global', topic: 'render', callback: update});
   postal.subscribe({channel: 'global', topic: 'data.changed', callback: onDataChanged});
+  postal.subscribe({channel: 'detector', topic: 'changed', callback: detectorChanged});
+
+  function detectorChanged(prob) {
+    let map = null;
+    if (prob) {
+      map = new Map();
+      for(let entry of prob.top(Infinity))
+        map.set(entry.id, entry.prob);
+    }
+    graph.prob(map);
+    postal.publish({channel: 'global', topic: 'render'});  }
 
   /* nodes behavior */
   function onNodeDragStart(d, mx, my) {
@@ -138,10 +151,6 @@ export default function() {
     d.fixed &= ~6;
   }
 
-  //function onNodeDblclick(d) {
-  //  d3.select(this).classed("fixed", d.fixed = false);
-  //}
-
   /* zoom behavior*/
   let zoom;
 
@@ -159,19 +168,23 @@ export default function() {
   }
 
 
+  function getNode(item) {
+
+    return node;
+  }
+
+
+  /*
+   * process new data
+   */
   function update() {
     force.stop();
 
-    let prev = new Map();
-    for(let node of graph.nodes()) {
-      prev.set(node.id, node);
-    }
-
-    // todo: cache unused nodes?
     graph.nodes(group.top(Infinity).map(item => {
       let topic = topicsMap.get(item.key);
-      let node = prev.get(topic)
-        || {
+      let node = cache.get(topic);
+      if (!node) {
+        node = {
           id:    item.key,
           label: topic.label,
           topic: topic,
@@ -179,9 +192,11 @@ export default function() {
           y:     Math.random() * height,
           scale: 1
         };
+        cache.set(node.id, node);
+      }
 
       node.items = item.value.map(entry => entry.enc_id);
-      node.items.sort((a, b) => a - b); // todo: why are we sorting them here?
+      node.items.sort((a, b) => a - b);
 
       node.selected = tagSelection.isSelected(node.id);
       if (tagSelection.isExcluded(node.id)) {
@@ -260,7 +275,7 @@ export default function() {
   }
 
   function render(duration) {
-    console.log('render');
+    let t = Date.now();
     let activeNodes = [];
     for(let node of graph.nodes()) {
       if (node.excluded) {
@@ -316,6 +331,9 @@ export default function() {
       .duration(duration)
       .style('opacity', 1e-6)
       .remove();
+
+    // performance
+    console.log('render: ', Date.now() -t, 'msec');
   }
 
   /* interactions */

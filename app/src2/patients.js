@@ -113,10 +113,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     });
   }
 
-  function updateTags() {
-    console.log('update tags');
-  }
-
   /* detectors */
 
   var detectors = new Map();
@@ -130,9 +126,9 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
       }), similar: cf.dimension(function (d) {
         return d.similar;
       }) };
-    detector.eid.cf = cf;
-    detector.prob.cf = cf;
-    detector.similar.cf = cf;
+    detector.eid.cf = cf;detector.eid.name = 'detector';
+    detector.prob.cf = cf;detector.prob.name = 'detector';
+    detector.similar.cf = cf;detector.similar.name = 'detector';
     detectors.set(name, detector);
 
     return detector;
@@ -142,6 +138,7 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
   function update(dimension) {
     var t = Date.now(); // performance measure
+    console.log('patients update:', dimension.name);
     if (dimension.name === 'encounters') {
       (function () {
         var currentEncounters = collect(enc_eid);
@@ -179,7 +176,22 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
           });
         });
       })();
-    } else if (false /* is a detector */) {} else if (dimension.name == 'relations') {
+    } else if (dimension.name == 'detector') {
+      (function () {
+        var currentEncounters = collect(dimension);
+        enc_eid.filter(function (e) {
+          return currentEncounters.has(e);
+        });
+
+        rel_eid_p.filter(function (e) {
+          return currentEncounters.has(e);
+        });
+        var currentTopics = collect(rel_tid_p);
+        topics_tid.filter(function (t) {
+          return currentTopics.has(t);
+        });
+      })();
+    } else if (dimension.name == 'relations') {
       (function () {
         var currentTopics = collect(rel_tid_p);
         topics_tid.filter(function (t) {
