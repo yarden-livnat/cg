@@ -15,7 +15,7 @@ import CG from './cg/cg';
 import Map from './map';
 
 let geomap = Map();
-let cg = CG().dimension(patients.rel_tid);
+let cg = CG().dimension(patients.rel_tid_cg);
 let detectors = Detectors();
 
 let dateFormat = d3.time.format('%Y-%m-%d');

@@ -41,6 +41,10 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     return d.id;
   });exports.enc_tags = enc_tags;
   enc_tags.name = 'encounters';
+  var enc_eid_det = encounters_cf.dimension(function (d) {
+    return d.id;
+  });exports.enc_eid_det = enc_eid_det;
+  enc_eid.name = 'encounters';enc_eid_det.collect = enc_eid_det.group();
 
   var topics = (0, _crossfilter2['default'])();
   var topics_tid = topics.dimension(function (d) {
@@ -63,16 +67,15 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
   var rel_tid_p = relations_cf.dimension(function (r) {
     return r.tag_id;
   });
+  //let rel_enc_det = relations_cf.dimension( r=> r.enc_id);
   var rel_tid = relations_cf.dimension(function (r) {
     return r.tag_id;
   });exports.rel_tid = rel_tid;
   rel_tid.name = 'relations';
-
-  function collect(dim) {
-    return dim.group().top(Infinity).reduce(function (p, v) {
-      return v.value ? p.add(v.key) : p;
-    }, new Set());
-  }
+  var rel_tid_cg = relations_cf.dimension(function (r) {
+    return r.tag_id;
+  });exports.rel_tid_cg = rel_tid_cg;
+  rel_tid.name = 'relations';
 
   function setup(data) {
     exports.encounters = encounters = data.encounters;
@@ -89,8 +92,8 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     });
   }
 
-  function init(topics_) {
-    topics.add(topics_);
+  function init(_) {
+    topics.add(_);
   }
 
   function set(data) {
@@ -129,12 +132,21 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     detector.eid.cf = cf;detector.eid.name = 'detector';
     detector.prob.cf = cf;detector.prob.name = 'detector';
     detector.similar.cf = cf;detector.similar.name = 'detector';
-    detectors.set(name, detector);
+    detectors.set(detector.name, detector);
 
     return detector;
   }
 
   /* update */
+
+  function collect(dim) {
+    if (!dim.collect) {
+      dim.collect = dim.group();
+    }
+    return dim.collect.all().reduce(function (p, v) {
+      return v.value ? p.add(v.key) : p;
+    }, new Set());
+  }
 
   function update(dimension) {
     var t = Date.now(); // performance measure
@@ -142,7 +154,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     if (dimension.name === 'encounters') {
       (function () {
         var currentEncounters = collect(enc_eid);
-
         rel_eid_p.filter(function (e) {
           return currentEncounters.has(e);
         });
@@ -152,9 +163,11 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
           return currentTopics.has(t);
         });
 
+        //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+        var detEnc = collect(enc_eid_det);
         detectors.forEach(function (detector) {
           detector.eid.filter(function (e) {
-            return currentEncounters.has(e);
+            return detEnc.has(e);
           });
         });
       })();
@@ -170,22 +183,26 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
           return currentEncounters.has(e);
         });
 
+        //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+        var detEnc = collect(enc_eid_det);
         detectors.forEach(function (detector) {
           detector.eid.filter(function (e) {
-            return currentEncounters.has(e);
+            return detEnc.has(e);
           });
         });
       })();
     } else if (dimension.name == 'detector') {
       (function () {
-        var currentEncounters = collect(dimension);
-        enc_eid.filter(function (e) {
-          return currentEncounters.has(e);
+        var detEnc = collect(dimension);
+        enc_eid_det.filter(function (e) {
+          return detEnc.has(e);
         });
 
+        var currentEncounters = collect(rel_eid_p);
         rel_eid_p.filter(function (e) {
           return currentEncounters.has(e);
         });
+
         var currentTopics = collect(rel_tid_p);
         topics_tid.filter(function (t) {
           return currentTopics.has(t);
@@ -201,6 +218,14 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
         var currentEncounters = collect(rel_eid_p);
         enc_eid.filter(function (e) {
           return currentEncounters.has(e);
+        });
+
+        //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+        var detEnc = collect(enc_eid_det);
+        detectors.forEach(function (detector) {
+          detector.eid.filter(function (e) {
+            return detEnc.has(e);
+          });
         });
       })();
     }

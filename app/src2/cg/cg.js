@@ -226,7 +226,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     function update() {
       force.stop();
 
-      graph.nodes(group.top(Infinity).map(function (item) {
+      graph.nodes(group.all().map(function (item) {
         var topic = _service.topicsMap.get(item.key);
         var node = cache.get(topic);
         if (!node) {
@@ -532,6 +532,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     cg.dimension = function (_) {
       if (!arguments.length) return dimension;
       dimension = _;
+      if (group) group.dispose();
       group = dimension.group().reduce(function (p, v) {
         p.push(v);return p;
       }, function (p, v) {

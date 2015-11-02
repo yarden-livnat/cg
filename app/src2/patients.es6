@@ -13,6 +13,7 @@ export let enc_eid = encounters_cf.dimension(d => d.id); enc_eid.name = 'encount
 export let enc_date = encounters_cf.dimension(d => d.date); enc_date.name = 'encounters';
 export let enc_zipcode = encounters_cf.dimension(d => d.zipcode); enc_zipcode.name = 'encounters';
 export let enc_tags = encounters_cf.dimension(d => d.id); enc_tags.name = 'encounters';
+export let enc_eid_det = encounters_cf.dimension(d => d.id); enc_eid.name = 'encounters'; enc_eid_det.collect = enc_eid_det.group();
 
 let topics = crossfilter();
 export let topics_tid = topics.dimension(d => d.id); topics_tid.name = 'topics';
@@ -22,11 +23,10 @@ export let topics_sys = topics.dimension(d => d.system); topics_sys.name = 'topi
 let relations_cf = crossfilter();
 let rel_eid_p = relations_cf.dimension(r => r.enc_id);
 let rel_tid_p = relations_cf.dimension(r => r.tag_id);
+//let rel_enc_det = relations_cf.dimension( r=> r.enc_id);
 export let rel_tid = relations_cf.dimension(r => r.tag_id); rel_tid.name = 'relations';
+export let rel_tid_cg = relations_cf.dimension(r => r.tag_id); rel_tid.name = 'relations';
 
-function collect(dim) {
- return dim.group().top(Infinity).reduce( (p, v) => v.value ? p.add(v.key) : p, new Set() );
-}
 
 function setup(data) {
   encounters = data.encounters;
@@ -41,8 +41,8 @@ function setup(data) {
   relations.forEach(r => encountersMap.get(r.enc_id).tags.add(r.tag_id));
 }
 
-export function init(topics_) {
-  topics.add(topics_);
+export function init(_) {
+  topics.add(_);
 }
 
 export function set(data) {
@@ -73,25 +73,33 @@ export function addDetector(d) {
   detector.eid.cf = cf; detector.eid.name = 'detector';
   detector.prob.cf = cf; detector.prob.name = 'detector';
   detector.similar.cf = cf; detector.similar.name = 'detector';
-  detectors.set(name, detector);
+  detectors.set(detector.name, detector);
 
   return detector;
 }
 
 /* update */
 
+function collect(dim) {
+  if (!dim.collect) {
+    dim.collect = dim.group();
+  }
+  return dim.collect.all().reduce((p, v) => v.value ? p.add(v.key) : p, new Set());
+}
+
 export function update(dimension) {
   let t = Date.now(); // performance measure
   console.log('patients update:', dimension.name);
   if (dimension.name === 'encounters') {
     let currentEncounters = collect(enc_eid);
-
     rel_eid_p.filter( e => currentEncounters.has(e));
 
     let currentTopics = collect(rel_tid_p);
     topics_tid.filter( t => currentTopics.has(t) );
 
-    detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+    //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+    let detEnc = collect(enc_eid_det);
+    detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
   }
   else if (dimension.name == 'topics') {
     let currentTopics = collect(topics_tid);
@@ -100,15 +108,20 @@ export function update(dimension) {
     let currentEncounters = collect(rel_eid_p);
     enc_eid.filter( e => currentEncounters.has(e) );
 
-    detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+    //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+    let detEnc = collect(enc_eid_det);
+    detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
 
   } else if (dimension.name == 'detector') {
-      let currentEncounters =  collect(dimension);
-      enc_eid.filter( e => currentEncounters.has(e));
+      let detEnc =  collect(dimension);
+      enc_eid_det.filter( e => detEnc.has(e));
 
+      let currentEncounters = collect(rel_eid_p);
       rel_eid_p.filter( e => currentEncounters.has(e));
+
       let currentTopics = collect(rel_tid_p);
       topics_tid.filter( t => currentTopics.has(t) );
+
   }
   else if (dimension.name == 'relations' ) {
       let currentTopics = collect(rel_tid_p);
@@ -116,6 +129,11 @@ export function update(dimension) {
 
       let currentEncounters = collect(rel_eid_p);
       enc_eid.filter( e => currentEncounters.has(e) );
+
+      //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+      let detEnc = collect(enc_eid_det);
+      detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
+
   }
   console.log('patient: update ', Date.now()-t);
 }

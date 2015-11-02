@@ -29,7 +29,8 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
   var bars = (0, _bar['default'])();
   var tags = RelTable(container).id('tags-table').header([{ name: 'topic', title: 'Topic', cellAttr: function cellAttr(r) {
       return r.attr && r.attr.name;
-    } }, { name: 'value', title: 'Encounters', render: bars }]).in_dimension(_patients.rel_tid).out_dimension(_patients.enc_tags);
+    } }, { name: 'value', title: 'Encounters', render: bars }]).in_dimension(_patients.rel_tid);
+  //.out_dimension(patients.enc_tags);
   //.on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
   //.on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); })
 
@@ -49,21 +50,24 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
     var selected = new Set();
     var excluded = new Set();
     var dimension = undefined;
-    var dirty = false;
-    var inner = (0, _table['default'])(div).on('click', function click(d) {
-      dirty = true;
-      if (selected['delete'](d.value)) {
-        _d32['default'].select(this).classed('selected', false);
-      } else {
-        _d32['default'].select(this).classed('selected', true);
-        selected.add(d.value);
-      }
-      if (selected.size == 0) dimension.filterAll();else dimension.filter(function (v) {
-        return selected.has(v);
-      });
-      _patients.update(dimension);
+    var group = undefined;
 
-      // todo: should this be done in patients.update?
+    var inner = (0, _table['default'])(div).on('click', function click(d) {
+      if (_d32['default'].event.metaKey) {
+        if (!excluded['delete'](d.value)) excluded.add(d.value);
+        selected['delete'](d.value);
+      } else {
+        if (!selected['delete'](d.value)) selected.add(d.value);
+        excluded['delete'](d.value);
+      }
+
+      d.row.classes = { selected: selected.has(d.value), excluded: excluded.has(d.value) };
+
+      if (selected.size == 0 && excluded.size == 0) dimension.filterAll();else dimension.filter(function (v) {
+        return (selected.size == 0 || selected.has(v)) && (excluded.size == 0 || !excluded.has(v));
+      });
+
+      _patients.update(dimension);
       _postal2['default'].publish({ channel: 'global', topic: 'render' });
     });
 
@@ -83,15 +87,13 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
 
     api.dimension = function (_) {
       dimension = _;
+      if (group) group.dispose();
+      group = dimension.group();
       return this;
     };
 
     api.render = function () {
-      if (dirty) {
-        dirty = false;
-      } else {
-        inner.data(dimension.group().top(Infinity));
-      }
+      inner.data(group.all());
       return this;
     };
 
@@ -100,6 +102,7 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
 
   function RelTable(div) {
     var in_dimension = undefined;
+    var in_group = undefined;
     var out_dimension = undefined;
     var dirty = false;
     var inner = (0, _table['default'])(div).on('click', function click(d) {
@@ -107,62 +110,7 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
       var key = d.row.key;
 
       if (_d32['default'].event.metaKey) _tag_selection.exclude(key);else _tag_selection.select(key);
-
-      _d32['default'].select(this).classed('selected', _tag_selection.isSelected(key)).classed('excluded', _tag_selection.isExcluded(key));
     });
-
-    function filter(eid) {
-      var enc = _patients.encountersMap.get(eid);
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = selected[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var s = _step.value;
-          if (!enc.tags.has(s)) return false;
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator['return']) {
-            _iterator['return']();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = excluded[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var e = _step2.value;
-          if (enc.tags.has(e)) return false;
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
-            _iterator2['return']();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
-      }
-
-      return true;
-    }
 
     function api(selection) {
       return this;
@@ -180,6 +128,8 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
 
     api.in_dimension = function (_) {
       in_dimension = _;
+      if (in_group) in_group.dispose();
+      in_group = in_dimension.group();
       return this;
     };
 
@@ -189,44 +139,40 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
     };
 
     api.render = function () {
-      if (dirty) {
-        dirty = false;
-      } else {
-        var items = in_dimension.group().top(Infinity);
-        var max = 0;
-        var _iteratorNormalCompletion3 = true;
-        var _didIteratorError3 = false;
-        var _iteratorError3 = undefined;
+      var items = in_group.all();
+      var max = 0;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
 
+      try {
+        for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var item = _step.value;
+
+          item.topic = _service.topicsMap.get(item.key).label;
+          item.classes = {
+            'selected': _tag_selection.isSelected(item.key),
+            'excluded': _tag_selection.isExcluded(item.key)
+          };
+          max = Math.max(max, item.value);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
         try {
-          for (var _iterator3 = items[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-            var item = _step3.value;
-
-            item.topic = _service.topicsMap.get(item.key).label;
-            item.classes = {
-              'selected': _tag_selection.isSelected(item.key),
-              'excluded': _tag_selection.isExcluded(item.key)
-            };
-            max = Math.max(max, item.value);
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
           }
-        } catch (err) {
-          _didIteratorError3 = true;
-          _iteratorError3 = err;
         } finally {
-          try {
-            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-              _iterator3['return']();
-            }
-          } finally {
-            if (_didIteratorError3) {
-              throw _iteratorError3;
-            }
+          if (_didIteratorError) {
+            throw _iteratorError;
           }
         }
-
-        bars.max(max);
-        inner.data(items);
       }
+
+      bars.max(max);
+      inner.data(items);
       return this;
     };
 

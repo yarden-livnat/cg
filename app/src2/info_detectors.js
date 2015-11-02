@@ -90,10 +90,6 @@ define(['exports', 'module', 'd3', 'postal', './patients', './service', './compo
     }
 
     function render() {
-      if (dirty) {
-        dirty = false;
-        return;
-      }
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;

@@ -180,7 +180,7 @@ export default function() {
   function update() {
     force.stop();
 
-    graph.nodes(group.top(Infinity).map(item => {
+    graph.nodes(group.all().map(item => {
       let topic = topicsMap.get(item.key);
       let node = cache.get(topic);
       if (!node) {
@@ -455,6 +455,7 @@ export default function() {
   cg.dimension = function(_) {
     if (!arguments.length) return dimension;
     dimension = _;
+    if (group) group.dispose();
     group = dimension.group().reduce(
       (p,v) => { p.push(v); return p; },
       (p,v) => { p.splice(p.indexOf(v), 1); return p; },

@@ -82,10 +82,6 @@ export default function() {
   }
 
   function render() {
-    if (dirty) {
-      dirty = false;
-      return;
-    }
     for (let detector of detectors) {
       let hist = range.map(d => ({x: d, p: 0, s: 0}));
 

@@ -18,7 +18,7 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
   var _Map = _interopRequireDefault(_map);
 
   var geomap = (0, _Map['default'])();
-  var cg = (0, _CG['default'])().dimension(_patients.rel_tid);
+  var cg = (0, _CG['default'])().dimension(_patients.rel_tid_cg);
   var detectors = (0, _Detectors['default'])();
 
   var dateFormat = d3.time.format('%Y-%m-%d');

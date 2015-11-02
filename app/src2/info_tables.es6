@@ -34,8 +34,8 @@ let tags = RelTable(container)
   .header([
     {name: 'topic', title: 'Topic', cellAttr: r => r.attr && r.attr.name},
     {name: 'value', title: 'Encounters', render: bars}])
-  .in_dimension(patients.rel_tid)
-  .out_dimension(patients.enc_tags);
+  .in_dimension(patients.rel_tid);
+  //.out_dimension(patients.enc_tags);
   //.on('mouseover', function(d) { post.publish('tag.highlight', {name: d.value, show: true}); })
   //.on('mouseout', function(d) { post.publish('tag.highlight', {name: d.value, show: false}); })
 
@@ -59,25 +59,26 @@ function Table(div) {
   let selected = new Set();
   let excluded = new Set();
   let dimension;
-  let dirty = false;
+  let group;
+
   let inner = table(div)
     .on('click',  function click(d) {
-      dirty = true;
-      if (selected.delete(d.value)) {
-        d3.select(this)
-          .classed('selected', false);
+      if (d3.event.metaKey) {
+        if (!excluded.delete(d.value)) excluded.add(d.value);
+        selected.delete(d.value);
       } else {
-        d3.select(this)
-          .classed('selected', true);
-        selected.add(d.value)
+        if (!selected.delete(d.value)) selected.add(d.value);
+        excluded.delete(d.value);
       }
-      if (selected.size == 0)
+
+      d.row.classes = { selected: selected.has(d.value), excluded: excluded.has(d.value)};
+
+      if (selected.size == 0 && excluded.size == 0)
         dimension.filterAll();
       else
-        dimension.filter( v => selected.has(v) );
-      patients.update(dimension);
+        dimension.filter( v => (selected.size == 0 || selected.has(v)) && (excluded.size == 0 || !excluded.has(v)) );
 
-      // todo: should this be done in patients.update?
+      patients.update(dimension);
       postal.publish({channel: 'global', topic: 'render'});
     });
 
@@ -97,14 +98,13 @@ function Table(div) {
 
   api.dimension = function(_) {
     dimension = _;
+    if (group) group.dispose();
+    group = dimension.group();
     return this;
   };
 
   api.render = function() {
-    if (dirty) { dirty = false; }
-    else {
-      inner.data(dimension.group().top(Infinity));
-    }
+    inner.data(group.all());
     return this;
   };
 
@@ -113,6 +113,7 @@ function Table(div) {
 
 function RelTable(div) {
   let in_dimension;
+  let in_group;
   let out_dimension;
   let dirty = false;
   let inner = table(div)
@@ -122,18 +123,7 @@ function RelTable(div) {
 
       if (d3.event.metaKey) tagSelection.exclude(key);
       else  tagSelection.select(key);
-
-      d3.select(this)
-        .classed('selected', tagSelection.isSelected(key))
-        .classed('excluded', tagSelection.isExcluded(key));
     });
-
-  function filter(eid) {
-    let enc = patients.encountersMap.get(eid);
-    for (let s of selected) if (!enc.tags.has(s)) return false;
-    for (let e of excluded) if (enc.tags.has(e)) return false;
-    return true;
-  }
 
   function api(selection) {
     return this;
@@ -151,6 +141,8 @@ function RelTable(div) {
 
   api.in_dimension = function(_) {
     in_dimension = _;
+    if (in_group) in_group.dispose();
+    in_group = in_dimension.group();
     return this;
   };
 
@@ -160,21 +152,18 @@ function RelTable(div) {
   };
 
   api.render = function() {
-    if (dirty) { dirty = false; }
-    else {
-      let items = in_dimension.group().top(Infinity);
-      let max = 0;
-      for (let item of items) {
-        item.topic = topicsMap.get(item.key).label;
-        item.classes = {
-          'selected': tagSelection.isSelected(item.key),
-          'excluded': tagSelection.isExcluded(item.key)
-        };
-        max = Math.max(max, item.value);
-      }
-      bars.max(max);
-      inner.data( items );
+    let items = in_group.all();
+    let max = 0;
+    for (let item of items) {
+      item.topic = topicsMap.get(item.key).label;
+      item.classes = {
+        'selected': tagSelection.isSelected(item.key),
+        'excluded': tagSelection.isExcluded(item.key)
+      };
+      max = Math.max(max, item.value);
     }
+    bars.max(max);
+    inner.data( items );
     return this;
   };
 
