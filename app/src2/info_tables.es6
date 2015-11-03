@@ -115,11 +115,10 @@ function RelTable(div) {
   let in_dimension;
   let in_group;
   let out_dimension;
-  let dirty = false;
+
   let inner = table(div)
     .on('click',  function click(d) {
-      dirty = true;
-      let key = d.row.key;
+      let key = d.row.key.tid;
 
       if (d3.event.metaKey) tagSelection.exclude(key);
       else  tagSelection.select(key);
@@ -155,10 +154,10 @@ function RelTable(div) {
     let items = in_group.all();
     let max = 0;
     for (let item of items) {
-      item.topic = topicsMap.get(item.key).label;
+      item.topic = topicsMap.get(item.key.tid).label;
       item.classes = {
-        'selected': tagSelection.isSelected(item.key),
-        'excluded': tagSelection.isExcluded(item.key)
+        'selected': tagSelection.isSelected(item.key.tid),
+        'excluded': tagSelection.isExcluded(item.key.tid)
       };
       max = Math.max(max, item.value);
     }

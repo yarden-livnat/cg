@@ -16,6 +16,8 @@ define(['exports', 'module', 'd3', 'postal', './patients', './service', './compo
   module.exports = function () {
 
     var N_BINS = 20;
+    var MIN_PROB = 0;
+    var PROB_RANGE = 1 - MIN_PROB;
 
     _postal2['default'].subscribe({ channel: 'global', topic: 'data.changed', callback: dataChanged });
     _postal2['default'].subscribe({ channel: 'global', topic: 'render', callback: render });
@@ -23,10 +25,8 @@ define(['exports', 'module', 'd3', 'postal', './patients', './service', './compo
     var selection = undefined;
     var Detector = (0, _DetectorClass['default'])();
     var detectors = [];
-    var detectorsData = [];
-    var range = _d32['default'].range(0.5, 1, 0.5 / N_BINS);
+    var range = _d32['default'].range(MIN_PROB, 1, (1 - MIN_PROB) / N_BINS);
     var current = null;
-    var dirty = false;
 
     function elem(id) {
       return _d32['default'].select('#detectors').select('#detector-' + id);
@@ -36,10 +36,10 @@ define(['exports', 'module', 'd3', 'postal', './patients', './service', './compo
       detectors = list;
       detectors.forEach(function (d) {
         d.probGroup = d.prob.group(function (p) {
-          return Math.floor((p - 0.5) / 0.5 * N_BINS);
+          return Math.floor((p - MIN_PROB) / PROB_RANGE * N_BINS);
         });
         d.similarGroup = d.similar.group(function (p) {
-          return Math.floor((p - 0.5) / 0.5 * N_BINS);
+          return Math.floor((p - MIN_PROB) / PROB_RANGE * N_BINS);
         });
       });
 
@@ -59,13 +59,11 @@ define(['exports', 'module', 'd3', 'postal', './patients', './service', './compo
 
     function update(ext) {
       if (!current) return;
-      dirty = true;
       current.prob.filter(function (p) {
         return ext[0] <= p && p <= ext[1];
       });
-      _patients.update(current.eid);
 
-      // todo: should this be done in patients.update?
+      _patients.update(current.eid);
       _postal2['default'].publish({ channel: 'global', topic: 'render' });
     }
 
@@ -73,7 +71,6 @@ define(['exports', 'module', 'd3', 'postal', './patients', './service', './compo
       (0, _service.fetch)('detectors', detectors.map(function (d) {
         return d.name;
       }), data.from, data.to).then(function (reply) {
-        detectorsData = reply;
         for (var i = 0; i < reply.length; i++) {
           var detector = detectors[i];
           var _data = reply[i];

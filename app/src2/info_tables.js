@@ -104,10 +104,9 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
     var in_dimension = undefined;
     var in_group = undefined;
     var out_dimension = undefined;
-    var dirty = false;
+
     var inner = (0, _table['default'])(div).on('click', function click(d) {
-      dirty = true;
-      var key = d.row.key;
+      var key = d.row.key.tid;
 
       if (_d32['default'].event.metaKey) _tag_selection.exclude(key);else _tag_selection.select(key);
     });
@@ -149,10 +148,10 @@ define(['exports', 'd3', 'postal', './patients', './service', './tag_selection',
         for (var _iterator = items[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var item = _step.value;
 
-          item.topic = _service.topicsMap.get(item.key).label;
+          item.topic = _service.topicsMap.get(item.key.tid).label;
           item.classes = {
-            'selected': _tag_selection.isSelected(item.key),
-            'excluded': _tag_selection.isExcluded(item.key)
+            'selected': _tag_selection.isSelected(item.key.tid),
+            'excluded': _tag_selection.isExcluded(item.key.tid)
           };
           max = Math.max(max, item.value);
         }

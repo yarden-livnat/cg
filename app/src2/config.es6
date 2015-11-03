@@ -37,8 +37,10 @@ export let cgOptions = {
     // nodes
     nodeRadius: 3,
     nodeScale: d3.scale.linear()
-      .domain([0.4, 1])
-      .range([0.4, 1])
+      //.domain([0.4, 1])
+      //.range([0.4, 1])
+     .domain([0, 1])
+     .range([0, 1])
       .clamp(true),
 
     duration: 500,

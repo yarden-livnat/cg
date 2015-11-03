@@ -24,8 +24,18 @@ let relations_cf = crossfilter();
 let rel_eid_p = relations_cf.dimension(r => r.enc_id);
 let rel_tid_p = relations_cf.dimension(r => r.tag_id);
 //let rel_enc_det = relations_cf.dimension( r=> r.enc_id);
-export let rel_tid = relations_cf.dimension(r => r.tag_id); rel_tid.name = 'relations';
-export let rel_tid_cg = relations_cf.dimension(r => r.tag_id); rel_tid.name = 'relations';
+export let rel_tid_cg = relations_cf.dimension(r => r.tag_id); rel_tid_cg.name = 'relations';
+
+
+function TagEnc(eid, tid) {
+  this.eid = eid;
+  this.tid = tid;
+}
+
+TagEnc.prototype.valueOf = function() { return this.tid; };
+
+export let rel_tid = relations_cf.dimension(r => { return new TagEnc(r.enc_id, r.tag_id); }); rel_tid.name = 'relations';
+
 
 
 function setup(data) {
@@ -51,16 +61,23 @@ export function set(data) {
   enc_eid.filterAll();
   enc_date.filterAll();
   enc_zipcode.filterAll();
+  enc_tags.filterAll();
+  enc_eid_det.filterAll();
   encounters_cf.remove();
   encounters_cf.add(data.encounters);
 
   rel_eid_p.filterAll();
   rel_tid_p.filterAll();
+  rel_tid_cg.filterAll();
+  rel_tid.filterAll();
   relations_cf.remove();
   relations_cf.add(data.relations);
 
-  let tid = collect(rel_tid);
-  topics_tid.filter(t => tid.has(t));
+  topics_tid.filterAll();
+  topics_cat.filterAll();
+  topics_sys.filterAll();
+  //let tid = collect(rel_tid);
+  //topics_tid.filter(t => tid.has(t));
 }
 
 /* detectors */
@@ -97,6 +114,7 @@ export function update(dimension) {
     let currentTopics = collect(rel_tid_p);
     topics_tid.filter( t => currentTopics.has(t) );
 
+    console.log('patients: enc:',currentEncounters.size, 'top:', currentTopics.size);
     //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
     let detEnc = collect(enc_eid_det);
     detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
@@ -108,6 +126,8 @@ export function update(dimension) {
     let currentEncounters = collect(rel_eid_p);
     enc_eid.filter( e => currentEncounters.has(e) );
 
+    console.log('patients: enc:',currentEncounters.size, 'top:', currentTopics.size);
+
     //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
     let detEnc = collect(enc_eid_det);
     detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
@@ -116,12 +136,13 @@ export function update(dimension) {
       let detEnc =  collect(dimension);
       enc_eid_det.filter( e => detEnc.has(e));
 
-      let currentEncounters = collect(rel_eid_p);
-      rel_eid_p.filter( e => currentEncounters.has(e));
+    let currentEncounters = collect(enc_eid);
+    rel_eid_p.filter( e => currentEncounters.has(e));
 
-      let currentTopics = collect(rel_tid_p);
-      topics_tid.filter( t => currentTopics.has(t) );
+    let currentTopics = collect(rel_tid_p);
+    topics_tid.filter( t => currentTopics.has(t) );
 
+    console.log('patients: enc:',currentEncounters.size, 'top:', currentTopics.size);
   }
   else if (dimension.name == 'relations' ) {
       let currentTopics = collect(rel_tid_p);
@@ -130,7 +151,9 @@ export function update(dimension) {
       let currentEncounters = collect(rel_eid_p);
       enc_eid.filter( e => currentEncounters.has(e) );
 
-      //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
+      console.log('patients: enc:',currentEncounters.size, 'top:', currentTopics.size);
+
+    //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
       let detEnc = collect(enc_eid_det);
       detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
 

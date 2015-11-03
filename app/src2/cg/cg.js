@@ -53,8 +53,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     var force = _d32['default'].layout.force().charge(_config.cgOptions.layout.charge).friction(_config.cgOptions.layout.friction).gravity(_config.cgOptions.layout.gravity).linkStrength(function (d) {
       return d.value * _config.cgOptions.layout.linkStrength;
     }).linkDistance(function (d) {
-      /*return cgOptions.layout.distScale(d.value); */
-      return 40;
+      /*return cgOptions.layout.distScale(d.value); */return 40;
     }).on('tick', updatePosition).on('end', forceDone);
 
     /*

@@ -30,10 +30,10 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
   }).awaitAll(function (err) {
     if (err) error(err);else {
       _patients.init(_service.topics);
-      _query.init(updateData);
       _info_tables.init();
       detectors.init(_service.detectors.map(_patients.addDetector));
       cg(d3.select('#cg-area')).resize(getSize('#cg-area'));
+      _query.init(updateData);
     }
   });
 

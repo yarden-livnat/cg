@@ -48,7 +48,7 @@ export default function() {
       for(let node of nodes) {
         node.scale = 0;
         for(let item of node.items) {
-          node.scale += prob.get(item);
+          node.scale += prob.get(item) || 0;
         }
         max = Math.max(max, node.scale);
       }
@@ -60,9 +60,9 @@ export default function() {
     }
 
     // scale nodes
-    for (let node of nodes)
+    for (let node of nodes) {
       node.scale /= max;
-    //nodes.forEach( node => node.scale /= max );
+    }
   }
 
   function recalculate() {

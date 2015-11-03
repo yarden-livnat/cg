@@ -61,9 +61,7 @@ export default function() {
     .friction(cgOptions.layout.friction)
     .gravity(cgOptions.layout.gravity)
     .linkStrength(function (d) { return d.value * cgOptions.layout.linkStrength; })
-    .linkDistance(function (d) { /*return cgOptions.layout.distScale(d.value); */
-      return 40;
-    }
+    .linkDistance(function (d) { /*return cgOptions.layout.distScale(d.value); */ return 40;}
   )
     .on('tick', updatePosition)
     .on('end', forceDone);

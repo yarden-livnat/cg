@@ -73,46 +73,21 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
       }
     }
 
+    //console.log('enc:', enc.id,'tags:', enc.tags)
     return true;
   }
 
-  function activeTags() {
-    var tags = new Set();
-
+  function activeEncounters() {
+    var active = new Set();
     var _iteratorNormalCompletion3 = true;
     var _didIteratorError3 = false;
     var _iteratorError3 = undefined;
 
     try {
       for (var _iterator3 = _patients.encountersMap.values()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-        var e = _step3.value;
+        var enc = _step3.value;
 
-        if (accept(e)) {
-          var _iteratorNormalCompletion4 = true;
-          var _didIteratorError4 = false;
-          var _iteratorError4 = undefined;
-
-          try {
-            for (var _iterator4 = e.tags[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-              var _t = _step4.value;
-
-              tags.add(_t);
-            }
-          } catch (err) {
-            _didIteratorError4 = true;
-            _iteratorError4 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-                _iterator4['return']();
-              }
-            } finally {
-              if (_didIteratorError4) {
-                throw _iteratorError4;
-              }
-            }
-          }
-        }
+        if (accept(enc)) active.add(enc.id);
       }
     } catch (err) {
       _didIteratorError3 = true;
@@ -125,6 +100,62 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
       } finally {
         if (_didIteratorError3) {
           throw _iteratorError3;
+        }
+      }
+    }
+
+    return active;
+  }
+
+  function activeTags() {
+    var tags = new Set();
+
+    var _iteratorNormalCompletion4 = true;
+    var _didIteratorError4 = false;
+    var _iteratorError4 = undefined;
+
+    try {
+      for (var _iterator4 = _patients.encountersMap.values()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+        var e = _step4.value;
+
+        if (accept(e)) {
+          var _iteratorNormalCompletion5 = true;
+          var _didIteratorError5 = false;
+          var _iteratorError5 = undefined;
+
+          try {
+            for (var _iterator5 = e.tags[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+              var _t = _step5.value;
+
+              tags.add(_t);
+            }
+          } catch (err) {
+            _didIteratorError5 = true;
+            _iteratorError5 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+                _iterator5['return']();
+              }
+            } finally {
+              if (_didIteratorError5) {
+                throw _iteratorError5;
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      _didIteratorError4 = true;
+      _iteratorError4 = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+          _iterator4['return']();
+        }
+      } finally {
+        if (_didIteratorError4) {
+          throw _iteratorError4;
         }
       }
     }
@@ -145,9 +176,10 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
   function update() {
     if (isEmpty()) dimension.filterAll();else {
       (function () {
-        var a = activeTags();
-        dimension.filter(function (tid) {
-          return a.has(tid);
+        var e = activeEncounters();
+        console.log('active:', e.size);
+        dimension.filter(function (entry) {
+          return e.has(entry.eid);
         });
       })();
     }
@@ -158,6 +190,7 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
   }
 
   function select(item) {
+    console.log('select:', item);
     if (!selected['delete'](item)) selected.add(item);
     excluded['delete'](item);
     update();

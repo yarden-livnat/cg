@@ -15,7 +15,15 @@ function accept(enc) {
     if (!enc.tags.has(s)) return false;
   for (let e of excluded)
     if (enc.tags.has(e)) return false;
+  //console.log('enc:', enc.id,'tags:', enc.tags)
   return true;
+}
+
+function activeEncounters() {
+  let active = new Set();
+  for (let enc of patients.encountersMap.values())
+    if (accept(enc)) active.add(enc.id);
+  return active;
 }
 
 function activeTags() {
@@ -41,8 +49,9 @@ function update() {
   if (isEmpty())
     dimension.filterAll();
   else {
-    let a = activeTags();
-    dimension.filter( tid => a.has(tid));
+    let e = activeEncounters();
+    console.log('active:', e.size);
+    dimension.filter( entry => e.has(entry.eid) );
   }
     //dimension.filter(filter(activeTags()));
 
@@ -51,6 +60,7 @@ function update() {
 }
 
 export function select(item) {
+  console.log('select:', item);
   if (!selected.delete(item)) selected.add(item);
   excluded.delete(item);
   update();

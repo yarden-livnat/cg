@@ -15,7 +15,7 @@ export default function(options) {
   let handle;
 
   let x = d3.scale.linear()
-    .domain([0.5, 1])
+    .domain([0, 1])
     .range([0, width]);
 
   let y = d3.scale.linear()

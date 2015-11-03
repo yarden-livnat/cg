@@ -27,10 +27,10 @@ queue()
     if (err) error(err);
     else {
       patients.init(service.topics);
-      query.init(updateData);
       infoTables.init();
       detectors.init(service.detectors.map(patients.addDetector));
       cg(d3.select('#cg-area')).resize(getSize('#cg-area'));
+      query.init(updateData);
     }
   });
 

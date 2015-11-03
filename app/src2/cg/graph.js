@@ -78,7 +78,7 @@ define(['exports', 'module'], function (exports, module) {
               for (var _iterator2 = node.items[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
                 var item = _step2.value;
 
-                node.scale += prob.get(item);
+                node.scale += prob.get(item) || 0;
               }
             } catch (err) {
               _didIteratorError2 = true;
@@ -149,7 +149,6 @@ define(['exports', 'module'], function (exports, module) {
           var node = _step4.value;
 
           node.scale /= max;
-          //nodes.forEach( node => node.scale /= max );
         }
       } catch (err) {
         _didIteratorError4 = true;

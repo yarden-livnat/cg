@@ -4,7 +4,6 @@
 
 import d3 from 'd3';
 import postal from 'postal';
-
 import * as patients from './patients';
 import {fetch} from './service';
 import DetectorClass from './components/detector';
@@ -12,6 +11,8 @@ import DetectorClass from './components/detector';
 export default function() {
 
   const N_BINS = 20;
+  const MIN_PROB = 0;
+  const PROB_RANGE = 1-MIN_PROB;
 
   postal.subscribe({channel: 'global', topic: 'data.changed', callback: dataChanged});
   postal.subscribe({channel: 'global', topic: 'render', callback: render});
@@ -19,10 +20,8 @@ export default function() {
   let selection;
   let Detector = DetectorClass();
   let detectors = [];
-  let detectorsData = [];
-  let range = d3.range(0.5, 1, 0.5/N_BINS);
+  let range = d3.range(MIN_PROB, 1, (1-MIN_PROB)/N_BINS);
   let current = null;
-  let dirty = false;
 
   function elem(id) {
     return d3.select('#detectors').select('#detector-'+id);
@@ -31,8 +30,8 @@ export default function() {
   function init(list) {
     detectors = list;
     detectors.forEach( d => {
-      d.probGroup = d.prob.group( p => Math.floor((p-0.5)/0.5 * N_BINS));
-      d.similarGroup = d.similar.group( p => Math.floor((p-0.5)/0.5 * N_BINS));
+      d.probGroup = d.prob.group( p => Math.floor((p-MIN_PROB)/PROB_RANGE * N_BINS));
+      d.similarGroup = d.similar.group( p => Math.floor((p-MIN_PROB)/PROB_RANGE * N_BINS));
     });
 
     d3.select('#detectors').selectAll('div')
@@ -55,18 +54,15 @@ export default function() {
 
   function update(ext) {
     if (!current) return;
-    dirty = true;
     current.prob.filter( p => ext[0] <= p && p <= ext[1]);
-    patients.update(current.eid);
 
-    // todo: should this be done in patients.update?
+    patients.update(current.eid);
     postal.publish({channel: 'global', topic: 'render'});
   }
 
   function dataChanged(data) {
     fetch('detectors',detectors.map(d => d.name), data.from, data.to)
       .then( reply => {
-        detectorsData = reply;
         for (let i=0; i<reply.length; i++) {
           let detector = detectors[i];
           let data = reply[i];
