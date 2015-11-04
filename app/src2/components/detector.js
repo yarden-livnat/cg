@@ -15,11 +15,12 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var width = 200 - margin.left - margin.right;
     var height = 100 - margin.top - margin.bottom;
+    var min_x = 0;
     var color = ['#ff8c00', 'lightsteelblue'];
     var dispatch = _d32['default'].dispatch('select', 'range');
     var handle = undefined;
 
-    var x = _d32['default'].scale.linear().domain([0, 1]).range([0, width]);
+    var x = _d32['default'].scale.linear().domain([min_x, 1]).range([0, width]);
 
     var y = _d32['default'].scale.linear().range([height, 0]);
 
@@ -121,6 +122,13 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       if (!arguments.length) return height + margin.top + margin.bottom;
       height = h - margin.top - margin.bottom;
       y.range([height, 0]);
+      return this;
+    };
+
+    detector.minX = function (_) {
+      if (!arguments.length) return min_x;
+      min_x = _;
+      x.domain([min_x, 1]);
       return this;
     };
 

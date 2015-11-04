@@ -300,7 +300,8 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
               node.selected = node.excluded = false;
               changed.push(node);
             }
-          }if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
+          }
+          if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
             if (!node.selected && s == 'selected' && partialLayout['delete'](node.tag)) {
               prevVisible = _2['default'].filter(graph.nodes, function (node) {
                 return node.visible;

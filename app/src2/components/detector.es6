@@ -10,12 +10,13 @@ export default function(options) {
 
   let width = 200 - margin.left - margin.right;
   let height = 100 - margin.top - margin.bottom;
+  let min_x = 0;
   let color = ['#ff8c00', 'lightsteelblue'];
   let dispatch = d3.dispatch('select', 'range');
   let handle;
 
   let x = d3.scale.linear()
-    .domain([0, 1])
+    .domain([min_x, 1])
     .range([0, width]);
 
   let y = d3.scale.linear()
@@ -154,6 +155,13 @@ export default function(options) {
     if (!arguments.length) return height + margin.top + margin.bottom;
     height = h - margin.top - margin.bottom;
     y.range([height, 0]);
+    return this;
+  };
+
+  detector.minX = function(_) {
+    if (!arguments.length) return min_x;
+    min_x = _;
+    x.domain([min_x, 1]);
     return this;
   };
 

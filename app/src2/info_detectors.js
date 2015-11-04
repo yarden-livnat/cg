@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', './patients', './service', './components/detector'], function (exports, module, _d3, _postal, _patients, _service, _componentsDetector) {
+define(['exports', 'module', 'd3', 'postal', './config', './patients', './service', './components/detector'], function (exports, module, _d3, _postal, _config, _patients, _service, _componentsDetector) {
   /**
    * Created by yarden on 8/18/15.
    */
@@ -16,14 +16,14 @@ define(['exports', 'module', 'd3', 'postal', './patients', './service', './compo
   module.exports = function () {
 
     var N_BINS = 20;
-    var MIN_PROB = 0;
+    var MIN_PROB = _config.DETECTOR_OPT.MIN_PROB;
     var PROB_RANGE = 1 - MIN_PROB;
 
     _postal2['default'].subscribe({ channel: 'global', topic: 'data.changed', callback: dataChanged });
     _postal2['default'].subscribe({ channel: 'global', topic: 'render', callback: render });
 
     var selection = undefined;
-    var Detector = (0, _DetectorClass['default'])();
+    var Detector = (0, _DetectorClass['default'])().minX(MIN_PROB);
     var detectors = [];
     var range = _d32['default'].range(MIN_PROB, 1, (1 - MIN_PROB) / N_BINS);
     var current = null;

@@ -4,6 +4,7 @@
 
 import d3 from 'd3';
 import postal from 'postal';
+import {DETECTOR_OPT} from './config';
 import * as patients from './patients';
 import {fetch} from './service';
 import DetectorClass from './components/detector';
@@ -11,14 +12,14 @@ import DetectorClass from './components/detector';
 export default function() {
 
   const N_BINS = 20;
-  const MIN_PROB = 0;
+  const MIN_PROB = DETECTOR_OPT.MIN_PROB;
   const PROB_RANGE = 1-MIN_PROB;
 
   postal.subscribe({channel: 'global', topic: 'data.changed', callback: dataChanged});
   postal.subscribe({channel: 'global', topic: 'render', callback: render});
 
   let selection;
-  let Detector = DetectorClass();
+  let Detector = DetectorClass().minX(MIN_PROB);
   let detectors = [];
   let range = d3.range(MIN_PROB, 1, (1-MIN_PROB)/N_BINS);
   let current = null;

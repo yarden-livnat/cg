@@ -76,7 +76,12 @@ define(['exports', 'd3'], function (exports, _d3) {
       linkDistanceFactor: 100
     }
   };
+
   exports.cgOptions = cgOptions;
+  var DETECTOR_OPT = {
+    MIN_PROB: 0.2
+  };
+  exports.DETECTOR_OPT = DETECTOR_OPT;
 });
 
 //# sourceMappingURL=config.js.map
