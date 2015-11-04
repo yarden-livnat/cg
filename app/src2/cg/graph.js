@@ -195,7 +195,7 @@ define(['exports', 'module'], function (exports, module) {
       }
     }
 
-    var graph = {};;
+    var graph = {};
 
     graph.prob = function (_) {
       prob = _;

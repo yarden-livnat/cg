@@ -93,7 +93,7 @@ export default function() {
     }
   }
 
-  let graph = {};;
+  let graph = {};
 
   graph.prob = function(_) {
     prob = _;
