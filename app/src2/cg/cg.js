@@ -56,11 +56,12 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       /*return cgOptions.layout.distScale(d.value); */return 40;
     }).on('tick', updatePosition).on('end', forceDone);
 
+    _d32['default'].select('#relayout').on('click', layout);
     /*
      * Nodes and Edge Selectors
      */
 
-    var nodesRange = [0, 1],
+    var nodesRange = [0.2, 1],
         edgesRange = [0.7, 1];
 
     var nodesSelector = (0, _Selector['default'])().width(100).height(50).select(nodesRange).on('select', function (r) {
@@ -82,9 +83,9 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
       try {
         for (var _iterator = graph.nodes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var _node = _step.value;
+          var node = _step.value;
 
-          if (_node.items.length > 0) values.push(_node.scale);
+          if (node.items.length > 0) values.push(node.scale);
         }
       } catch (err) {
         _didIteratorError = true;
@@ -182,7 +183,6 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     }
 
     function onNodeDrag(d) {
-      console.log('on drag');
       _d32['default'].select(this).classed('fixed', d.fixed |= 3);
       d.x = d.px = x.invert(_d32['default'].event.sourceEvent.layerX - offsetX);
       d.y = d.py = y.invert(_d32['default'].event.sourceEvent.layerY - offsetY);
@@ -193,7 +193,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     }
 
     function onNodeDragEnd(d) {
-      d.fixed &= ~6;
+      d.fixed &= ~2;
     }
 
     /* zoom behavior*/
@@ -214,11 +214,6 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       d3Links.call(edgeRenderer.update);
     }
 
-    function getNode(item) {
-
-      return node;
-    }
-
     /*
      * process new data
      */
@@ -227,7 +222,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
       graph.nodes(group.all().map(function (item) {
         var topic = _service.topicsMap.get(item.key);
-        var node = cache.get(topic);
+        var node = cache.get(topic.id);
         if (!node) {
           node = {
             id: item.key,
@@ -237,7 +232,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
             y: Math.random() * height,
             scale: 1
           };
-          cache.set(node.id, node);
+          cache.set(topic.id, node);
         }
 
         node.items = item.value.map(function (entry) {
@@ -248,12 +243,10 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
         });
 
         node.selected = _tag_selection.isSelected(node.id);
-        if (_tag_selection.isExcluded(node.id)) {
-          if (!node.excluded) {
-            node.lastScale = node.scale;
-            node.excluded = true;
-          }
-        }
+
+        var prev = node.excluded;
+        node.excluded = _tag_selection.isExcluded(node.id);
+        if (node.excluded && !prev) node.lastScale = node.scale;
 
         return node;
       }));
@@ -267,26 +260,22 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       layout(_config.cgOptions.layout.initIterations);
     }
 
+    var TWO_STEPS_LAYOUT = false;
     function layout(iter) {
-      force.nodes(graph.nodes()).links(graph.edges()).start();
-    }
+      var visibleEdges = graph.edges().filter(function (edge) {
+        return edge.source.visible && edge.target.visible && edge.value >= edgesRange[0] && edge.value <= edgesRange[1];
+      });
 
-    function clamp(v, min, max) {
-      return v < min ? min : v > max ? max : v;
-    }
-
-    function updatePosition() {
-      if (_config.cgOptions.layout.clampToWindow) {
+      if (TWO_STEPS_LAYOUT) {
         var _iteratorNormalCompletion4 = true;
         var _didIteratorError4 = false;
         var _iteratorError4 = undefined;
 
         try {
           for (var _iterator4 = activeNodes[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-            var _node2 = _step4.value;
+            var node = _step4.value;
 
-            _node2.x = clamp(_node2.x, 0, width - _node2.w);
-            _node2.y = clamp(_node2.y, 0, height - _node2.h);
+            node.fixed &= ~4;
           }
         } catch (err) {
           _didIteratorError4 = true;
@@ -299,6 +288,104 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
           } finally {
             if (_didIteratorError4) {
               throw _iteratorError4;
+            }
+          }
+        }
+
+        force.nodes(activeNodes).links(visibleEdges /*graph.edges()*/).on('end', layout2).start();
+      } else {
+        force.nodes(graph.nodes()).links(visibleEdges /*graph.edges()*/).on('end', null).start();
+      }
+    }
+
+    function layout2() {
+      // fix active node positions
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = activeNodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var node = _step5.value;
+
+          node.fixed |= 4;
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+            _iterator5['return']();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+
+      // layout using all nodes
+      force.nodes(graph.nodes()).links(graph.edges()).on('end', null).start();
+
+      for (var i = 0; i < 100; i++) {
+        force.tick();
+      }force.stop();
+
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = activeNodes[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var node = _step6.value;
+
+          node.fixed &= ~4;
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+            _iterator6['return']();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
+      }
+    }
+
+    function clamp(v, min, max) {
+      return v < min ? min : v > max ? max : v;
+    }
+
+    function updatePosition() {
+      if (_config.cgOptions.layout.clampToWindow) {
+        var _iteratorNormalCompletion7 = true;
+        var _didIteratorError7 = false;
+        var _iteratorError7 = undefined;
+
+        try {
+          for (var _iterator7 = activeNodes[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+            var node = _step7.value;
+
+            node.x = clamp(node.x, 0, width - node.w);
+            node.y = clamp(node.y, 0, height - node.h);
+          }
+        } catch (err) {
+          _didIteratorError7 = true;
+          _iteratorError7 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion7 && _iterator7['return']) {
+              _iterator7['return']();
+            }
+          } finally {
+            if (_didIteratorError7) {
+              throw _iteratorError7;
             }
           }
         }
@@ -316,44 +403,45 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
           sum = 0,
           zero = 0,
           one = 0;
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
+      var _iteratorNormalCompletion8 = true;
+      var _didIteratorError8 = false;
+      var _iteratorError8 = undefined;
 
       try {
-        for (var _iterator5 = activeNodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var _node3 = _step5.value;
+        for (var _iterator8 = activeNodes[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+          var node = _step8.value;
 
-          var dx = Math.abs(_node3.x - _node3.px);
-          var dy = Math.abs(_node3.y - _node3.py);
+          var dx = Math.abs(node.x - node.px);
+          var dy = Math.abs(node.y - node.py);
           var speed = Math.sqrt(dx * dx + dy + dy);
           max = Math.max(speed, max);
           sum += speed;
           if (speed == 0) zero++;
           if (speed < 1) one++;
         }
+
+        //var max = _.reduce(activeNodes,  function(max, node) {
+        //  return Math.max(max,  Math.abs(node.x - node.px));
+        //}, 0);
+
+        //console.log('speed  n:',activeNodes.length,' max:', max,  ' avg:',sum/activeNodes.length, 'zero:', zero,  '<1:', one);
+        //if (max < cgOptions.layout.minSpeed) {
+        //  console.log('stop force');
+        //  force.stop();
+        //}
       } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
+        _didIteratorError8 = true;
+        _iteratorError8 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-            _iterator5['return']();
+          if (!_iteratorNormalCompletion8 && _iterator8['return']) {
+            _iterator8['return']();
           }
         } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
+          if (_didIteratorError8) {
+            throw _iteratorError8;
           }
         }
-      }
-
-      //var max = _.reduce(activeNodes,  function(max, node) {
-      //  return Math.max(max,  Math.abs(node.x - node.px));
-      //}, 0);
-
-      //console.log('speed  n:',activeNodes.length,' max:', max,  ' avg:',sum/activeNodes.length, 'zero:', zero,  '<1:', one);
-      if (max < _config.cgOptions.layout.minSpeed) {
-        force.stop();
       }
     }
 
@@ -363,39 +451,39 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
     function render(duration) {
       var t = Date.now();
-      var activeNodes = [];
-      var _iteratorNormalCompletion6 = true;
-      var _didIteratorError6 = false;
-      var _iteratorError6 = undefined;
+      activeNodes = [];
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
 
       try {
-        for (var _iterator6 = graph.nodes()[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-          var _node4 = _step6.value;
+        for (var _iterator9 = graph.nodes()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var node = _step9.value;
 
-          if (_node4.excluded) {
-            _node4.visible = true;
-            _node4.scale = _node4.lastScale;
+          if (node.excluded) {
+            node.visible = true;
+            node.scale = node.lastScale;
           } else {
-            _node4.visible = _node4.items.length > 0 && _node4.scale >= nodesRange[0] && _node4.scale <= nodesRange[1];
+            node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1];
           }
-          if (_node4.visible) activeNodes.push(_node4);
+          if (node.visible) activeNodes.push(node);
         }
       } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
-            _iterator6['return']();
+          if (!_iteratorNormalCompletion9 && _iterator9['return']) {
+            _iterator9['return']();
           }
         } finally {
-          if (_didIteratorError6) {
-            throw _iteratorError6;
+          if (_didIteratorError9) {
+            throw _iteratorError9;
           }
         }
       }
 
-      d3Nodes = svgNodes.selectAll('.node').data(activeNodes, function (d) {
+      d3Nodes = svgNodes.selectAll('.node').data(activeNodes, /*graph.nodes()*/function (d) {
         return d.id;
       });
 
@@ -412,7 +500,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
       d3Nodes.exit().transition().duration(duration).style('opacity', 0.000001).remove();
 
-      var activeEdges = showEdges && graph.edges().filter(function (edge) {
+      activeEdges = showEdges && graph.edges().filter(function (edge) {
         return edge.source.visible && edge.target.visible && edge.value >= edgesRange[0] && edge.value <= edgesRange[1];
       }) || [];
 
@@ -434,7 +522,14 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     var mouse_time = Date.now();
 
     function node_behavior(selection) {
-      selection.on('mousedown', node_mousedown).on('mouseup', node_mouseup).on('dblclick', node_dblclick).call(drag);
+      selection.call(drag);
+
+      selection.selectAll('.scaledTag').on('mousedown', node_mousedown).on('mouseup', node_mouseup);
+      //.on("dblclick", node_dblclick)
+
+      selection.selectAll('circle').on('click', function (d) {
+        _d32['default'].select(this.parentNode).classed('fixed', d.fixed = false);
+      });
     }
 
     function node_mousedown(d) {
@@ -448,17 +543,12 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       var dt = Date.now() - mouse_time;
       if (dt < 200) {
         force.stop();
-        //if (d3.event.metaKey)       { d3.select(this).classed("fixed", d.fixed = false); }
         if (_d32['default'].event.metaKey) {
           _tag_selection.exclude(d.topic.id);
         } else {
           _tag_selection.select(d.topic.id);
         }
       }
-    }
-
-    function node_dblclick(d) {
-      _d32['default'].select(this).classed('fixed', d.fixed = false);
     }
 
     /* init */
@@ -502,49 +592,31 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       return cg;
     };
 
-    cg.width = function (_) {
-      if (!arguments.length) return width;
-      width = _;
-      x.domain([0, width]).range([0, width]);
-      zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
-      svg.attr('width', width);
-      overlay.attr('width', width).call(zoom);
+    cg.group = function (_) {
+      if (!arguments.length) return group;
+      group = _;
 
-      return this;
-    };
-
-    cg.height = function (_) {
-      if (!arguments.length) return height;
-      height = _;
-      y.domain([0, height]).range([0, height]);
-      zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
-
-      var h = Math.max(0, height - edgesSelector.height() - 10);
-      svg.attr('height', height);
-      svg.select('.cgSelectors').attr('transform', 'translate(10,' + h + ')');
-
-      overlay.attr('height', h).call(zoom);
-
-      return this;
-    };
-
-    cg.dimension = function (_) {
-      if (!arguments.length) return dimension;
-      dimension = _;
-      if (group) group.dispose();
-      group = dimension.group().reduce(function (p, v) {
-        p.push(v);return p;
-      }, function (p, v) {
-        p.splice(p.indexOf(v), 1);return p;
-      }, function () {
-        return [];
-      });
       return this;
     };
 
     cg.resize = function (size) {
-      cg.width(size[0]).height(size[1]);
-      // todo: render
+      if (!arguments.length) return [width, height];
+      width = size[0];
+      height = size[1];
+      x.domain([0, width]).range([0, width]);
+      y.domain([0, height]).range([0, height]);
+      svg.attr('width', width).attr('height', height);
+
+      var h = Math.max(0, height - edgesSelector.height() - 10);
+      svg.select('.cgSelectors').attr('transform', 'translate(10,' + h + ')');
+
+      zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
+
+      overlay.attr('width', width).attr('height', h).call(zoom);
+
+      force.size(size);
+
+      return this;
     };
 
     return cg;

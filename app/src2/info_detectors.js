@@ -51,14 +51,23 @@ define(['exports', 'module', 'd3', 'postal', './config', './patients', './servic
     }
 
     function select(d) {
-      if (current) Detector.select(elem(current.name), false);
+      if (current) {
+        Detector.select(elem(current.name), false);
+        current.prob.filterAll();
+        _patients.update(current.eid);
+      }
       current = current != d ? d : null;
-      if (current) Detector.select(elem(current.name), true);
+      if (current) {
+        Detector.select(elem(current.name), true);
+        update(current.prob.ext);
+      }
+
       _postal2['default'].publish({ channel: 'detector', topic: 'changed', data: current && current.prob });
     }
 
     function update(ext) {
-      if (!current) return;
+      if (!current || !ext) return;
+      current.ext = ext;
       current.prob.filter(function (p) {
         return ext[0] <= p && p <= ext[1];
       });

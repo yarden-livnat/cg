@@ -9,14 +9,16 @@ import * as service from './service';
 import * as query from './query';
 import * as patients from './patients';
 import * as infoTables from './info_tables';
+import * as InfoCharts from './info_charts';
 import Detectors from './info_detectors';
 import CG from './cg/cg';
 
 import Map from './map';
 
 let geomap = Map();
-let cg = CG().dimension(patients.rel_tid_cg);
+let cg = CG().group(patients.tag_enc_group);
 let detectors = Detectors();
+let infoChart = InfoCharts().group(patients.tag_enc_group);
 
 let dateFormat = d3.time.format('%Y-%m-%d');
 
@@ -51,8 +53,8 @@ function updateData(err, data) {
     });
 
     // todo: reapply filters
-    postal.publish({channel: 'global', topic: 'render'});
     postal.publish({channel: 'global', topic: 'data.changed', data: {from: data.from, to: data.to}});
+    postal.publish({channel: 'global', topic: 'render'});
   }
 }
 
@@ -66,6 +68,5 @@ function getSize(el) {
 }
 
 window.addEventListener('resize', function() {
-  console.log('window resize');
   cg.resize(getSize('#cg-area'));
 });

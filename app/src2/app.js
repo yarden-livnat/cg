@@ -1,4 +1,4 @@
-define(['exports', 'queue', 'postal', './service', './query', './patients', './info_tables', './info_detectors', './cg/cg', './map'], function (exports, _queue, _postal, _service, _query, _patients, _info_tables, _info_detectors, _cgCg, _map) {
+define(['exports', 'queue', 'postal', './service', './query', './patients', './info_tables', './info_charts', './info_detectors', './cg/cg', './map'], function (exports, _queue, _postal, _service, _query, _patients, _info_tables, _info_charts, _info_detectors, _cgCg, _map) {
   /**
    * Created by yarden on 8/21/15.
    */
@@ -18,8 +18,9 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
   var _Map = _interopRequireDefault(_map);
 
   var geomap = (0, _Map['default'])();
-  var cg = (0, _CG['default'])().dimension(_patients.rel_tid_cg);
+  var cg = (0, _CG['default'])().group(_patients.tag_enc_group);
   var detectors = (0, _Detectors['default'])();
+  var infoChart = (0, _info_charts)().group(_patients.tag_enc_group);
 
   var dateFormat = d3.time.format('%Y-%m-%d');
 
@@ -52,8 +53,8 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
       });
 
       // todo: reapply filters
-      _postal2['default'].publish({ channel: 'global', topic: 'render' });
       _postal2['default'].publish({ channel: 'global', topic: 'data.changed', data: { from: data.from, to: data.to } });
+      _postal2['default'].publish({ channel: 'global', topic: 'render' });
     }
   }
 
@@ -67,7 +68,6 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
   }
 
   window.addEventListener('resize', function () {
-    console.log('window resize');
     cg.resize(getSize('#cg-area'));
   });
 });

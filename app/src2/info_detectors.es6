@@ -47,14 +47,23 @@ export default function() {
   }
 
   function select(d){
-    if (current) Detector.select(elem(current.name), false);
+    if (current) {
+      Detector.select(elem(current.name), false);
+      current.prob.filterAll();
+      patients.update(current.eid);
+    }
     current = current != d ? d : null;
-    if (current) Detector.select(elem(current.name), true);
+    if (current) {
+      Detector.select(elem(current.name), true);
+      update(current.prob.ext);
+    }
+
     postal.publish({channel: 'detector', topic: 'changed', data: current && current.prob});
   }
 
   function update(ext) {
-    if (!current) return;
+    if (!current || !ext) return;
+    current.ext = ext;
     current.prob.filter( p => ext[0] <= p && p <= ext[1]);
 
     patients.update(current.eid);

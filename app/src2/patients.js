@@ -17,6 +17,10 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
   var _crossfilter2 = _interopRequireDefault(_crossfilter);
 
+  var fromDate = undefined;
+  exports.fromDate = fromDate;
+  var toDate = undefined;
+  exports.toDate = toDate;
   var encounters = undefined;
   exports.encounters = encounters;
   var encountersMap = undefined;
@@ -67,12 +71,20 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
   var rel_tid_p = relations_cf.dimension(function (r) {
     return r.tag_id;
   });
-  //let rel_enc_det = relations_cf.dimension( r=> r.enc_id);
+
   var rel_tid_cg = relations_cf.dimension(function (r) {
     return r.tag_id;
   });exports.rel_tid_cg = rel_tid_cg;
   rel_tid_cg.name = 'relations';
+  var tag_enc_group = rel_tid_cg.group().reduce(function (p, v) {
+    p.push(v);return p;
+  }, function (p, v) {
+    p.splice(p.indexOf(v), 1);return p;
+  }, function () {
+    return [];
+  });
 
+  exports.tag_enc_group = tag_enc_group;
   function TagEnc(eid, tid) {
     this.eid = eid;
     this.tid = tid;
@@ -88,6 +100,9 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
   rel_tid.name = 'relations';
 
   function setup(data) {
+    exports.fromDate = fromDate = data.from;
+    exports.toDate = toDate = data.to;
+
     exports.encounters = encounters = data.encounters;
     exports.relations = relations = data.relations;
 
@@ -127,8 +142,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     topics_tid.filterAll();
     topics_cat.filterAll();
     topics_sys.filterAll();
-    //let tid = collect(rel_tid);
-    //topics_tid.filter(t => tid.has(t));
   }
 
   /* detectors */
@@ -179,7 +192,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
         });
 
         console.log('patients: enc:', currentEncounters.size, 'top:', currentTopics.size);
-        //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
         var detEnc = collect(enc_eid_det);
         detectors.forEach(function (detector) {
           detector.eid.filter(function (e) {
@@ -201,7 +213,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
         console.log('patients: enc:', currentEncounters.size, 'top:', currentTopics.size);
 
-        //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
         var detEnc = collect(enc_eid_det);
         detectors.forEach(function (detector) {
           detector.eid.filter(function (e) {
@@ -242,7 +253,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
         console.log('patients: enc:', currentEncounters.size, 'top:', currentTopics.size);
 
-        //detectors.forEach( detector => { detector.eid.filter(e => currentEncounters.has(e) )});
         var detEnc = collect(enc_eid_det);
         detectors.forEach(function (detector) {
           detector.eid.filter(function (e) {

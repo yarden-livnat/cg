@@ -18,10 +18,12 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
 
   var _postal2 = _interopRequireDefault(_postal);
 
-  var dimension = _patients.rel_tid; //enc_tags;
+  var dimension = _patients.rel_tid;
   var selected = new Set();
+  exports.selected = selected;
   var excluded = new Set();
 
+  exports.excluded = excluded;
   function accept(enc) {
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
@@ -73,7 +75,6 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
       }
     }
 
-    //console.log('enc:', enc.id,'tags:', enc.tags)
     return true;
   }
 
@@ -107,72 +108,6 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
     return active;
   }
 
-  function activeTags() {
-    var tags = new Set();
-
-    var _iteratorNormalCompletion4 = true;
-    var _didIteratorError4 = false;
-    var _iteratorError4 = undefined;
-
-    try {
-      for (var _iterator4 = _patients.encountersMap.values()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-        var e = _step4.value;
-
-        if (accept(e)) {
-          var _iteratorNormalCompletion5 = true;
-          var _didIteratorError5 = false;
-          var _iteratorError5 = undefined;
-
-          try {
-            for (var _iterator5 = e.tags[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-              var _t = _step5.value;
-
-              tags.add(_t);
-            }
-          } catch (err) {
-            _didIteratorError5 = true;
-            _iteratorError5 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-                _iterator5['return']();
-              }
-            } finally {
-              if (_didIteratorError5) {
-                throw _iteratorError5;
-              }
-            }
-          }
-        }
-      }
-    } catch (err) {
-      _didIteratorError4 = true;
-      _iteratorError4 = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-          _iterator4['return']();
-        }
-      } finally {
-        if (_didIteratorError4) {
-          throw _iteratorError4;
-        }
-      }
-    }
-
-    return tags;
-  }
-
-  var count = 0;
-  function filter(activeSet) {
-    return function (tid) {
-      if (activeSet.has(tid)) {
-        console.log('filter: ', tid);count++;
-      }
-      return activeSet.has(tid);
-    };
-  }
-
   function update() {
     if (isEmpty()) dimension.filterAll();else {
       (function () {
@@ -183,14 +118,12 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
         });
       })();
     }
-    //dimension.filter(filter(activeTags()));
 
     _patients.update(dimension);
     _postal2['default'].publish({ channel: 'global', topic: 'render' });
   }
 
   function select(item) {
-    console.log('select:', item);
     if (!selected['delete'](item)) selected.add(item);
     excluded['delete'](item);
     update();
@@ -213,17 +146,6 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
   function isExcluded(item) {
     return excluded.has(item);
   }
-
-  //export function filter(tid) {
-  //  return (selected.size == 0 || selected.has(tid)) && (excluded.size == 0 || !excluded.has(tid));
-  //}
-  //
-  //export function filter1(eid) {
-  //  let enc = patients.encountersMap.get(eid);
-  //  for (let s of selected) if (!enc.tags.has(s)) return false;
-  //  for (let e of excluded) if (enc.tags.has(e)) return false;
-  //  return true;
-  //}
 });
 
 //# sourceMappingURL=tag_selection.js.map
