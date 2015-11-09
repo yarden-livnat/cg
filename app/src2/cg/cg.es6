@@ -136,7 +136,9 @@ export default function() {
   }
 
   function onNodeDrag(d) {
-    d3.select(this).classed("fixed", d.fixed |= 3);
+    if (!d3.event.sourceEvent.metaKey)
+      d3.select(this).classed("fixed", d.fixed |= 3);
+
     d.x = d.px = x.invert(d3.event.sourceEvent.layerX - offsetX);
     d.y = d.py = y.invert(d3.event.sourceEvent.layerY - offsetY);
     d3.select(this).attr('transform', function (d) {
@@ -144,6 +146,10 @@ export default function() {
     }
     );
     d3Links.call(edgeRenderer.update);
+    if (d3.event.sourceEvent.metaKey)
+      force.start();
+    else
+      force.stop();
   }
 
   function onNodeDragEnd(d) {

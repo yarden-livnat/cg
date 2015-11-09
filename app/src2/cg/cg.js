@@ -183,13 +183,15 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     }
 
     function onNodeDrag(d) {
-      _d32['default'].select(this).classed('fixed', d.fixed |= 3);
+      if (!_d32['default'].event.sourceEvent.metaKey) _d32['default'].select(this).classed('fixed', d.fixed |= 3);
+
       d.x = d.px = x.invert(_d32['default'].event.sourceEvent.layerX - offsetX);
       d.y = d.py = y.invert(_d32['default'].event.sourceEvent.layerY - offsetY);
       _d32['default'].select(this).attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       });
       d3Links.call(edgeRenderer.update);
+      if (_d32['default'].event.sourceEvent.metaKey) force.start();else force.stop();
     }
 
     function onNodeDragEnd(d) {
