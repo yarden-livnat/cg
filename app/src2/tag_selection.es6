@@ -30,7 +30,6 @@ function update() {
     dimension.filterAll();
   else {
     let e = activeEncounters();
-    console.log('active:', e.size);
     dimension.filter( entry => e.has(entry.eid) );
   }
 

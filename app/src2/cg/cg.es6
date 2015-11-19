@@ -175,8 +175,8 @@ export default function() {
   /*
    * process new data
    */
-  function update() {
-    force.stop();
+  function update(doLayout) {
+    //force.stop();
 
     graph.nodes(group.all().map(item => {
       let topic = topicsMap.get(item.key);
@@ -206,12 +206,14 @@ export default function() {
     }));
 
     render(cgOptions.canvas.duration);
+    if (doLayout) layout(cgOptions.layout.initIterations);
     updateNodesSelector();
     updateEdgesSelector();
   }
 
   function onDataChanged() {
-    layout(cgOptions.layout.initIterations);
+    //layout(cgOptions.layout.initIterations);
+    update(true);
   }
 
   const TWO_STEPS_LAYOUT = false;

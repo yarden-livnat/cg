@@ -178,20 +178,20 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
   function update(dimension) {
     var t = Date.now(); // performance measure
-    console.log('patients update:', dimension.name);
+    var currentEncounters = undefined,
+        currentTopics = undefined;
     if (dimension.name === 'encounters') {
       (function () {
-        var currentEncounters = collect(enc_eid);
+        currentEncounters = collect(enc_eid);
         rel_eid_p.filter(function (e) {
           return currentEncounters.has(e);
         });
 
-        var currentTopics = collect(rel_tid_p);
+        currentTopics = collect(rel_tid_p);
         topics_tid.filter(function (t) {
           return currentTopics.has(t);
         });
 
-        console.log('patients: enc:', currentEncounters.size, 'top:', currentTopics.size);
         var detEnc = collect(enc_eid_det);
         detectors.forEach(function (detector) {
           detector.eid.filter(function (e) {
@@ -201,17 +201,15 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
       })();
     } else if (dimension.name == 'topics') {
       (function () {
-        var currentTopics = collect(topics_tid);
+        currentTopics = collect(topics_tid);
         rel_tid_p.filter(function (t) {
           return currentTopics.has(t);
         });
 
-        var currentEncounters = collect(rel_eid_p);
+        currentEncounters = collect(rel_eid_p);
         enc_eid.filter(function (e) {
           return currentEncounters.has(e);
         });
-
-        console.log('patients: enc:', currentEncounters.size, 'top:', currentTopics.size);
 
         var detEnc = collect(enc_eid_det);
         detectors.forEach(function (detector) {
@@ -227,31 +225,27 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
           return detEnc.has(e);
         });
 
-        var currentEncounters = collect(enc_eid);
+        currentEncounters = collect(enc_eid);
         rel_eid_p.filter(function (e) {
           return currentEncounters.has(e);
         });
 
-        var currentTopics = collect(rel_tid_p);
+        currentTopics = collect(rel_tid_p);
         topics_tid.filter(function (t) {
           return currentTopics.has(t);
         });
-
-        console.log('patients: enc:', currentEncounters.size, 'top:', currentTopics.size);
       })();
     } else if (dimension.name == 'relations') {
       (function () {
-        var currentTopics = collect(rel_tid_p);
+        currentTopics = collect(rel_tid_p);
         topics_tid.filter(function (t) {
           return currentTopics.has(t);
         });
 
-        var currentEncounters = collect(rel_eid_p);
+        currentEncounters = collect(rel_eid_p);
         enc_eid.filter(function (e) {
           return currentEncounters.has(e);
         });
-
-        console.log('patients: enc:', currentEncounters.size, 'top:', currentTopics.size);
 
         var detEnc = collect(enc_eid_det);
         detectors.forEach(function (detector) {
@@ -261,7 +255,7 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
         });
       })();
     }
-    console.log('patient: update ', Date.now() - t);
+    console.log('patient update [', dimension.name, '] in ', Date.now() - t, '  enc:', currentEncounters.size, 'top:', currentTopics.size);
   }
 });
 

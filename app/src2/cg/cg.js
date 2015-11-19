@@ -219,8 +219,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     /*
      * process new data
      */
-    function update() {
-      force.stop();
+    function update(doLayout) {
+      //force.stop();
 
       graph.nodes(group.all().map(function (item) {
         var topic = _service.topicsMap.get(item.key);
@@ -254,12 +254,14 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       }));
 
       render(_config.cgOptions.canvas.duration);
+      if (doLayout) layout(_config.cgOptions.layout.initIterations);
       updateNodesSelector();
       updateEdgesSelector();
     }
 
     function onDataChanged() {
-      layout(_config.cgOptions.layout.initIterations);
+      //layout(cgOptions.layout.initIterations);
+      update(true);
     }
 
     var TWO_STEPS_LAYOUT = false;

@@ -112,7 +112,6 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
     if (isEmpty()) dimension.filterAll();else {
       (function () {
         var e = activeEncounters();
-        console.log('active:', e.size);
         dimension.filter(function (entry) {
           return e.has(entry.eid);
         });

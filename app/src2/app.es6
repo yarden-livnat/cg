@@ -8,11 +8,13 @@ import postal from 'postal';
 import * as service from './service';
 import * as query from './query';
 import * as patients from './patients';
-import * as infoTables from './info_tables';
-import * as InfoCharts from './info_charts';
-import Detectors from './info_detectors';
+import * as infoTables from './info/info_tables';
+import * as InfoCharts from './info/info_charts';
+import Detectors from './info/info_detectors';
+import infoSelection from './info/info_selection';
+import * as InfoPathogens from './info/info_pathogens';
 import CG from './cg/cg';
-import infoSelection from './info_selection';
+
 
 import Map from './map';
 
@@ -31,6 +33,7 @@ queue()
     else {
       patients.init(service.topics);
       infoTables.init();
+      InfoPathogens.init();
       detectors.init(service.detectors.map(patients.addDetector));
       cg(d3.select('#cg-area')).resize(getSize('#cg-area'));
       query.init(updateData);

@@ -1,4 +1,4 @@
-define(['exports', 'queue', 'postal', './service', './query', './patients', './info_tables', './info_charts', './info_detectors', './cg/cg', './info_selection', './map'], function (exports, _queue, _postal, _service, _query, _patients, _info_tables, _info_charts, _info_detectors, _cgCg, _info_selection, _map) {
+define(['exports', 'queue', 'postal', './service', './query', './patients', './info/info_tables', './info/info_charts', './info/info_detectors', './info/info_selection', './info/info_pathogens', './cg/cg', './map'], function (exports, _queue, _postal, _service, _query, _patients, _infoInfo_tables, _infoInfo_charts, _infoInfo_detectors, _infoInfo_selection, _infoInfo_pathogens, _cgCg, _map) {
   /**
    * Created by yarden on 8/21/15.
    */
@@ -11,18 +11,18 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
 
   var _postal2 = _interopRequireDefault(_postal);
 
-  var _Detectors = _interopRequireDefault(_info_detectors);
+  var _Detectors = _interopRequireDefault(_infoInfo_detectors);
+
+  var _infoSelection = _interopRequireDefault(_infoInfo_selection);
 
   var _CG = _interopRequireDefault(_cgCg);
-
-  var _infoSelection = _interopRequireDefault(_info_selection);
 
   var _Map = _interopRequireDefault(_map);
 
   var geomap = (0, _Map['default'])();
   var cg = (0, _CG['default'])().group(_patients.tag_enc_group);
   var detectors = (0, _Detectors['default'])();
-  var infoChart = (0, _info_charts)().group(_patients.tag_enc_group);
+  var infoChart = (0, _infoInfo_charts)().group(_patients.tag_enc_group);
 
   var dateFormat = d3.time.format('%Y-%m-%d');
 
@@ -33,7 +33,8 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
   }).awaitAll(function (err) {
     if (err) error(err);else {
       _patients.init(_service.topics);
-      _info_tables.init();
+      _infoInfo_tables.init();
+      _infoInfo_pathogens.init();
       detectors.init(_service.detectors.map(_patients.addDetector));
       cg(d3.select('#cg-area')).resize(getSize('#cg-area'));
       _query.init(updateData);

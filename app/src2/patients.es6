@@ -114,26 +114,23 @@ function collect(dim) {
 
 export function update(dimension) {
   let t = Date.now(); // performance measure
-  console.log('patients update:', dimension.name);
+  let currentEncounters, currentTopics;
   if (dimension.name === 'encounters') {
-    let currentEncounters = collect(enc_eid);
+    currentEncounters = collect(enc_eid);
     rel_eid_p.filter( e => currentEncounters.has(e));
 
-    let currentTopics = collect(rel_tid_p);
+    currentTopics = collect(rel_tid_p);
     topics_tid.filter( t => currentTopics.has(t) );
 
-    console.log('patients: enc:',currentEncounters.size, 'top:', currentTopics.size);
     let detEnc = collect(enc_eid_det);
     detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
   }
   else if (dimension.name == 'topics') {
-    let currentTopics = collect(topics_tid);
+    currentTopics = collect(topics_tid);
     rel_tid_p.filter( t => currentTopics.has(t) );
 
-    let currentEncounters = collect(rel_eid_p);
+    currentEncounters = collect(rel_eid_p);
     enc_eid.filter( e => currentEncounters.has(e) );
-
-    console.log('patients: enc:',currentEncounters.size, 'top:', currentTopics.size);
 
     let detEnc = collect(enc_eid_det);
     detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
@@ -142,25 +139,21 @@ export function update(dimension) {
     let detEnc =  collect(dimension);
      enc_eid_det.filter( e => detEnc.has(e));
 
-    let currentEncounters = collect(enc_eid);
+    currentEncounters = collect(enc_eid);
     rel_eid_p.filter( e => currentEncounters.has(e));
 
-    let currentTopics = collect(rel_tid_p);
+    currentTopics = collect(rel_tid_p);
     topics_tid.filter( t => currentTopics.has(t) );
-
-    console.log('patients: enc:',currentEncounters.size, 'top:', currentTopics.size);
   }
   else if (dimension.name == 'relations' ) {
-    let currentTopics = collect(rel_tid_p);
+    currentTopics = collect(rel_tid_p);
     topics_tid.filter( t => currentTopics.has(t) );
 
-    let currentEncounters = collect(rel_eid_p);
+    currentEncounters = collect(rel_eid_p);
     enc_eid.filter( e => currentEncounters.has(e) );
-
-    console.log('patients: enc:',currentEncounters.size, 'top:', currentTopics.size);
 
     let detEnc = collect(enc_eid_det);
     detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
   }
-  console.log('patient: update ', Date.now()-t);
+  console.log('patient update [',dimension.name,'] in ', Date.now()-t,'  enc:',currentEncounters.size, 'top:', currentTopics.size);
 }
