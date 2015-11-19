@@ -48,7 +48,7 @@ define(['exports', 'd3'], function (exports, _d3) {
       nodeScale: _d32['default'].scale.linear()
       //.domain([0.4, 1])
       //.range([0.4, 1])
-      .domain([0, 1]).range([0.1, 1]).clamp(true),
+      .domain([0, 1]).range([0.4, 1]).clamp(true),
 
       duration: 500,
       fastDuration: 50

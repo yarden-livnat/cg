@@ -12,6 +12,7 @@ import * as infoTables from './info_tables';
 import * as InfoCharts from './info_charts';
 import Detectors from './info_detectors';
 import CG from './cg/cg';
+import infoSelection from './info_selection';
 
 import Map from './map';
 

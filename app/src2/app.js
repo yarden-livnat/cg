@@ -1,4 +1,4 @@
-define(['exports', 'queue', 'postal', './service', './query', './patients', './info_tables', './info_charts', './info_detectors', './cg/cg', './map'], function (exports, _queue, _postal, _service, _query, _patients, _info_tables, _info_charts, _info_detectors, _cgCg, _map) {
+define(['exports', 'queue', 'postal', './service', './query', './patients', './info_tables', './info_charts', './info_detectors', './cg/cg', './info_selection', './map'], function (exports, _queue, _postal, _service, _query, _patients, _info_tables, _info_charts, _info_detectors, _cgCg, _info_selection, _map) {
   /**
    * Created by yarden on 8/21/15.
    */
@@ -14,6 +14,8 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
   var _Detectors = _interopRequireDefault(_info_detectors);
 
   var _CG = _interopRequireDefault(_cgCg);
+
+  var _infoSelection = _interopRequireDefault(_info_selection);
 
   var _Map = _interopRequireDefault(_map);
 
