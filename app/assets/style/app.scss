@@ -19,6 +19,9 @@ body {
   margin: 10px 0 10px 0;
 }
 
+#info-num {
+
+}
 #query-area {
   width: $query-width;
   height: auto;
@@ -112,7 +115,6 @@ body {
 }
 
 .excluded {
-  //color: lightgrey;
   text-decoration: line-through;
 }
 
@@ -161,10 +163,12 @@ body {
   path:hover {
     stroke-width: 1.5px;
     stroke: #000;
+    z-index: 2;
   }
 
   path.selected {
-    stroke-width: 2px;
+    stroke-width: 3px;
     stroke: green;
+    z-index: 1;
   }
 }

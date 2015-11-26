@@ -68,7 +68,6 @@ export default function() {
   function recalculate() {
     updateNodes();
 
-
     // create edges
     let n = nodes.length, n1 = n-1,
       src, dest;

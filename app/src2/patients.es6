@@ -10,6 +10,11 @@ export let encounters;
 export let encountersMap;
 export let relations;
 
+export let currentEncounters = new Set();
+export let currentTopics = new Set();
+export let numActiveEncounters = 0;
+export let numActiveRelations = 0;
+
 let encounters_cf = crossfilter();
 export let enc_eid = encounters_cf.dimension(d => d.id); enc_eid.name = 'encounters';
 export let enc_date = encounters_cf.dimension(d => d.date); enc_date.name = 'encounters';
@@ -105,55 +110,82 @@ export function addDetector(d) {
 
 /* update */
 
-function collect(dim) {
+function groupCollect(dim) {
   if (!dim.collect) {
     dim.collect = dim.group();
   }
   return dim.collect.all().reduce((p, v) => v.value ? p.add(v.key) : p, new Set());
 }
 
+function dimCollect(dim) {
+  let set = new Set();
+  for (let item of dim.top(Infinity)) {
+    set.add(item.id);
+  }
+  return set;
+}
+
 export function update(dimension) {
-  let t = Date.now(); // performance measure
-  let currentEncounters, currentTopics;
+  let t = Date.now(); // performance measurement
+  let collection;
+
+  /* encounters */
   if (dimension.name === 'encounters') {
-    currentEncounters = collect(enc_eid);
-    rel_eid_p.filter( e => currentEncounters.has(e));
+    collection = groupCollect(enc_eid);
+    rel_eid_p.filter( e => collection.has(e));
 
-    currentTopics = collect(rel_tid_p);
-    topics_tid.filter( t => currentTopics.has(t) );
+    collection = groupCollect(rel_tid_p);
+    topics_tid.filter( t => collection.has(t) );
 
-    let detEnc = collect(enc_eid_det);
-    detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
+    collection= groupCollect(enc_eid_det);
+    detectors.forEach( detector => { detector.eid.filter(e => collection.has(e) )});
   }
+
+  /* topics */
   else if (dimension.name == 'topics') {
-    currentTopics = collect(topics_tid);
-    rel_tid_p.filter( t => currentTopics.has(t) );
+    collection = groupCollect(topics_tid);
+    rel_tid_p.filter( t => collection.has(t) );
 
-    currentEncounters = collect(rel_eid_p);
-    enc_eid.filter( e => currentEncounters.has(e) );
+    collection = groupCollect(rel_eid_p);
+    enc_eid.filter( e => collection.has(e) );
 
-    let detEnc = collect(enc_eid_det);
-    detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
-
-  } else if (dimension.name == 'detector') {
-    let detEnc =  collect(dimension);
-     enc_eid_det.filter( e => detEnc.has(e));
-
-    currentEncounters = collect(enc_eid);
-    rel_eid_p.filter( e => currentEncounters.has(e));
-
-    currentTopics = collect(rel_tid_p);
-    topics_tid.filter( t => currentTopics.has(t) );
+    collection = groupCollect(enc_eid_det);
+    detectors.forEach( detector => { detector.eid.filter(e => collection.has(e) )});
   }
+
+  /* detectors */
+  else if (dimension.name == 'detector') {
+    collection =  groupCollect(dimension);
+     enc_eid_det.filter( e => collection.has(e));
+
+    //currentEncounters = collect(enc_eid);
+    //collection = new Set();
+    //for (let enc of enc_eid.top(Infinity)) {
+    //  collection.add(enc.id);
+    //}
+    collection = dimCollect(enc_eid);
+    rel_eid_p.filter( e => collection.has(e));
+
+    collection = groupCollect(rel_tid_p);
+    topics_tid.filter( t => collection.has(t) );
+  }
+
+  /* relations */
   else if (dimension.name == 'relations' ) {
-    currentTopics = collect(rel_tid_p);
-    topics_tid.filter( t => currentTopics.has(t) );
+    collection = groupCollect(rel_tid_p);
+    topics_tid.filter( t => collection.has(t) );
 
-    currentEncounters = collect(rel_eid_p);
-    enc_eid.filter( e => currentEncounters.has(e) );
+    collection = groupCollect(rel_eid_p);
+    enc_eid.filter( e => collection.has(e) );
 
-    let detEnc = collect(enc_eid_det);
-    detectors.forEach( detector => { detector.eid.filter(e => detEnc.has(e) )});
+    collection = groupCollect(enc_eid_det);
+    detectors.forEach( detector => { detector.eid.filter(e => collection.has(e) )});
   }
+
+  currentEncounters = dimCollect(enc_eid);
+  currentTopics = dimCollect(topics_tid);
+
+  numActiveEncounters = currentEncounters.size;
+  numActiveRelations = currentTopics.size;
   console.log('patient update [',dimension.name,'] in ', Date.now()-t,'  enc:',currentEncounters.size, 'top:', currentTopics.size);
 }

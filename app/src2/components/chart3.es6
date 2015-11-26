@@ -57,6 +57,12 @@ export default function(el, useRight) {
     .x( d => { return x(d.x); })
     .y( d => { return y(d.value); });
 
+  let area = d3.svg.area()
+    .x( d => { return x(d.x); })
+    .y0(height)
+    .y1( d => { return y(d.value); })
+    .interpolate('cardinal');
+
   let zoom = d3.behavior.zoom()
     .on('zoom', draw);
 
@@ -142,6 +148,8 @@ export default function(el, useRight) {
     let xrange = x.range();
     let yrange = y.range();
 
+    area.y0(y(0));
+
     svg.select('#clip rect')
       .attr('x', xrange[0])
       .attr('y', yrange[1])
@@ -175,8 +183,23 @@ export default function(el, useRight) {
       let ly = d => y(d.value);
       let ry = hasRight ? d => yr(d.value) : ly;
 
+      let areas = svg.selectAll('.area')
+        .data(series.filter(d => d.type == 'area'));
+
+      areas.enter()
+        .append('path')
+        .attr('class', 'area')
+        .attr("clip-path", "url(#clip)");
+
+      areas
+        .style('fill', d => { return d.color; })
+        //.attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
+        .attr('d', d => area(d.values));
+
+      areas.exit().remove();
+
       let lines = svg.selectAll('path.line')
-        .data(series)
+        .data(series.filter(d => d.type == 'line'))
         .attr('stroke', d => { return d.color; })
         .attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
         .attr('d', d => line.y( d.right ? ry : ly ).interpolate(d.interpolate || 'cardinal')(d.values));

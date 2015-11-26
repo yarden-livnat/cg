@@ -42,6 +42,12 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       return y(d.value);
     });
 
+    var area = _d3.svg.area().x(function (d) {
+      return x(d.x);
+    }).y0(height).y1(function (d) {
+      return y(d.value);
+    }).interpolate('cardinal');
+
     var zoom = _d3.behavior.zoom().on('zoom', draw);
 
     var selection = typeof el == 'string' ? _d3.select(el) : el;
@@ -99,6 +105,8 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       var xrange = x.range();
       var yrange = y.range();
 
+      area.y0(y(0));
+
       svg.select('#clip rect').attr('x', xrange[0]).attr('y', yrange[1]).attr('width', xrange[1] - xrange[0]).attr('height', yrange[0] - yrange[1]);
 
       svg.select('g.x.axis').attr('transform', 'translate(0,' + height + ')');
@@ -127,7 +135,25 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
             return yr(d.value);
           } : ly;
 
-          var lines = svg.selectAll('path.line').data(series).attr('stroke', function (d) {
+          var areas = svg.selectAll('.area').data(series.filter(function (d) {
+            return d.type == 'area';
+          }));
+
+          areas.enter().append('path').attr('class', 'area').attr('clip-path', 'url(#clip)');
+
+          areas.style('fill', function (d) {
+            return d.color;
+          })
+          //.attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
+          .attr('d', function (d) {
+            return area(d.values);
+          });
+
+          areas.exit().remove();
+
+          var lines = svg.selectAll('path.line').data(series.filter(function (d) {
+            return d.type == 'line';
+          })).attr('stroke', function (d) {
             return d.color;
           }).attr('stroke-dasharray', function (d) {
             return d.marker == 'dash' ? '3' : '0';

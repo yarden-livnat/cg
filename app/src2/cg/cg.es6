@@ -8,7 +8,7 @@ import postal from 'postal'
 import {cgOptions} from '../config';
 import {topicsMap} from '../service';
 import * as tagSelection from '../tag_selection';
-
+import * as patients from '../patients';
 
 import Selector from '../components/selector';
 
@@ -18,6 +18,7 @@ import {NodeRenderer, EdgeRenderer} from './renderers';
 export default function() {
   let width = 200, height = 200;
   let dimension;
+  let drawArea = {w: width, h:height};
   let group;
 
   let container, svg, svgLinks, svgNodes, overlay;
@@ -66,7 +67,6 @@ export default function() {
     .on('tick', updatePosition)
     .on('end', forceDone);
 
-  d3.select('#relayout').on('click', layout);
   /*
    * Nodes and Edge Selectors
    */
@@ -324,7 +324,7 @@ export default function() {
     }
 
     d3Nodes = svgNodes.selectAll('.node')
-      .data(activeNodes /*graph.nodes()*/, d => d.id);
+      .data(activeNodes, d => d.id);
 
     let newNodes = nodeRenderer(d3Nodes.enter());
     newNodes
@@ -333,7 +333,8 @@ export default function() {
 
 
     d3Nodes.select('text')
-      .classed('excluded', d => d.excluded);
+      .classed('excluded', d => d.excluded)
+      .attr('fill', d => d.topic.color);
 
     d3Nodes
       .transition()
@@ -367,8 +368,12 @@ export default function() {
       .style('opacity', 1e-6)
       .remove();
 
+    d3.select("#encounters").text(patients.numActiveEncounters);
+    d3.select("#topics").text(activeNodes.length+' of '+graph.nodes().length);
+    d3.select("#relations").text(activeEdges.length+' of '+graph.edges().length);
+
     // performance
-    console.log('render: ', Date.now() -t, 'msec');
+    //console.log('render: ', Date.now() -t, 'msec');
   }
 
   /* interactions */
@@ -415,10 +420,11 @@ export default function() {
 
     let g = svg.append('g');
 
+    drawArea = { h: Math.max(0, height - edgesSelector.height() -10), w:width};
     overlay = g.append('rect')
       .attr('class', 'overlay')
-      .attr('width', width)
-      .attr('height', Math.max(0, height - edgesSelector.height() -10));
+      .attr('width', drawArea.w)
+      .attr('height', drawArea.h);
 
     /* selectors */
     let sg = g.append('g')
@@ -437,7 +443,31 @@ export default function() {
     sg.append('text')
       .attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) +',' + (nodesSelector.height() + 5) + ')')
       .text('relations')
-      .on('click', () => { showEdges = !showEdges; render(cgOptions.canvas.fastDuration); });
+      .on('click', function () {
+        showEdges = !showEdges;
+        d3.select(this).classed('selected', showEdges);
+        render(cgOptions.canvas.fastDuration);
+      });
+
+    let b = sg.append('g')
+      .attr('id', 'relayout')
+      .attr('transform', 'translate(250, 25)')
+      .on('click', function () {
+          layout();
+      });
+
+
+    b.append('rect')
+      .attr('x', 0.5)
+      .attr('y', 0.5)
+      .attr('width', 54)
+      .attr('height', 20)
+      .attr('rx', 5)
+      .attr('ry', 5);
+    b.append('text')
+      .attr('x', 5)
+      .attr('y', 14)
+      .text('relayout');
 
 
     /* graph */

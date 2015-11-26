@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_selection', '../components/selector', './graph', './renderers'], function (exports, module, _d3, _postal, _config, _service, _tag_selection, _componentsSelector, _graph, _renderers) {
+define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_selection', '../patients', '../components/selector', './graph', './renderers'], function (exports, module, _d3, _postal, _config, _service, _tag_selection, _patients, _componentsSelector, _graph, _renderers) {
   /**
    * Created by yarden on 8/24/15.
    */
@@ -19,6 +19,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     var width = 200,
         height = 200;
     var dimension = undefined;
+    var drawArea = { w: width, h: height };
     var group = undefined;
 
     var container = undefined,
@@ -56,7 +57,6 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       /*return cgOptions.layout.distScale(d.value); */return 40;
     }).on('tick', updatePosition).on('end', forceDone);
 
-    _d32['default'].select('#relayout').on('click', layout);
     /*
      * Nodes and Edge Selectors
      */
@@ -487,7 +487,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
         }
       }
 
-      d3Nodes = svgNodes.selectAll('.node').data(activeNodes, /*graph.nodes()*/function (d) {
+      d3Nodes = svgNodes.selectAll('.node').data(activeNodes, function (d) {
         return d.id;
       });
 
@@ -498,6 +498,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
       d3Nodes.select('text').classed('excluded', function (d) {
         return d.excluded;
+      }).attr('fill', function (d) {
+        return d.topic.color;
       });
 
       d3Nodes.transition().duration(duration).style('opacity', 1).call(nodeRenderer.update);
@@ -518,8 +520,12 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
       d3Links.exit().transition().duration(duration).style('opacity', 0.000001).remove();
 
+      _d32['default'].select('#encounters').text(_patients.numActiveEncounters);
+      _d32['default'].select('#topics').text(activeNodes.length + ' of ' + graph.nodes().length);
+      _d32['default'].select('#relations').text(activeEdges.length + ' of ' + graph.edges().length);
+
       // performance
-      console.log('render: ', Date.now() - t, 'msec');
+      //console.log('render: ', Date.now() -t, 'msec');
     }
 
     /* interactions */
@@ -561,7 +567,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
       var g = svg.append('g');
 
-      overlay = g.append('rect').attr('class', 'overlay').attr('width', width).attr('height', Math.max(0, height - edgesSelector.height() - 10));
+      drawArea = { h: Math.max(0, height - edgesSelector.height() - 10), w: width };
+      overlay = g.append('rect').attr('class', 'overlay').attr('width', drawArea.w).attr('height', drawArea.h);
 
       /* selectors */
       var sg = g.append('g').attr('class', 'cgSelectors');
@@ -573,8 +580,17 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       edgesSelector(sg.append('g').attr('class', 'edgesSelector').attr('transform', 'translate(' + (nodesSelector.width() + 10) + ',0)'));
 
       sg.append('text').attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) + ',' + (nodesSelector.height() + 5) + ')').text('relations').on('click', function () {
-        showEdges = !showEdges;render(_config.cgOptions.canvas.fastDuration);
+        showEdges = !showEdges;
+        _d32['default'].select(this).classed('selected', showEdges);
+        render(_config.cgOptions.canvas.fastDuration);
       });
+
+      var b = sg.append('g').attr('id', 'relayout').attr('transform', 'translate(250, 25)').on('click', function () {
+        layout();
+      });
+
+      b.append('rect').attr('x', 0.5).attr('y', 0.5).attr('width', 54).attr('height', 20).attr('rx', 5).attr('ry', 5);
+      b.append('text').attr('x', 5).attr('y', 14).text('relayout');
 
       /* graph */
       svgLinks = g.append('g').attr('class', 'links');

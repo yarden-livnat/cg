@@ -8,10 +8,6 @@
   opacity: 0.3;
 }
 
-.cg {
-  //background-color: #0078A8;
-}
-
 .cg .node {
     .circle {
       fill: lightgray;
@@ -83,3 +79,20 @@
     }
 
   }
+
+#relayout {
+  rect {
+    fill: white;
+    stroke: #666;
+    stroke-width: 0.5;
+
+    &:hover {
+      stroke-width: 1;
+    }
+  }
+
+  text {
+    color: green;
+    pointer-events: none;
+  }
+}

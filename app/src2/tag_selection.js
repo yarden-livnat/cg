@@ -1,4 +1,4 @@
-define(['exports', './patients', 'postal'], function (exports, _patients, _postal) {
+define(['exports', 'postal', './patients', './utils', './service'], function (exports, _postal, _patients, _utils, _service) {
   /**
    * Created by yarden on 10/27/15.
    */
@@ -123,13 +123,23 @@ define(['exports', './patients', 'postal'], function (exports, _patients, _posta
   }
 
   function select(item) {
-    if (!selected['delete'](item)) selected.add(item);
+    if (!selected['delete'](item)) {
+      selected.add(item);
+      _utils.assign_color(_service.topicsMap.get(item));
+    } else {
+      _utils.release_color(_service.topicsMap.get(item));
+    }
     excluded['delete'](item);
     update();
   }
 
   function exclude(item) {
-    if (!excluded['delete'](item)) excluded.add(item);
+    if (!excluded['delete'](item)) {
+      excluded.add(item);
+      _utils.assign_color(_service.topicsMap.get(item));
+    } else {
+      _utils.release_color(_service.topicsMap.get(item));
+    }
     selected['delete'](item);
     update();
   }

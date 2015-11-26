@@ -100,6 +100,7 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
     function showInfo(d, show) {
       if (show) {
         _d32['default'].select('#map-info').text('Zipcode: ' + d.properties.Zip_Code + ' cases:' + d.active + '  rate:' + format(d.rate));
+        renderOne(d);
       } else {
         _d32['default'].select('#map-info').text('');
       }
@@ -138,6 +139,16 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
     function projectPoint(x, y) {
       var point = map.latLngToLayerPoint(new _leaflet.LatLng(y, x));
       this.stream.point(point.x, point.y);
+    }
+
+    function renderOne(node) {
+      svg.selectAll('path').data(node, function (d) {
+        return d.properties.Zip_Code;
+      }).style('fill-opacity', function (d) {
+        return AREA_ALPHA;
+      }).style('fill', function (d) {
+        return colorScale(Math.min(d.rate, 1));
+      });
     }
 
     function render() {
@@ -179,7 +190,10 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
 
             f.active = active.get(f.properties.Zip_Code) || 0;
             f.rate = f.active * f.pop_factor;
-            if (f.active) list.push(f);
+            f.selected = selectedZipcodes.has(f.properties.Zip_Code);
+            if (f.active) {
+              list.push(f);
+            }
           }
         } catch (err) {
           _didIteratorError2 = true;
@@ -195,6 +209,10 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
             }
           }
         }
+
+        list.sort(function (a, b) {
+          return a.selected == b.selected ? 0 : a.selected ? 1 : -1;
+        });
 
         var paths = svg.selectAll('path').data(list, function (d) {
           return d.properties.Zip_Code;

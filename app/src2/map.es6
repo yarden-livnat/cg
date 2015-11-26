@@ -81,8 +81,8 @@ export default function (opt) {
             .data(features, function(d) { return d.properties.Zip_Code;})
             .enter()
             .append("path")
-              .on('mouseenter', d => { showInfo(d, true); })
-              .on('mouseout', d => { showInfo(d, false); })
+              .on('mouseenter', function(d) { showInfo(d, true); })
+              .on('mouseout', function(d) { showInfo(d, false); })
               .on('click', selectZipcode);
 
           function update() {
@@ -99,6 +99,7 @@ export default function (opt) {
   function showInfo(d, show) {
     if (show) {
       d3.select('#map-info').text(`Zipcode: ${d.properties.Zip_Code} cases:${d.active}  rate:${format(d.rate)}`);
+      renderOne(d);
     } else {
       d3.select('#map-info').text('');
     }
@@ -140,6 +141,12 @@ export default function (opt) {
   }
 
 
+  function renderOne(node) {
+    svg.selectAll("path").data(node, function (d) { return d.properties.Zip_Code;})
+      .style('fill-opacity', d => AREA_ALPHA )
+      .style('fill', function (d) { return colorScale(Math.min(d.rate, 1)); });
+  }
+
   function render() {
     if (dirty) dirty = false;
     else {
@@ -152,8 +159,12 @@ export default function (opt) {
       for(let f of features) {
         f.active = active.get(f.properties.Zip_Code) || 0;
         f.rate = f.active * f.pop_factor;
-        if (f.active) list.push(f);
+        f.selected =  selectedZipcodes.has(f.properties.Zip_Code);
+        if (f.active) {
+          list.push(f);
+        }
       }
+      list.sort(function(a, b) { return a.selected == b.selected ? 0 : a.selected ? 1 : -1; });
 
       let paths = svg.selectAll("path")
         .data(list, function (d) { return d.properties.Zip_Code;});

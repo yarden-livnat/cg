@@ -28,6 +28,15 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
   var relations = undefined;
 
   exports.relations = relations;
+  var currentEncounters = new Set();
+  exports.currentEncounters = currentEncounters;
+  var currentTopics = new Set();
+  exports.currentTopics = currentTopics;
+  var numActiveEncounters = 0;
+  exports.numActiveEncounters = numActiveEncounters;
+  var numActiveRelations = 0;
+
+  exports.numActiveRelations = numActiveRelations;
   var encounters_cf = (0, _crossfilter2['default'])();
   var enc_eid = encounters_cf.dimension(function (d) {
     return d.id;
@@ -167,7 +176,7 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
   /* update */
 
-  function collect(dim) {
+  function groupCollect(dim) {
     if (!dim.collect) {
       dim.collect = dim.group();
     }
@@ -176,85 +185,128 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     }, new Set());
   }
 
-  function update(dimension) {
-    var t = Date.now(); // performance measure
-    var currentEncounters = undefined,
-        currentTopics = undefined;
-    if (dimension.name === 'encounters') {
-      (function () {
-        currentEncounters = collect(enc_eid);
-        rel_eid_p.filter(function (e) {
-          return currentEncounters.has(e);
-        });
+  function dimCollect(dim) {
+    var set = new Set();
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-        currentTopics = collect(rel_tid_p);
-        topics_tid.filter(function (t) {
-          return currentTopics.has(t);
-        });
+    try {
+      for (var _iterator = dim.top(Infinity)[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var item = _step.value;
 
-        var detEnc = collect(enc_eid_det);
-        detectors.forEach(function (detector) {
-          detector.eid.filter(function (e) {
-            return detEnc.has(e);
-          });
-        });
-      })();
-    } else if (dimension.name == 'topics') {
-      (function () {
-        currentTopics = collect(topics_tid);
-        rel_tid_p.filter(function (t) {
-          return currentTopics.has(t);
-        });
-
-        currentEncounters = collect(rel_eid_p);
-        enc_eid.filter(function (e) {
-          return currentEncounters.has(e);
-        });
-
-        var detEnc = collect(enc_eid_det);
-        detectors.forEach(function (detector) {
-          detector.eid.filter(function (e) {
-            return detEnc.has(e);
-          });
-        });
-      })();
-    } else if (dimension.name == 'detector') {
-      (function () {
-        var detEnc = collect(dimension);
-        enc_eid_det.filter(function (e) {
-          return detEnc.has(e);
-        });
-
-        currentEncounters = collect(enc_eid);
-        rel_eid_p.filter(function (e) {
-          return currentEncounters.has(e);
-        });
-
-        currentTopics = collect(rel_tid_p);
-        topics_tid.filter(function (t) {
-          return currentTopics.has(t);
-        });
-      })();
-    } else if (dimension.name == 'relations') {
-      (function () {
-        currentTopics = collect(rel_tid_p);
-        topics_tid.filter(function (t) {
-          return currentTopics.has(t);
-        });
-
-        currentEncounters = collect(rel_eid_p);
-        enc_eid.filter(function (e) {
-          return currentEncounters.has(e);
-        });
-
-        var detEnc = collect(enc_eid_det);
-        detectors.forEach(function (detector) {
-          detector.eid.filter(function (e) {
-            return detEnc.has(e);
-          });
-        });
-      })();
+        set.add(item.id);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator['return']) {
+          _iterator['return']();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
+      }
     }
+
+    return set;
+  }
+
+  function update(dimension) {
+    var t = Date.now(); // performance measurement
+    var collection = undefined;
+
+    /* encounters */
+    if (dimension.name === 'encounters') {
+      collection = groupCollect(enc_eid);
+      rel_eid_p.filter(function (e) {
+        return collection.has(e);
+      });
+
+      collection = groupCollect(rel_tid_p);
+      topics_tid.filter(function (t) {
+        return collection.has(t);
+      });
+
+      collection = groupCollect(enc_eid_det);
+      detectors.forEach(function (detector) {
+        detector.eid.filter(function (e) {
+          return collection.has(e);
+        });
+      });
+    }
+
+    /* topics */
+    else if (dimension.name == 'topics') {
+      collection = groupCollect(topics_tid);
+      rel_tid_p.filter(function (t) {
+        return collection.has(t);
+      });
+
+      collection = groupCollect(rel_eid_p);
+      enc_eid.filter(function (e) {
+        return collection.has(e);
+      });
+
+      collection = groupCollect(enc_eid_det);
+      detectors.forEach(function (detector) {
+        detector.eid.filter(function (e) {
+          return collection.has(e);
+        });
+      });
+    }
+
+    /* detectors */
+    else if (dimension.name == 'detector') {
+      collection = groupCollect(dimension);
+      enc_eid_det.filter(function (e) {
+        return collection.has(e);
+      });
+
+      //currentEncounters = collect(enc_eid);
+      //collection = new Set();
+      //for (let enc of enc_eid.top(Infinity)) {
+      //  collection.add(enc.id);
+      //}
+      collection = dimCollect(enc_eid);
+      rel_eid_p.filter(function (e) {
+        return collection.has(e);
+      });
+
+      collection = groupCollect(rel_tid_p);
+      topics_tid.filter(function (t) {
+        return collection.has(t);
+      });
+    }
+
+    /* relations */
+    else if (dimension.name == 'relations') {
+      collection = groupCollect(rel_tid_p);
+      topics_tid.filter(function (t) {
+        return collection.has(t);
+      });
+
+      collection = groupCollect(rel_eid_p);
+      enc_eid.filter(function (e) {
+        return collection.has(e);
+      });
+
+      collection = groupCollect(enc_eid_det);
+      detectors.forEach(function (detector) {
+        detector.eid.filter(function (e) {
+          return collection.has(e);
+        });
+      });
+    }
+
+    exports.currentEncounters = currentEncounters = dimCollect(enc_eid);
+    exports.currentTopics = currentTopics = dimCollect(topics_tid);
+
+    exports.numActiveEncounters = numActiveEncounters = currentEncounters.size;
+    exports.numActiveRelations = numActiveRelations = currentTopics.size;
     console.log('patient update [', dimension.name, '] in ', Date.now() - t, '  enc:', currentEncounters.size, 'top:', currentTopics.size);
   }
 });

@@ -10,7 +10,7 @@ define(["exports", "module", "d3"], function (exports, module, _d3) {
 
     container = container instanceof Array && container || _d3.select(container);
 
-    var table = container.append("table"),
+    var table = container.append("table").attr("class", "info-table"),
         thead = table.append("thead").append("tr"),
         tbody = table.append("tbody"),
         dispatch = _d3.dispatch("click", "mouseover", "mouseout"),

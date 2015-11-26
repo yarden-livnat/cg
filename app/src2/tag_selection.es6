@@ -2,9 +2,11 @@
  * Created by yarden on 10/27/15.
  */
 
-import * as patients from './patients';
 import postal from 'postal';
 
+import * as patients from './patients';
+import * as utils from './utils';
+import {topicsMap} from './service';
 
 let dimension = patients.rel_tid;
 export let selected = new Set();
@@ -38,13 +40,23 @@ function update() {
 }
 
 export function select(item) {
-  if (!selected.delete(item)) selected.add(item);
+  if (!selected.delete(item)) {
+    selected.add(item);
+    utils.assign_color(topicsMap.get(item));
+  } else {
+    utils.release_color(topicsMap.get(item));
+  }
   excluded.delete(item);
   update();
 }
 
 export function exclude(item) {
-  if (!excluded.delete(item)) excluded.add(item);
+  if (!excluded.delete(item)) {
+    excluded.add(item);
+    utils.assign_color(topicsMap.get(item));
+  } else {
+    utils.release_color(topicsMap.get(item));
+  }
   selected.delete(item);
   update();
 }

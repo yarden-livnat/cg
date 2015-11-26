@@ -12,7 +12,7 @@ export default function(container, id) {
 
   container = container instanceof Array && container || d3.select(container);
 
-  let table = container.append('table'),
+  let table = container.append('table').attr('class', 'info-table'),
       thead = table.append('thead').append('tr'),
       tbody = table.append('tbody'),
       dispatch = d3.dispatch('click', 'mouseover', 'mouseout'),

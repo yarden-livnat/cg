@@ -13,13 +13,13 @@ define(["exports", "d3"], function (exports, _d3) {
   exports.reset_colors = reset_colors;
 
   var available_colors = _d3.scale.category10().range().concat();
-  var default_color = "gray";
+  var default_color = "black";
 
   function assign_color(obj) {
-    if (!obj.color || obj.color == default_color) {
+    if (!obj.prevColor || obj.prevColor == default_color) {
       obj.color = available_colors.shift() || default_color;
     } else {
-      var i = available_colors.indexOf(obj.color);
+      var i = available_colors.indexOf(obj.prevColor);
       if (i == -1) {
         obj.color = available_colors.shift() || default_color;
       } else {
@@ -31,9 +31,9 @@ define(["exports", "d3"], function (exports, _d3) {
   function release_color(obj) {
     if (obj.color != default_color) {
       available_colors.push(obj.color);
-    } else {
-      obj.color = undefined;
     }
+    obj.prevColor = obj.color;
+    obj.color = default_color;
   }
 
   function reset_colors() {

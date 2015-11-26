@@ -15,13 +15,17 @@
         <input type="date" id="date" required="required" placeholder="from date">
         <input type="text" class="input" id="duration" maxlength="3" persistent="true" placeholder="duration"> wks
         <br><br>
-        <input type="text" id="keywords" name="keywords" placeholder="keywords">
-        <br><br>
+        <!--<input type="text" id="keywords" name="keywords" placeholder="keywords">-->
+        <!--<br><br>-->
         <input type="button" value="Search" id="submit">
     </form>
-
-    <input type="button" value="relayout" id="relayout">
 </div>
+
+<table id="info-num">
+  <tr><td>Encounters</td><td id="encounters"></td></tr>
+  <tr><td>Topics</td><td id="topics"></td></tr>
+  <tr><td>Relations</td><td id="relations"></td></tr>
+</table>
 
 <div id="details-area">
     <div id="details-tables"></div>
