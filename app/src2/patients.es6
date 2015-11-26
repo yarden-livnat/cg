@@ -158,11 +158,6 @@ export function update(dimension) {
     collection =  groupCollect(dimension);
      enc_eid_det.filter( e => collection.has(e));
 
-    //currentEncounters = collect(enc_eid);
-    //collection = new Set();
-    //for (let enc of enc_eid.top(Infinity)) {
-    //  collection.add(enc.id);
-    //}
     collection = dimCollect(enc_eid);
     rel_eid_p.filter( e => collection.has(e));
 

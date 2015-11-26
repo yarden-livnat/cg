@@ -266,11 +266,6 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
         return collection.has(e);
       });
 
-      //currentEncounters = collect(enc_eid);
-      //collection = new Set();
-      //for (let enc of enc_eid.top(Infinity)) {
-      //  collection.add(enc.id);
-      //}
       collection = dimCollect(enc_eid);
       rel_eid_p.filter(function (e) {
         return collection.has(e);

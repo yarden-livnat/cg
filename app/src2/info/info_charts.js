@@ -108,19 +108,18 @@ define(['exports', 'module', 'd3', 'postal', '../components/chart3', '../patient
       var selectedSeries = [];
 
       var map = new Map();
+      //git s
       var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator3 = _patients.relations[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        for (var _iterator3 = _patients.rel_tid.top(Infinity)[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
           var r = _step3.value;
 
-          if (_tag_selection.isSelected(r.tag_id)) {
-            var entry = map.get(r.tag_id);
-            if (!entry) map.set(r.tag_id, entry = []);
-            entry.push(_patients.encountersMap.get(r.enc_id));
-          }
+          var entry = map.get(r.tag_id);
+          if (!entry) map.set(r.tag_id, entry = []);
+          entry.push(_patients.encountersMap.get(r.enc_id));
         }
       } catch (err) {
         _didIteratorError3 = true;

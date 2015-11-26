@@ -65,12 +65,11 @@ export default function() {
     let selectedSeries = [];
 
     let map = new Map();
-    for (let r of patients.relations) {
-      if (tagSelection.isSelected(r.tag_id)) {
-        let entry = map.get(r.tag_id);
-        if (!entry) map.set(r.tag_id, entry = []);
-        entry.push(patients.encountersMap.get(r.enc_id));
-      }
+    //git s
+    for (let r of patients.rel_tid.top(Infinity)) {
+      let entry = map.get(r.tag_id);
+      if (!entry) map.set(r.tag_id, entry = []);
+      entry.push(patients.encountersMap.get(r.enc_id));
     }
 
     for (let entry of map) {
