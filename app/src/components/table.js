@@ -1,178 +1,213 @@
-define(['exports', 'module', 'd3', 'utils'], function (exports, module, _d3, _utils) {
+define(["exports", "module", "d3"], function (exports, module, _d3) {
   /**
-   * Created by yarden on 12/29/14.
+   * Created by yarden on 8/4/15.
    */
 
-  'use strict';
+  "use strict";
 
-  module.exports = function () {
-    var SORT_OP = [{ func: _d3.ascending, symbol: 'fa-sort-asc' }, { func: _d3.descending, symbol: 'fa-sort-desc' }];
+  module.exports = function (container, id) {
+    var SORT_OP = [{ func: _d3.ascending, symbol: "fa-sort-asc" }, { func: _d3.descending, symbol: "fa-sort-desc" }];
 
-    var d3el, header, data;
-    var width, height;
-    var valid = false;
-    var columns = [];
-    var sortCol;
-    var table, thead, tbody;
-    var dispatch = _d3.dispatch('click');
+    container = container instanceof Array && container || _d3.select(container);
 
-    function identity() {
-      return this;
+    var table = container.append("table").attr("id", id),
+        thead = table.append("thead").append("tr"),
+        tbody = table.append("tbody"),
+        dispatch = _d3.dispatch("click", "mouseover", "mouseout"),
+        columns = undefined,
+        sortCol = undefined,
+        sortHeader = undefined,
+        _data = undefined;
+
+    function capitalize(str) {
+      var def = arguments[1] === undefined ? "" : arguments[1];
+
+      return str && str.length > 0 && str[0].toUpperCase() + str.substr(1) || def;
     }
 
-    function validate() {
-      valid = d3el && data; // && key; //&& width && height
-    }
-
-    function showSort(name, opt) {
-      var node = header.select('#' + name).select('.fa');
-      if (opt !== false) {
-        node.classed(SORT_OP[1 - opt].symbol, false);
-        node.classed(SORT_OP[opt].symbol, true);
-      }
-      node.style('visibility', opt === false ? 'hidden' : 'visible');
-    }
-
-    function sort(col) {
-      sortCol = col;
-      showSort(col.name, col.sortOrder);
-
-      var compare = SORT_OP[col.sortOrder].func;
-      var field = sortCol.name;
-      data.sort(function (a, b) {
-        return compare(a[field], b[field]);
-      });
-
-      update();
+    function f(field) {
+      return typeof field == "string" ? function (o) {
+        return o[field];
+      } : function (o) {
+        return field;
+      };
     }
 
     function onSort(col) {
-      if (sortCol && sortCol.name != col.name) showSort(sortCol.name, false);else col.sortOrder = 1 - col.sortOrder;
-      sort(col);
+      if (sortHeader == this) {
+        col.sortOrder = !col.sortOrder;
+      } else if (sortHeader) {
+        _d3.select(sortHeader).classed("asc desc", false);
+      }
+
+      _d3.select(this).classed({ asc: col.sortOrder, desc: !col.sortOrder });
+
+      sortHeader = this;
+      sortCol = col;
+
+      sortTable();
     }
 
-    function update() {
-      if (!valid) return;
-
-      header = thead.selectAll('th').data(columns);
-
-      var colHeader = header.enter().append('th').attr('class', function (d) {
-        return d['class'];
-      }).append('g').attr('id', function (d) {
-        return d.name;
+    function sortTable() {
+      if (!sortCol) return;
+      var sortFunc = sortCol.sortOrder && _d3.ascending || _d3.descending;
+      tbody.selectAll("tr").sort(function (a, b) {
+        return sortFunc(sortCol.cellValue(a), sortCol.cellValue(b));
       });
+    }
 
-      colHeader.append('text').text(function (col) {
-        return col.title;
-      }).on('click', onSort);
+    return {
+      header: function header(columnsDef) {
+        columnsDef = typeof columnsDef == "string" && columnsDef.split(",") || columnsDef;
+        columns = columnsDef.map(function (col) {
+          col = typeof col == "string" && { name: col } || col;
+          col.title = col.title || capitalize(col.name, "?");
+          col.cellValue = col.cellValue || f(col.name);
+          col.cellAttr = col.cellAttr || f({});
+          col.attr = col.attr || "";
+          col.sortOrder = col.sortOrder || 0;
+          col.render = col.render || "text";
 
-      colHeader.append('i').attr('class', 'fa').attr('width', '10px').style('padding-left', '5px');
-
-      header.exit().remove();
-
-      var rows = tbody.selectAll('tr').data(data);
-
-      rows.enter().append('tr').selectAll('td').data(columns);
-
-      rows.exit().remove();
-
-      // update
-      var cells = rows.selectAll('td').data(function (row) {
-        return columns.map(function (col) {
-          return { col: col.name, value: row[col.name], 'class': col['class'], row: row };
+          return col;
         });
-      });
 
-      cells.enter().append('td').on('click', function (d) {
-        dispatch.click(d.row);
-      });
+        var h = thead.selectAll("th").data(columns);
 
-      cells.text(function (d) {
-        return d.value;
-      }).attr('class', function (d) {
-        return d['class'];
-      });
+        h.enter().append("th").attr("class", "tableColHeader").on("click", onSort);
 
-      cells.exit().remove();
-    }
+        h.text(function (c) {
+          return c.title;
+        });
 
-    function convert(cols) {
-      cols = typeof cols == 'string' ? cols.split(', ') : cols;
-      return cols.map(function (col) {
-        if (typeof col == 'string') col = { name: col };
+        h.exit().remove();
 
-        col.title = col.title || (0, _utils.capitalize)(col.name);
-        col.sortOrder = col.sortOrder || 0;
-        return col;
-      });
-    }
+        h.each(function (d) {
+          d.minWidth = _d3.select(this).style("width");
+        });
 
-    function api() {}
+        return this;
+      },
 
-    api.el = function (el) {
-      if (!arguments.length) return d3el;
-      d3el = typeof el == 'string' ? _d3.select(el) : el;
-      //table = d3el.append('table')
-      //  .classed('table', true);
-      table = d3el;
+      data: function data(list) {
+        if (!arguments.length) return _data;
 
-      if (width) table.attr('width', width);
-      if (height) table.attr('height', height);
+        _data = list;
+        var rows = tbody.selectAll("tr").data(list, columns[0].cellValue);
 
-      thead = table.append('thead').append('tr');
-      tbody = table.append('tbody');
+        rows.enter().append("tr");
+        rows.exit().remove();
 
-      validate();
-      update();
-      return this;
-    };
+        var cells = rows.selectAll("td").data(function (row) {
+          return columns.map(function (c) {
+            return { col: c, value: c.cellValue(row), attr: c.cellAttr(row), row: row };
+          });
+        });
 
-    api.width = function (value) {
-      if (!arguments.length) return width;
-      width = value;
-      if (table) {
-        table.attr('width', width);
+        cells.enter().append("td").attr("class", function (d) {
+          return d.col.attr;
+        }).attr("width", function (d) {
+          return d.col.minWidth;
+        }).on("click", function (d) {
+          dispatch.click(d);
+        }).on("mouseover", function (d) {
+          dispatch.mouseover(d);
+        }).on("mouseout", function (d) {
+          dispatch.mouseout(d);
+        });
+
+        cells.filter(function (d) {
+          return d.col.render == "text";
+        }).text(function (d) {
+          return d.value;
+        }).classed(function (d) {
+          return d.attr;
+        });
+
+        var _iteratorNormalCompletion = true;
+        var _didIteratorError = false;
+        var _iteratorError = undefined;
+
+        try {
+          var _loop = function () {
+            var col = _step.value;
+
+            if (col.render != "text") {
+              cells.filter(function (d) {
+                return d.col == col;
+              }).call(col.render);
+            }
+          };
+
+          for (var _iterator = columns[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            _loop();
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator["return"]) {
+              _iterator["return"]();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
+        }
+
+        cells.exit().remove();
+
+        sortTable();
+
+        // adjust header cols width
+        var i = 0;
+        var _iteratorNormalCompletion2 = true;
+        var _didIteratorError2 = false;
+        var _iteratorError2 = undefined;
+
+        try {
+          for (var _iterator2 = tbody.select("tr").selectAll("td")[0][Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+            var c = _step2.value;
+
+            columns[i++].width = parseInt(_d3.select(c).style("width"));
+          }
+        } catch (err) {
+          _didIteratorError2 = true;
+          _iteratorError2 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion2 && _iterator2["return"]) {
+              _iterator2["return"]();
+            }
+          } finally {
+            if (_didIteratorError2) {
+              throw _iteratorError2;
+            }
+          }
+        }
+
+        if (columns.length > 0) columns[columns.length - 1].width += 15;
+        thead.selectAll("th").data(columns).attr("width", function (d) {
+          return d.width;
+        });
+
+        return this;
+      },
+
+      row: function row(filter) {
+        return tbody.selectAll("tr").filter(filter);
+      },
+
+      cell: function cell(rfilter, cfilter) {
+        return row(rfilter).filter(cfilter);
+      },
+
+      on: function on(type, cb) {
+        dispatch.on(type, cb);
+        return this;
       }
-      return this;
     };
-
-    api.height = function (value) {
-      if (!arguments.length) return height;
-      height = value;
-      if (table) {
-        table.attr('height', height);
-      }
-      return this;
-    };
-
-    api.data = function (value) {
-      if (!arguments.length) return data;
-      data = value;
-      if (sortCol) sort(sortCol);
-      validate();
-      update();
-      return this;
-    };
-
-    api.columns = function (value) {
-      if (!arguments.length) return columns;
-      columns = convert(value);
-      validate();
-      update();
-      return this;
-    };
-
-    api.on = function (type, listener) {
-      dispatch.on(type, listener);
-      return this;
-    };
-
-    api.update = function () {
-      update();
-      return this;
-    };
-
-    return api;
   };
 });
 

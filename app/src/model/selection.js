@@ -63,7 +63,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
           return list;
         }
         va = a[ia].id;
-        va = b[ib].id;
+        vb = b[ib].id;
       }
     }
   }
@@ -120,18 +120,20 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
   }
 
   module.exports = function () {
-    var initialDomain = undefined;
-    var filteredDomain = undefined;
+    var initialDomain = [];
+    var filteredDomain = [];
     var domain = [];
+    var domainMap = new Map();
 
-    var excluded = new Set();
+    var _excluded = new Set();
     var filters = new Map();
+    var tagFilters = new Map();
 
     var tags = new Set();
 
     var dispatch = _d3.dispatch('changed');
 
-    clear(true);
+    _clear(true);
 
     function add(tag) {
       if (tags.has(tag)) return;
@@ -139,7 +141,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       assign_color(tag);
 
       tags.add(tag);
-      excluded['delete'](tag);
+      _excluded['delete'](tag);
       recompute();
     }
 
@@ -149,7 +151,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       recompute();
     }
 
-    function clear(silent) {
+    function _clear(silent) {
       var _iteratorNormalCompletion = true;
       var _didIteratorError = false;
       var _iteratorError = undefined;
@@ -180,7 +182,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = excluded[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (var _iterator2 = _excluded[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var tag = _step2.value;
 
           release_color(tag);
@@ -201,7 +203,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       }
 
       tags = new Set();
-      excluded = new Set();
+      _excluded = new Set();
       filteredDomain = initialDomain;
       domain = initialDomain;
       if (!silent) {
@@ -220,103 +222,305 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
       recompute();
     }
 
-    function recompute() {
-      domain = filteredDomain;
-      tags.forEach(function (tag) {
-        domain = intersect(domain, tag.items);
-      });
-      excluded.forEach(function (tag) {
-        domain = excludeItems(domain, tag.items);
-      });
+    function useTag(tag) {
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
 
-      dispatch.changed();
+      try {
+        for (var _iterator3 = tagFilters.values()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var f = _step3.value;
+
+          if (!f(tag)) return false;
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      return true;
     }
 
-    function check(domain, msg) {
-      for (var i = 0; i < domain.length; i++) {
-        if (domain[i] == undefined) console.log(msg, 'at', i);
+    function recompute(silent) {
+      domain = filteredDomain;
+      tags.forEach(function (tag) {
+        if (useTag(tag)) domain = intersect(domain, tag.items);
+      });
+      _excluded.forEach(function (tag) {
+        if (useTag(tag)) domain = excludeItems(domain, tag.items);
+      });
+
+      domainMap = new Map();
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
+
+      try {
+        for (var _iterator4 = domain[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var d = _step4.value;
+          domainMap.set(d.id, d);
+        }
+      } catch (err) {
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+            _iterator4['return']();
+          }
+        } finally {
+          if (_didIteratorError4) {
+            throw _iteratorError4;
+          }
+        }
       }
+
+      if (!silent) dispatch.changed();
+    }
+
+    function _reset(newDomain, newTags) {
+      var tag = undefined;
+      var prevTags = tags;
+      var prevExcluded = _excluded;
+      var current = new Set();
+
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = newTags[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          tag = _step5.value;
+          current.add(tag.concept.label);
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+            _iterator5['return']();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+
+      tags = new Set();
+      _excluded = new Set();
+
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = prevTags[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          tag = _step6.value;
+
+          if (current.has(tag.concept.label)) tags.add(tag);else release_color(tag);
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+            _iterator6['return']();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
+
+      try {
+        for (var _iterator7 = prevExcluded[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          tag = _step7.value;
+
+          if (current.has(tag.concept.label)) _excluded.add(tag);else release_color(tag);
+        }
+      } catch (err) {
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion7 && _iterator7['return']) {
+            _iterator7['return']();
+          }
+        } finally {
+          if (_didIteratorError7) {
+            throw _iteratorError7;
+          }
+        }
+      }
+
+      filteredDomain = initialDomain = newDomain;
+      recompute(true);
     }
 
     /*
      * API
      */
-    var selection = Object.defineProperties({}, {
+    return Object.defineProperties({
+
+      reset: function reset(newDomain, currentTags) {
+        _reset(newDomain, currentTags);
+      },
+
+      update: function update() {
+        dispatch.changed();
+      },
+
+      countActive: function countActive(items) {
+        return intersect(domain, items).length;
+      },
+
+      selectedItems: function selectedItems() {
+        return tags.size || _excluded.size ? domain : [];
+      },
+
+      clear: function clear(silent) {
+        _clear(false);
+      },
+
+      exclude: function exclude(tag, add) {
+        if (arguments.length == 1) {
+          add = !_excluded.has(tag);
+        }
+        if (add) {
+          if (_excluded.has(tag)) return;
+          assign_color(tag);
+          _excluded.add(tag);
+          tags['delete'](tag);
+        } else {
+          if (!_excluded['delete'](tag)) return;
+          release_color(tag);
+        }
+        recompute();
+      },
+
+      addFilter: function addFilter(filter, key) {
+        filters.set(key, filter);
+        filter.on('change.selection', function () {
+          return filterDomain();
+        });
+        filterDomain();
+      },
+
+      removeFilter: function removeFilter(key) {
+        var filter = filters.get(key);
+        if (!filter) return;
+        filter.off('change.selection');
+        filters['delete'](key);
+        filterDomain();
+      },
+
+      addTagsFilter: function addTagsFilter(filter, key, silence) {
+        tagFilters.set(key, filter);
+        filter.on('change.selection', function () {
+          recompute();
+        });
+        recompute(silence);
+      },
+
+      removeTagsFilter: function removeTagsFilter(key) {
+        var filter = tagFilters.get(key);
+        if (!filter) return;
+
+        filter.off('change.selection');
+        tagFilters['delete'](key);
+        recompute();
+      },
+
+      select: function select(tag, op) {
+        if (op == undefined) op = !tags.has(tag);
+
+        if (op) add(tag);else remove(tag);
+      },
+
+      selected: function selected() {
+        return tags;
+      },
+
+      excluded: function excluded() {
+        return _excluded;
+      },
+
+      isAnySelected: function isAnySelected() {
+        var _iteratorNormalCompletion8 = true;
+        var _didIteratorError8 = false;
+        var _iteratorError8 = undefined;
+
+        try {
+          for (var _iterator8 = arguments[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+            var tag = _step8.value;
+
+            if (tags.has(tag)) return true;
+          }
+        } catch (err) {
+          _didIteratorError8 = true;
+          _iteratorError8 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion8 && _iterator8['return']) {
+              _iterator8['return']();
+            }
+          } finally {
+            if (_didIteratorError8) {
+              throw _iteratorError8;
+            }
+          }
+        }
+
+        return false;
+        //return _.some(arguments, function (tag) {
+        //    if (tags.has(tag)) return true;
+        //  }, this
+        //);
+      },
+
+      on: function on(type, listener) {
+        dispatch.on(type, listener);
+        return this;
+      }
+    }, {
       domain: {
         get: function () {
           return domain;
         },
         set: function (list) {
           initialDomain = list;
-          clear(false);
+          _clear(false);
+          //recompute(true);
+        },
+        configurable: true,
+        enumerable: true
+      },
+      domainMap: {
+        get: function () {
+          return domainMap;
         },
         configurable: true,
         enumerable: true
       }
     });
-
-    selection.selectedItems = function () {
-      return tags.size || excluded.size ? domain : [];
-    };
-
-    selection.clear = function (silent) {
-      clear(false);
-    };
-
-    selection.exclude = function (tag, add) {
-      if (add) {
-        if (excluded.has(tag)) return;
-        assign_color(tag);
-        excluded.add(tag);
-        tags['delete'](tag);
-      } else {
-        if (!excluded['delete'](tag)) return;
-        release_color(tag);
-      }
-      recompute();
-    };
-
-    selection.addFilter = function (filter, key) {
-      filters.set(key, filter);
-      filter.on('change', function () {
-        return filterDomain();
-      });
-      filterDomain();
-    };
-
-    selection.removeFilter = function (key) {
-      var filter = filters.get(key);
-      if (!filter) return;
-      filter.off('change');
-      filters['delete'](key);
-      filterDomain();
-    };
-
-    selection.select = function (tag, op) {
-      op = op || op == undefined;
-      if (op) add(tag);else remove(tag);
-    };
-
-    selection.tags = function () {
-      return tags;
-    };
-
-    selection.excluded = function () {
-      return excluded;
-    };
-
-    selection.isAnySelected = function () {
-      return _.some(arguments, function (tag) {
-        if (tags.has(tag)) return true;
-      }, this);
-    };
-
-    selection.on = function (type, listener) {
-      dispatch.on(type, listener);
-      return this;
-    };
-
-    return selection;
   };
 });
 

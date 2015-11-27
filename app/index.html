@@ -8,42 +8,55 @@
 </head>
 <body>
 
+<label id="title">CommonGround</label>
+
 <div id="query-area">
-    <label id="title">CommonGround</label>
-    <div id="query" >
-        <form >
-            <input type="date" id="date" required="required" placeholder="from date">
-            <input type="text" class="input" id="duration" maxlength="3" persistent="true" placeholder="duration"> wks
-            <br><br>
-            <input type="text" id="keywords" name="keywords" placeholder="keywords">
-            <br><br>
-            <input type="button" value="Search" id="submit">
-        </form>
+    <form >
+        <input type="date" id="date" required="required" placeholder="from date">
+        <input type="text" class="input" id="duration" maxlength="3" persistent="true" placeholder="duration"> wks
+        <br><br>
+        <!--<input type="text" id="keywords" name="keywords" placeholder="keywords">-->
+        <!--<br><br>-->
+        <input type="button" value="Search" id="submit">
+    </form>
+</div>
+
+<table id="info-num">
+  <tr><td>Encounters</td><td id="encounters"></td></tr>
+  <tr><td>Topics</td><td id="topics"></td></tr>
+  <tr><td>Relations</td><td id="relations"></td></tr>
+</table>
+
+<div id="details-area">
+    <div id="details-tables"></div>
+    <div id="selection">
+        <div class="selection-label">Selection:</div>
+        <ul id="selection-list"></ul>
+      <br>
+        <div class="selection-label">Filters:</div>
+        <ul id="filters-list"></ul>
     </div>
 </div>
 
-<div id="details-area">
-    <table id="tags-table"></table>
-    <table id="selected-table"></table>
-    <table id="category-table"></table>
-    <table id="system-table"></table>
-</div>
-<div id="cg"></div>
+<div id="cg-area"></div>
 
 <div id="info-area">
-    <div id="charts">
+    <div id="charts-area">
         <div id="summary-chart"></div>
         <div id="selected-chart"></div>
+    </div>
 
-        <label>Detectors</label>
-
-        <div class="chart">Detector</div>
+    <div id="detectors-area">
+        <div id="detectors-label">Detectors</div>
+        <div id="detectors"></div>
     </div>
 
     <div id="pathogens-area">
-        <select name='s' id="pathogens" multiple="multiple"></select>
-        <div class="chart">RSV</div>
-        <div class="chart">Influenza</div>
+        <div id="pathogens-selection" class="dropdown-check-list" tabindex="100">
+            <span class="anchor">Pathogens</span>
+          <ul id="items" class="items"></ul>
+        </div>
+      <div id="pathogens"></div>
     </div>
 </div>
 
@@ -52,6 +65,11 @@
     <div id="map"></div>
 </div>
 
-<script data-main="src/init" src="lib/requirejs/require.js"></script>
+<script src="jspm_packages/system.js"></script>
+<script src="config.js"></script>
+<script>
+    System.import('src2/app')
+</script>
+
 </body>
 </html>

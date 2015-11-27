@@ -1,8 +1,8 @@
 @import "base";
+@import "components";
 @import "xpanel";
 @import "query";
 @import "cg";
-@import "info";
 
 body {
   position: fixed;
@@ -15,106 +15,121 @@ body {
 }
 
 #title {
-  font: bold 16pt Arial;
+  font: bold 14pt Georgia; /* Arial; */
   margin: 10px 0 10px 0;
 }
 
+#info-num {
+
+}
 #query-area {
-  display: inline-block;
   width: $query-width;
   height: auto;
   padding: 10px;
-  //background-color: antiquewhite;
 }
 
 #details-area {
   position: fixed;
   left: $query-width + 5;
-  top: 0;
+  top: 10px;
   right: $info-width - 5;
   height: $details-height;
   padding: 0 20px 0 10px;
+}
 
-  //ul { list-style: none; position: relative; padding: 10px 0; margin: 0;}
-  //ul li { display: inline-block; padding: 0 10px; vertical-align: top;}
+#selection {
+  font-size: 8pt;
+  padding-left: 6px;
+
+  .selection-label {
+    width: 40pt;
+    display: inline-block;
+  }
+
+  ul { display: inline-block; list-style: none; position: relative; padding: 0 0; margin: 0;}
+  ul li {
+    display: inline-block;
+    padding: 0 2px;
+    border: solid lightgray 1px;
+    border-radius: 3px;
+
+    &.selected {
+      font-weight: normal;
+    }
+
+    &.excluded {
+      text-decoration: line-through;
+    }
+  }
 }
 
 #info-area {
   position: fixed;
   right: 10px;
   top: 10px;
+  bottom: $map-height + 20;
   width: $info-width;
 }
 
-#charts {
-  display: inline-block;
-  width: $info-width/2-5;
-  height: auto;
+#charts-area {
+  //display: inline-block;
+  //width: $info-width/2-5;
+  width: auto;
+  height: $chart-height+20;
+  margin-top: 18px;
 }
 
-#pathogens {
+#detectors-area {
   display: inline-block;
   width: $info-width/2-5;
   height: auto;
   vertical-align: top;
-}
 
-
-table {
-  display: inline-block;
-  max-height: $table-max-height;
-  height: $table-max-height;
-  width: 180px;
-
-  table-layout: fixed;
-  border-collapse: collapse;
-  //    border-width: 2px;
-
-  th { border-bottom: solid thin;  text-decoration: underline; }
-  td, th { padding: 0.25rem;  }
-  td.text-col, th.text-col { text-align: left; }
-  td.number-col, th.number-col { text-align: right; }
-
-  td:nth-child(1), th:nth-child(1) { min-width: 120px; }
-  td:nth-child(2), th:nth-child(2) { width: 50px;}
-  td:nth-child(2) {text-align: right;}
-
-  thead {
-    background-color: #eee;
-    font: 9pt sans-serif;
-    tr {
-      display: block;
-      position: relative;
-    }
+  #detectors-label {
+    //height: 24px;
+    margin: 5px 5px 10px 5px;
   }
 
-    tbody {
-      display: block;
-      overflow: auto;
-      width: 100%;
-      height: 100%;
-      //tr:nth-child(even) {
-      //  background-color: @alternate_row_background_color;
-      //}
-      font: 9pt sans-serif;
-    }
-  //}
+  #detectors {
+    width: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 }
 
-.chart {
-  width: $chart-width;
-  height: $chart-height;
-  border: 1px solid lightgrey ;
-  padding: 5px;
-  margin: 5px;
+#pathogens-area {
+  //display: inline-block;
+  //height: auto;
+  //vertical-align: top;
+  width: $info-width/2-5;
+
+  position: fixed;
+  top:$chart-height+50;
+  bottom: $map-height + 20;
+  right: 10px;
+
+  #pathogens {
+    width: $info-width/2-5;
+    overflow-x: hidden;
+    overflow-y: scroll;
+  }
 }
 
-#summary-chart {
-  @extend .chart;
+.pathogen {
+  //box-sizing: border-box;
+  width: auto;
+  height: 60px;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
-#selected-chart {
-  @extend .chart;
+.selected {
+  font-weight: bold;
+}
+
+.excluded {
+  text-decoration: line-through;
 }
 
 
@@ -130,12 +145,13 @@ table {
   height: 100%;
 }
 
-#cg {
+#cg-area {
   position: fixed;
   left: 10px;
   right: $map-width + 20px;
-  top: $details-height + 20px;
+  top: $details-height + 50px;
   bottom: 10px;
+  border: lightgray 1px solid;
 }
 
 /* info */
@@ -146,21 +162,27 @@ table {
   bottom: 10px;
 }
 
-
-
 #map {
   width: $map-width;
   height: $map-height;
+  border: solid gray 1px;
 
   path {
     fill: #fff;
-    fill-opacity: 0;
+    fill-opacity: 1;
     stroke: #ccc;
-    stroke-width: 0px;
+    stroke-width: 1px;
   }
 
   path:hover {
     stroke-width: 1.5px;
     stroke: #000;
+    z-index: 2;
+  }
+
+  path.selected {
+    stroke-width: 3px;
+    stroke: green;
+    z-index: 1;
   }
 }

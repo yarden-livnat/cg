@@ -1,3 +1,194 @@
+.info-table {
+  display: inline-block;
+  height: 130px;
+  margin: 0 0 5px 5px;
+  table-layout: auto;
+  border-collapse: collapse;
+  border: solid 1px lightgray; }
+  .info-table th {
+    border-bottom: solid thin lightgray; }
+  .info-table td, .info-table th {
+    padding: 2px; }
+  .info-table td.text-col, .info-table th.text-col {
+    text-align: left; }
+  .info-table td.number-col, .info-table th.number-col {
+    text-align: right; }
+  .info-table thead {
+    background-color: #fafafa;
+    font: 9pt sans-serif; }
+    .info-table thead tr {
+      display: block;
+      position: relative; }
+  .info-table tbody {
+    display: block;
+    overflow: auto;
+    max-height: 110px;
+    height: 100%;
+    font: 9pt sans-serif; }
+    .info-table tbody text:hover {
+      background-color: lightgray; }
+
+.tableColHeader {
+  text-align: left; }
+
+.numeric {
+  text-align: right; }
+
+.tableColHeader:after {
+  position: absolute;
+  content: "";
+  border-left: 1px solid black;
+  border-top: 1px solid black;
+  padding: 3px;
+  margin-left: 5px;
+  top: 30%;
+  display: none; }
+
+.tableColHeader.asc:after {
+  display: inline;
+  transform: rotate(45deg); }
+
+.tableColHeader.desc:after {
+  display: inline;
+  transform: rotate(-135deg); }
+
+.chart svg {
+  font: 8pt sans-serif; }
+.chart .axis {
+  shape-rendering: crispEdges; }
+.chart .axis path, .chart .axis line {
+  fill: none;
+  stroke-width: 1px;
+  stroke: #aaa; }
+.chart .x.axis line {
+  stroke: #aaa;
+  stroke-opacity: .5;
+  stroke-width: 1px; }
+.chart .y.axis line {
+  stroke: #aaa;
+  stroke-opacity: 0.5; }
+.chart path.line {
+  fill: none;
+  stroke-width: 1px; }
+.chart rect.pane {
+  cursor: move;
+  fill: none;
+  pointer-events: all; }
+
+/* checkbox drop down menu */
+.dropdown-check-list {
+  display: inline-block;
+  outline: none; }
+  .dropdown-check-list .anchor {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px 25px 5px 10px; }
+  .dropdown-check-list .anchor:after {
+    position: absolute;
+    content: "";
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    padding: 3px;
+    right: 10px;
+    top: 30%;
+    -moz-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    -o-transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+    transform: rotate(-135deg); }
+  .dropdown-check-list ul.items {
+    padding: 2px;
+    display: none;
+    background-color: white;
+    margin: 0;
+    border: 1px solid #ccc;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    right: 5px;
+    box-shadow: 5px 5px 3px gray; }
+  .dropdown-check-list ul.items li {
+    list-style: none;
+    font: 7pt Arial; }
+
+/* bullet */
+.bullet {
+  font: 9pt sanss-serif; }
+  .bullet .range.s0 {
+    fill: #eee;
+    color: #000; }
+  .bullet .range.s1 {
+    fill: lightsteelblue;
+    color: #000; }
+
+/* bar */
+.bar {
+  font: 10px sanss-serif;
+  background-color: #e0e0e0; }
+  .bar rect {
+    fill: lightsteelblue; }
+  .bar text {
+    fill: black; }
+
+/* histogram */
+.selector {
+  height: 150px; }
+  .selector .bar {
+    fill: steelblue;
+    shape-rendering: crispEdges; }
+  .selector .bar text {
+    fill: #fff; }
+  .selector .axis text {
+    font: 8px sans-serif; }
+  .selector .axis path, .selector .axis line {
+    fill: none;
+    stroke: #333;
+    shape-rendering: crispEdges; }
+  .selector .brush .extent {
+    fill: #ddd;
+    fill-opacity: 0.2;
+    stroke: #888;
+    stroke-width: 1px;
+    /*fill-opacity: .25;*/
+    shape-rendering: crispEdges; }
+
+.chart {
+  width: auto;
+  height: 100px;
+  border: 1px solid lightgrey;
+  padding: 5px;
+  margin: 5px; }
+  .chart .tick {
+    font-size: 6pt; }
+  .chart .title {
+    font-size: 8pt; }
+
+.detector {
+  width: auto;
+  height: 100px;
+  padding: 5px;
+  margin: 0; }
+  .detector .axis text {
+    font: 8px sans-serif; }
+  .detector .axis path, .detector .axis line {
+    fill: none;
+    stroke: #333;
+    shape-rendering: crispEdges; }
+  .detector .tick {
+    font-size: 6pt; }
+  .detector .bar {
+    shape-rendering: crispEdges; }
+  .detector .title {
+    font-size: 8pt; }
+  .detector .brush .extent {
+    fill: #ddd;
+    fill-opacity: 0.2;
+    stroke: #888;
+    stroke-width: 1px;
+    /*fill-opacity: .25;*/
+    shape-rendering: crispEdges; }
+
 .x-panel {
   width: auto;
   position: relative;
@@ -47,61 +238,42 @@ input[type=date]::-webkit-inner-spin-button {
   fill: steelblue;
   opacity: 0.3; }
 
-.cg {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 200px;
-  right: 0; }
-  .cg .node .circle {
-    fill: lightgray;
-    stroke: green;
-    stroke-width: 1.5px; }
-  .cg .node .scaledTag .frame {
-    fill: #707070; }
-  .cg .node .scaledTag .bg {
-    fill: #f0f0f0; }
-  .cg .node .scaledTag .tag {
-    font-size: 2em;
-    font-weight: normal;
-    stroke: none; }
-  .cg .node.selected .circle {
-    fill: red; }
-  .cg .node.excluded .scaledTag .bg {
-    fill: yellow; }
-  .cg .node.fixed {
-    text-decoration: underline; }
-  .cg .link {
-    fill: none;
-    stroke: #666;
-    stroke-width: 1.5px; }
-    .cg .link.highlight {
-      stroke: red;
-      stroke-opacity: 1; }
+.cg .node .circle {
+  fill: lightgray;
+  stroke: green;
+  stroke-width: 1.5px; }
+.cg .node .scaledTag .frame {
+  fill: #707070; }
+.cg .node .scaledTag .bg {
+  fill: #f0f0f0; }
+.cg .node .scaledTag .tag {
+  font-size: 2em;
+  font-weight: normal;
+  stroke: none; }
+.cg .node.excluded .scaledTag .bg {
+  fill: #fafafa; }
+.cg .node.fixed .circle {
+  fill: red; }
+.cg .node.highlight {
+  fill: red; }
 
-.chart svg, #summary-chart svg, #selected-chart svg {
-  font: 10px sans-serif; }
-.chart .axis, #summary-chart .axis, #selected-chart .axis {
-  shape-rendering: crispEdges; }
-.chart .axis path, #summary-chart .axis path, #selected-chart .axis path, .chart .axis line, #summary-chart .axis line, #selected-chart .axis line {
+.cg .link {
   fill: none;
-  stroke-width: .5px; }
-.chart .x.axis path, #summary-chart .x.axis path, #selected-chart .x.axis path {
-  stroke: #000; }
-.chart .x.axis line, #summary-chart .x.axis line, #selected-chart .x.axis line {
-  stroke: #aaa;
-  stroke-opacity: .5;
+  stroke: #666;
   stroke-width: 1px; }
-.chart .y.axis line, #summary-chart .y.axis line, #selected-chart .y.axis line {
-  stroke: none;
-  stroke-opacity: 0.5; }
-.chart path.line, #summary-chart path.line, #selected-chart path.line {
-  fill: none;
-  stroke-width: .5px; }
-.chart rect.pane, #summary-chart rect.pane, #selected-chart rect.pane {
-  cursor: move;
-  fill: none;
-  pointer-events: all; }
+  .cg .link.highlight {
+    stroke: red;
+    stroke-opacity: 1; }
+
+#relayout {
+  position: relative;
+  left: 250px;
+  bottom: 35px; }
+
+#edgeMeasure {
+  position: relative;
+  left: 280px;
+  bottom: 35px; }
 
 body {
   position: fixed;
@@ -110,14 +282,14 @@ body {
   left: 0;
   right: 0;
   padding: 5px;
-  font: 9pt Verdana; }
+  font: 9pt Arial; }
 
 #title {
-  font: bold 16pt Arial;
+  font: bold 14pt Georgia;
+  /* Arial; */
   margin: 10px 0 10px 0; }
 
 #query-area {
-  display: inline-block;
   width: 16em;
   height: auto;
   padding: 10px; }
@@ -125,81 +297,93 @@ body {
 #details-area {
   position: fixed;
   left: 21em;
-  top: 0;
+  top: 10px;
   right: 395px;
-  height: 150px;
+  height: 130px;
   padding: 0 20px 0 10px; }
+
+#selection {
+  font-size: 8pt;
+  padding-left: 6px; }
+  #selection .selection-label {
+    width: 40pt;
+    display: inline-block; }
+  #selection ul {
+    display: inline-block;
+    list-style: none;
+    position: relative;
+    padding: 0 0;
+    margin: 0; }
+  #selection ul li {
+    display: inline-block;
+    padding: 0 2px;
+    border: solid lightgray 1px;
+    border-radius: 3px; }
+    #selection ul li.selected {
+      font-weight: normal; }
+    #selection ul li.excluded {
+      text-decoration: line-through; }
 
 #info-area {
   position: fixed;
   right: 10px;
   top: 10px;
+  bottom: 420px;
   width: 400px; }
 
-#charts {
-  display: inline-block;
-  width: 195px;
-  height: auto; }
+#charts-area {
+  width: auto;
+  height: 120px;
+  margin-top: 18px; }
 
-#pathogens {
+#detectors-area {
   display: inline-block;
   width: 195px;
   height: auto;
   vertical-align: top; }
+  #detectors-area #detectors-label {
+    margin: 5px 5px 10px 5px; }
+  #detectors-area #detectors {
+    width: auto;
+    overflow-x: hidden;
+    overflow-y: auto; }
 
-table {
-  display: inline-block;
-  max-height: 130px;
-  height: 130px;
-  width: 180px;
-  table-layout: fixed;
-  border-collapse: collapse; }
-  table th {
-    border-bottom: solid thin;
-    text-decoration: underline; }
-  table td, table th {
-    padding: 0.25rem; }
-  table td.text-col, table th.text-col {
-    text-align: left; }
-  table td.number-col, table th.number-col {
-    text-align: right; }
-  table td:nth-child(1), table th:nth-child(1) {
-    min-width: 120px; }
-  table td:nth-child(2), table th:nth-child(2) {
-    width: 50px; }
-  table td:nth-child(2) {
-    text-align: right; }
-  table thead {
-    background-color: #eee;
-    font: 9pt sans-serif; }
-    table thead tr {
-      display: block;
-      position: relative; }
-  table tbody {
-    display: block;
-    overflow: auto;
-    width: 100%;
-    height: 100%;
-    font: 9pt sans-serif; }
+#pathogens-area {
+  width: 195px;
+  position: fixed;
+  top: 150px;
+  bottom: 420px;
+  right: 10px; }
+  #pathogens-area #pathogens {
+    width: 195px;
+    overflow-x: hidden;
+    overflow-y: scroll; }
 
-.chart, #summary-chart, #selected-chart {
+.pathogen {
   width: auto;
-  height: 100px;
-  border: 1px solid lightgrey;
-  padding: 5px;
-  margin: 5px; }
+  height: 60px;
+  border: none;
+  margin: 0;
+  padding: 0; }
+
+.selected {
+  font-weight: bold; }
+
+.excluded {
+  text-decoration: line-through; }
 
 /* query-area */
 #tags {
   width: auto;
   height: 100%; }
 
-#cg {
+#cg-area {
   position: fixed;
   left: 10px;
   right: 420px;
-  top: 170px;
-  bottom: 10px; }
+  top: 180px;
+  bottom: 10px;
+  border: lightgray 1px solid; }
 
 /* info */
 #map-area {
@@ -209,14 +393,20 @@ table {
 
 #map {
   width: 400px;
-  height: 400px; }
+  height: 400px;
+  border: solid gray 1px; }
   #map path {
     fill: #fff;
-    fill-opacity: 0;
+    fill-opacity: 1;
     stroke: #ccc;
-    stroke-width: 0px; }
+    stroke-width: 1px; }
   #map path:hover {
     stroke-width: 1.5px;
-    stroke: #000; }
+    stroke: #000;
+    z-index: 2; }
+  #map path.selected {
+    stroke-width: 3px;
+    stroke: green;
+    z-index: 1; }
 
 /*# sourceMappingURL=app.css.map */

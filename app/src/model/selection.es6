@@ -49,7 +49,7 @@ function release_color(tag) {
         list.push(a[ia]);
         if (++ia === na || ++ib === nb) { return list; }
         va = a[ia].id;
-        va = b[ib].id;
+        vb = b[ib].id;
       }
     }
   }
@@ -91,12 +91,14 @@ function release_color(tag) {
   }
 
   export default function() {
-    let initialDomain = undefined;
-    let filteredDomain = undefined;
+    let initialDomain = [];
+    let filteredDomain = [];
     let domain = [];
+    let domainMap = new Map();
 
     let excluded = new Set();
     let filters = new Map();
+    let tagFilters = new Map();
 
     let tags = new Set();
 
@@ -146,96 +148,164 @@ function release_color(tag) {
       recompute();
     }
 
-
-    function recompute() {
-      domain = filteredDomain;
-      tags.forEach(function (tag) {
-        domain = intersect(domain, tag.items);
-      });
-      excluded.forEach(function (tag) {
-        domain = excludeItems(domain, tag.items);
-      });
-
-      dispatch.changed();
+    function useTag(tag) {
+      for (let f of tagFilters.values()) {
+        if (!f(tag)) return false;
+      }
+      return true;
     }
 
-    function check(domain, msg) {
-      for(let i = 0; i < domain.length; i++)
-        if (domain[i] == undefined) console.log(msg, 'at', i);
+    function recompute(silent) {
+      domain = filteredDomain;
+      tags.forEach(function (tag) {
+        if (useTag(tag))
+          domain = intersect(domain, tag.items);
+      });
+      excluded.forEach(function (tag) {
+        if (useTag(tag))
+          domain = excludeItems(domain, tag.items);
+      });
+
+      domainMap = new Map();
+      for (let d of domain) domainMap.set(d.id, d);
+
+      if (!silent)
+        dispatch.changed();
+    }
+
+    function reset(newDomain, newTags) {
+      let tag;
+      let prevTags = tags;
+      let prevExcluded = excluded;
+      let current = new Set();
+
+      for (tag of newTags) current.add(tag.concept.label);
+
+      tags = new Set();
+      excluded = new Set();
+
+      for (tag of prevTags) {
+        if (current.has(tag.concept.label)) tags.add(tag);
+        else release_color(tag);
+      }
+
+      for (tag of prevExcluded) {
+        if (current.has(tag.concept.label)) excluded.add(tag);
+        else release_color(tag);
+      }
+
+      filteredDomain = initialDomain = newDomain;
+      recompute(true);
     }
 
     /*
      * API
      */
-    let selection = {
+    return  {
       get domain() { return domain; },
 
       set domain(list) {
         initialDomain = list;
         clear(false);
+        //recompute(true);
+      },
+
+      get domainMap() { return domainMap; },
+
+      reset(newDomain, currentTags) {
+        reset(newDomain, currentTags);
+      },
+
+      update() {
+        dispatch.changed();
+      },
+
+      countActive(items) {
+        return intersect(domain, items).length;
+      },
+
+      selectedItems() {
+        return tags.size || excluded.size ? domain : [];
+      },
+
+      clear(silent) {
+        clear(false);
+      },
+
+      exclude(tag, add) {
+        if (arguments.length == 1) {
+          add = !excluded.has(tag);
+        }
+        if (add) {
+          if (excluded.has(tag)) return;
+          assign_color(tag);
+          excluded.add(tag);
+          tags.delete(tag);
+        } else {
+          if (!excluded.delete(tag)) return;
+          release_color(tag);
+        }
+        recompute();
+      },
+
+      addFilter(filter, key) {
+        filters.set(key, filter);
+        filter.on('change.selection', () => filterDomain());
+        filterDomain();
+      },
+
+      removeFilter(key) {
+        let filter = filters.get(key);
+        if (!filter) return;
+        filter.off('change.selection');
+        filters.delete(key);
+        filterDomain();
+      },
+
+      addTagsFilter(filter, key, silence) {
+        tagFilters.set(key, filter);
+        filter.on('change.selection', () => {recompute(); });
+        recompute(silence);
+      },
+
+      removeTagsFilter(key) {
+        let filter = tagFilters.get(key);
+        if (!filter) return;
+
+        filter.off('change.selection');
+        tagFilters.delete(key);
+        recompute();
+      },
+
+      select(tag, op) {
+        if (op == undefined) op = !tags.has(tag);
+
+        if (op) add(tag);
+        else remove(tag)
+      },
+
+      selected() {
+        return tags;
+      },
+
+      excluded() {
+        return excluded;
+      },
+
+      isAnySelected() {
+        for (let tag of arguments) {
+          if (tags.has(tag)) return true;
+        }
+        return false;
+        //return _.some(arguments, function (tag) {
+        //    if (tags.has(tag)) return true;
+        //  }, this
+        //);
+      },
+
+      on(type, listener) {
+        dispatch.on(type, listener);
+        return this;
       }
     };
-
-    selection.selectedItems = function() {
-      return tags.size || excluded.size ? domain : [];
-    };
-
-    selection.clear = function(silent) {
-      clear(false);
-    };
-
-    selection.exclude = function (tag, add) {
-      if (add) {
-        if (excluded.has(tag)) return;
-        assign_color(tag);
-        excluded.add(tag);
-        tags.delete(tag);
-      } else {
-        if (!excluded.delete(tag)) return;
-        release_color(tag);
-      }
-      recompute();
-    };
-
-    selection.addFilter = function (filter, key) {
-      filters.set(key, filter);
-      filter.on('change', () => filterDomain());
-      filterDomain();
-    };
-
-    selection.removeFilter = function (key) {
-      let filter = filters.get(key);
-      if (!filter) return;
-      filter.off('change');
-      filters.delete(key);
-      filterDomain();
-    };
-
-    selection.select = function (tag, op) {
-      op = op || op == undefined;
-      if (op) add(tag);
-      else remove(tag)
-    };
-
-    selection.tags = function() {
-      return tags;
-    };
-
-    selection.excluded = function() {
-      return excluded;
-    };
-
-    selection.isAnySelected = function () {
-      return _.some(arguments, function (tag) {
-        if (tags.has(tag)) return true;
-      }, this
-      );
-    };
-
-    selection.on = function(type, listener) {
-      dispatch.on(type, listener);
-      return this;
-    };
-
-    return selection;
   }

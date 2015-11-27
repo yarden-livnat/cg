@@ -2,6 +2,8 @@
  * Created by yarden on 12/11/14.
  */
 
+import {_} from 'lodash'
+
 function shared(a, b) {
   let count = 0,
       ia = 0, ib = 0, // indices
@@ -151,8 +153,8 @@ export default function() {
    */
 
   var graph = {
-    get nodes() { return nodes; },
-    get edges() { return edges; },
+    get node() { return nodes; },
+    get edge() { return edges; },
 
     set domain(list) {
       if (domain == list) return;
@@ -170,22 +172,7 @@ export default function() {
   };
 
   graph.update = function (data) {
-    let prev = new Map();
-    nodes.forEach(function(node) { prev.set(node.id, node); });
-
     nodes = data;
-    nodes.forEach(function(node) {
-      node.scale = 1.0;
-      node.visible = true;
-      node.selected = false;
-
-      let n = prev.get(node.id);
-      if (n) {
-        node.x = n.x;
-        node.y = n.y;
-      }
-      //color: tag.positive ? opt.POS_COLOR : opt.NEG_COLOR;
-    });
     rescale();
     createEdges();
   };

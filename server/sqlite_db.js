@@ -41,35 +41,65 @@ function info(req, res, next) {
 }
 
 function pathogens(req, res, next) {
-  var list = req.query.pathogens;
-  var from = req.query.from;
-  var to = req.query.to;
+  var list = req.body.names;
+  var from = req.body.from;
+  var to = req.body.to;
 
-  var data = {};
+  var data = [];
   var n = 0;
 
   var stmt = db.prepare(
-    'select enc_id, positive from pathogens, encounter ' +
-    ' where path.id = (select id from pathogen_info where name = ?) ' +
+    'select enc_id, date, positive from pathogens, encounter ' +
+    ' where pathogens.path_id = (select id from pathogen_info where name = ?) ' +
     ' and enc_id = encounter.id ' +
-    ' and encounter.date between ? and ?');
+    ' and encounter.date between ? and ?' +
+    ' order by date');
 
   db.parallelize(function() {
-    console.log('start parallel');
     list.forEach(function(pathogen) {
       stmt.all(pathogen, from, to,
         function(err, rows) {
           if (err) next(err);
-          data[pathogen] = rows;
+          data.push({name: pathogen, rows: rows});
           n++;
-          console.log('n='+n);
           if (n == list.length) {
-            console.log('done');
+            console.log('done '+ data);
             res.send(JSON.stringify(data));
           }
       });
     });
-    console.log('end parallel');
+  });
+}
+
+function detectors(req, res, next) {
+  var list = req.body.names;
+  var from = req.body.from;
+  var to = req.body.to;
+
+  var data = [];
+  var n = 0;
+
+  var stmt = db.prepare(
+    'select enc_id as id, prob, similar from detectors, encounter ' +
+    ' where detectors.did = (select id from detector_info where name = ?) ' +
+    ' and enc_id = encounter.id ' +
+    ' and encounter.date between ? and ? ' +
+    ' order by enc_id');
+
+  console.log('>> detector');
+  db.parallelize(function() {
+    list.forEach(function(detector) {
+      console.log('detector:',detector,from, to);
+      stmt.all(detector, from, to,
+        function(err, rows) {
+          if (err) next(err);
+          data.push({name: detector, rows: rows});
+          n++;
+          if (n == list.length) {
+            res.send(JSON.stringify(data));
+          }
+        });
+    });
   });
 }
 
@@ -94,15 +124,15 @@ function query(req, res, next) {
     association_stmt.all(query.from, query.to,
       function(err, rows) {
         associations = rows;
-        res.send(JSON.stringify({enc: enc, associations: associations}));
+        res.send(JSON.stringify({from: query.from, to: query.to, enc: enc, associations: associations}));
       });
   });
-
-
 }
+
 
 exports.kb = kb;
 exports.query = query;
 exports.population = population;
 exports.info = info;
 exports.pathogens = pathogens;
+exports.detectors = detectors;

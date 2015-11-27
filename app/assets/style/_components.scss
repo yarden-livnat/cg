@@ -1,0 +1,272 @@
+.info-table {
+  display: inline-block;
+  height: $table-max-height;
+  margin: 0 0 5px 5px;
+
+  table-layout: auto;
+  border-collapse: collapse;
+  border: solid 1px lightgray;
+
+  th { border-bottom: solid thin lightgray;  }
+  td, th { padding: 2px;  }
+  td.text-col, th.text-col { text-align: left; }
+  td.number-col, th.number-col { text-align: right; }
+
+  //td:not(:last-child), th:not(:last-child) { min-width: 50px; }
+  //td:last-child, th:last-child { width: 50px; }
+  //td:nth-child(1), th:nth-child(1) { min-width: 120px; }
+  //td:nth-child(2), th:nth-child(2) { width: 50px;}
+  //td:nth-child(2) {text-align: right;}
+
+  thead {
+    background-color: #fafafa;
+    font: 9pt sans-serif;
+    tr {
+      display: block;
+      position: relative;
+    }
+  }
+
+  tbody {
+    display: block;
+    overflow: auto;
+    max-height: $table-max-height - 20;
+    height: 100%;
+    //tr:nth-child(even) {
+    //  background-color: @alternate_row_background_color;
+    //}
+    font: 9pt sans-serif;
+
+    text:hover {
+      background-color: lightgray;
+    }
+  }
+}
+
+.tableColHeader {
+  text-align: left;
+}
+
+.numeric {
+  text-align: right;
+}
+
+.tableColHeader:after {
+  position: absolute;
+  content: "";
+  border-left: 1px solid black;
+  border-top: 1px solid black;
+  padding: 3px;
+  margin-left: 5px;
+  top: 30%;
+  display:none;
+}
+
+.tableColHeader.asc:after
+{
+  display:inline;
+  transform: rotate(45deg);
+}
+
+.tableColHeader.desc:after {
+  display:inline;
+  transform: rotate(-135deg);
+}
+
+.chart {
+  svg {
+    font: 8pt sans-serif;
+  }
+
+  .axis {
+    shape-rendering: crispEdges;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke-width: 1px;
+    stroke: #aaa;
+  }
+
+  .x.axis line {
+    stroke: #aaa;
+    stroke-opacity: .5;
+    stroke-width: 1px;
+  }
+
+  .y.axis line {
+    stroke: #aaa;
+    stroke-opacity: 0.5;
+  }
+
+  path.line {
+    fill: none;
+    //stroke: #000;
+    stroke-width: 1px;
+  }
+
+  rect.pane {
+    cursor: move;
+    fill: none;
+    pointer-events: all;
+  }
+}
+
+
+/* checkbox drop down menu */
+
+.dropdown-check-list {
+  display: inline-block;
+  outline: none;
+
+  .anchor {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    padding: 5px 25px 5px 10px;
+    //border: 1px solid #ccc;
+  }
+
+  .anchor:after {
+    position: absolute;
+    content: "";
+    border-left: 1px solid black;
+    border-top: 1px solid black;
+    padding: 3px;
+    right: 10px;
+    top: 30%;
+    -moz-transform: rotate(-135deg);
+    -ms-transform: rotate(-135deg);
+    -o-transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+    transform: rotate(-135deg);
+  }
+
+  ul.items {
+    padding: 2px;
+    display: none;
+    background-color: white;
+    margin: 0;
+    border: 1px solid #ccc;
+    //border-top: none;
+    max-height: 150px;
+    overflow-y: auto;
+    position: absolute;
+    right: 5px;
+    box-shadow: 5px 5px 3px gray;
+  }
+
+  ul.items li {
+    list-style: none;
+    font: 7pt Arial;
+  }
+}
+
+/* bullet */
+.bullet {
+  font: 9pt sanss-serif;
+
+  .range.s0 { fill: #eee; color: #000; }
+  .range.s1 { fill: lightsteelblue; color: #000; }
+}
+
+/* bar */
+.bar {
+  font: 10px sanss-serif;
+  background-color: #e0e0e0;
+
+  rect {
+    fill: lightsteelblue;
+  }
+  text {
+    fill:black;
+  }
+}
+
+/* histogram */
+.selector {
+  height: 150px;
+
+  .bar {
+    fill: steelblue;
+    shape-rendering: crispEdges;
+  }
+
+  .bar text {
+    fill: #fff;
+  }
+
+  .axis text {
+    font: 8px sans-serif;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke: #333;
+    shape-rendering: crispEdges;
+  }
+
+  .brush .extent {
+    fill:  #ddd;
+    fill-opacity: 0.2;
+    stroke: #888;
+    stroke-width: 1px;
+    /*fill-opacity: .25;*/
+    shape-rendering: crispEdges;
+  }
+}
+
+.chart {
+  width: $chart-width;
+  height: $chart-height;
+  border: 1px solid lightgrey ;
+  padding: 5px;
+  margin: 5px;
+
+  .tick {
+    font-size: 6pt;
+  }
+
+  .title {
+    font-size: 8pt;
+  }
+}
+
+.detector {
+  width: $chart-width;
+  height: $chart-height;
+  //border: 1px solid lightgrey ;
+  padding: 5px;
+  margin: 0;
+
+  .axis text {
+    font: 8px sans-serif;
+  }
+
+  .axis path, .axis line {
+    fill: none;
+    stroke: #333;
+    shape-rendering: crispEdges;
+  }
+
+  .tick {
+    font-size: 6pt;
+  }
+
+  .bar {
+    shape-rendering: crispEdges;
+  }
+
+  .title {
+    font-size: 8pt;
+  }
+
+  .brush .extent {
+    fill:  #ddd;
+    fill-opacity: 0.2;
+    stroke: #888;
+    stroke-width: 1px;
+    /*fill-opacity: .25;*/
+    shape-rendering: crispEdges;
+  }
+}

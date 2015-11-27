@@ -3,24 +3,32 @@
  */
 
 import * as xpanel from './components/xpanel'
-import * as Formater from 'formatter'
+//import * as Formater from 'formatter.js'
 import * as d3 from 'd3'
 import * as postal from 'postal'
 
-import * as data from './services/data';
-import * as query from 'query';
-import * as Map from 'map/map'
-import CG from 'cg/cg';
-import * as Info from 'info';
+import * as data from './data';
+import * as query from './query';
+import * as Map from './map'
+import CG from './cg/cg';
+import * as Info from './info/info';
 
-import * as model from 'model/models'
+import * as model from './model/models'
 
 let map = Map();
 let selection = model.selection();
 let cg = CG();
 let info = Info();
 
-postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});
+let preSelection;
+
+postal.subscribe({channel:'data', topic:'pre-changed', callback: () => {
+  selection.reset(data.domain, data.selected);
+}});
+
+//postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});
+postal.subscribe({channel:'data', topic:'post-changed', callback: () => {
+  selection.update(); }});
 
 postal.subscribe({channel:'data', topic:'ready', callback: () => {initModules()}});
 
@@ -30,11 +38,6 @@ data.init();
 
 function getSize(el) {
   let d3el = d3.select(el);
-  let w = parseInt(d3el.style('width'));
-  let h = parseInt(d3el.style('height'));
-
-  console.log('resize '+el+': '+parseInt(d3el.style('width')) +'x'+ parseInt(d3el.style('height')));
-
   return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
 }
 
@@ -46,12 +49,12 @@ function resize() {
 function initHTML() {
   xpanel.init();
 
-  let duration_input = document.getElementById('duration-input');
-  if (duration_input) {
-    new Formater(duration_input, {
-      pattern: "{{99}}"
-    });
-  }
+  //let duration_input = document.getElementById('duration-input');
+  //if (duration_input) {
+  //  new Formater(duration_input, {
+  //    pattern: "{{99}}"
+  //  });
+  //}
 
   window.addEventListener('resize', resize);
 }

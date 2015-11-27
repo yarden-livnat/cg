@@ -1,11 +1,23 @@
-define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph'], function (exports, module, _d3, _postal, _servicesData, _config, _graph) {
+define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', './graph', '../components/selector'], function (exports, module, _d3, _postal, _lodash, _data, _config, _graph, _componentsSelector) {
   /**
    * Created by yarden on 12/17/14.
    */
 
   'use strict';
 
-  var ctrl = _postal.channel('cg');
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _d32 = _interopRequireDefault(_d3);
+
+  var _postal2 = _interopRequireDefault(_postal);
+
+  var _2 = _interopRequireDefault(_lodash);
+
+  var _Graph = _interopRequireDefault(_graph);
+
+  var _Selector = _interopRequireDefault(_componentsSelector);
+
+  var ctrl = _postal2['default'].channel('cg');
 
   module.exports = function () {
     var width = undefined,
@@ -14,44 +26,68 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
         svg = undefined,
         svgNodes = undefined,
         svgLinks = undefined,
-        force = _d3.layout.force(),
+        force = _d32['default'].layout.force(),
         d3nodes = undefined,
         d3links = undefined,
         activeNodes = undefined,
         activeEdges = undefined,
         prevVisible = null,
         partialLayout = new Set(),
-        selection = undefined,
-        graph = (0, _graph)();
+        nodesRange = [0, 1],
+        edgesRange = [0.7, 1],
+        showEdges = true,
+        _selection = undefined,
+        graph = (0, _Graph['default'])();
 
-    var x = _d3.scale.linear().domain([0, 1]).range([0, 1]);
+    var nodesSelector = (0, _Selector['default'])().width(100).height(50).select(nodesRange).on('select', function (r) {
+      nodesRange = r;
+      render(_config.cg.canvas.fastDuration);
+      updateEdgesSelector();
+    });
 
-    var y = _d3.scale.linear().domain([0, 1]).range([0, 1]);
+    var edgesSelector = (0, _Selector['default'])().width(100).height(50).select(edgesRange).on('select', function (r) {
+      edgesRange = r;render(_config.cg.canvas.fastDuration);
+    });
+
+    var x = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
+
+    var y = _d32['default'].scale.linear().domain([0, 1]).range([0, 1]);
 
     /*
      * rendering
      */
 
     function visibleNodes() {
-      return graph.nodes.filter(function (node) {
+      return graph.node.filter(function (node) {
         return node.visible || node.excluded;
       });
     }
 
     function visibleEdges() {
-      if (_config.cg.canvas.showEdges == 'none') return [];
+      if (!showEdges) return [];
 
-      var all = _config.cg.canvas.showEdges == 'all';
-      var range = _config.cg.canvas.edgeValueSelection;
-      return graph.edges.filter(function (edge) {
-        return edge.source.visible && edge.target.visible && (all || selection.isAnySelected(edge.source.tag, edge.target.tag)) && (edge.value >= range[0] && edge.value <= range[1]);
+      return graph.edge.filter(function (edge) {
+        return edge.source.visible && edge.target.visible
+        //&& (selection.isAnySelected(edge.source.tag, edge.target.tag))
+         && (edge.value >= edgesRange[0] && edge.value <= edgesRange[1]);
       });
+
+      //if (opt.canvas.showEdges == 'none') return [];
+      //
+      //var all = opt.canvas.showEdges == 'all';
+      ////var range = opt.canvas.edgeValueSelection;
+      //return graph.edges.filter(function (edge) {
+      //  return edge.source.visible && edge.target.visible
+      //    && (all || selection.isAnySelected(edge.source.tag, edge.target.tag))
+      //    && (edge.value >= edgesRange[0] && edge.value <= edgesRange[1]) ;
+      //});
     }
 
     function render(duration) {
+      duration = duration || _config.cg.canvas.duration;
       // mark visible nodes
-      graph.nodes.forEach(function (node) {
-        node.visible = node.items.length > 0 || node.excluded;
+      graph.node.forEach(function (node) {
+        node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1] || node.excluded;
         if (node.excluded) {
           node.scale = node.lastScale;
         }
@@ -84,7 +120,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
      * Interactions
      */
 
-    var drag = _d3.behavior.drag().origin(function (d) {
+    var drag = _d32['default'].behavior.drag().origin(function (d) {
       return { x: d.x, y: d.y };
     }).on('dragstart', onDragStart).on('drag', onDrag).on('dragend', onDragEnd);
 
@@ -92,15 +128,15 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
 
     function onDragStart(d, mx, my) {
       d.fixed |= 2;
-      offsetX = _d3.event.sourceEvent.layerX - x(d.x);
-      offsetY = _d3.event.sourceEvent.layerY - y(d.y);
+      offsetX = _d32['default'].event.sourceEvent.layerX - x(d.x);
+      offsetY = _d32['default'].event.sourceEvent.layerY - y(d.y);
     }
 
     function onDrag(d) {
-      _d3.select(this).classed('fixed', d.fixed |= 3);
-      d.x = d.px = x.invert(_d3.event.sourceEvent.layerX - offsetX);
-      d.y = d.py = y.invert(_d3.event.sourceEvent.layerY - offsetY);
-      _d3.select(this).attr('transform', function (d) {
+      _d32['default'].select(this).classed('fixed', d.fixed |= 3);
+      d.x = d.px = x.invert(_d32['default'].event.sourceEvent.layerX - offsetX);
+      d.y = d.py = y.invert(_d32['default'].event.sourceEvent.layerY - offsetY);
+      _d32['default'].select(this).attr('transform', function (d) {
         return 'translate(' + x(d.x) + ',' + y(d.y) + ')';
       });
       d3links.call(edgeRenderer.update);
@@ -111,7 +147,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
     }
 
     function dblclick(d) {
-      _d3.select(this).classed('fixed', d.fixed = false);
+      _d32['default'].select(this).classed('fixed', d.fixed = false);
     }
 
     var mouse_time = Date.now();
@@ -126,9 +162,9 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
 
       var dt = Date.now() - mouse_time;
       if (dt < 200) {
-        if (_d3.event.metaKey) {
-          _d3.select(this).classed('fixed', d.fixed = false);
-        } else if (_d3.event.shiftKey) {
+        if (_d32['default'].event.metaKey) {
+          _d32['default'].select(this).classed('fixed', d.fixed = false);
+        } else if (_d32['default'].event.shiftKey) {
           excludeNode.call(this, d);
         } else {
           selectNode.call(this, d);
@@ -137,11 +173,11 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
     }
 
     function mouseover(d) {
-      _d3.select(this.parentNode).select('text').transition().duration(_config.cg.canvas.duration).attr('transform', 'translate(7, 0) scale(1)');
+      _d32['default'].select(this.parentNode).select('text').transition().duration(_config.cg.canvas.duration).attr('transform', 'translate(7, 0) scale(1)');
     }
 
     function mouseout(d) {
-      _d3.select(this.parentNode).select('text').transition().duration(_config.cg.canvas.duration).call(scaleNode);
+      _d32['default'].select(this.parentNode).select('text').transition().duration(_config.cg.canvas.duration).call(scaleNode);
     }
 
     /*
@@ -150,54 +186,170 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
     function selectNode(d) {
       force.stop();
 
-      d.selected = !d.selected;
-      _d3.select(this).classed('selected', d.selected);
+      //d.selected = !d.selected;
+      //d3.select(this).classed('selected', d.selected);
 
-      if (!d.selected && partialLayout['delete'](d.tag)) {
-        prevVisible = _.filter(graph.nodes, function (node) {
-          return node.visible;
-        });
-      } else {
-        prevVisible = null;
-      }
+      // TODO: check what the preVisible is all about
+      //if (!d.selected  && partialLayout.delete(d.tag)) {
+      //  prevVisible = _.filter(graph.nodes, function(node) { return node.visible; });
+      //} else {
+      //  prevVisible = null;
+      //}
+      //
+      //if (d.selected && d.excluded) {
+      //  d.excluded = false;
+      //  d3.select(this).classed('excluded', false);
+      //}
+      //d3.select(this).select('.frame')
+      //  .transition()
+      //  .duration(opt.canvas.duration)
+      //  .style('opacity', d.selected ? 1 : 0);
 
-      if (d.selected && d.excluded) {
-        d.excluded = false;
-        _d3.select(this).classed('excluded', false);
-      }
-      _d3.select(this).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', d.selected ? 1 : 0);
-
-      selection.select(d.tag, d.selected);
+      _selection.select(d.tag, !d.selected);
     }
 
     function excludeNode(d) {
       force.stop();
 
-      d.excluded = !d.excluded;
-      _d3.select(this).classed('excluded', d.excluded);
+      //d.excluded = !d.excluded;
+      //d3.select(this).classed('excluded', d.excluded);
+      //
+      //if (d.excluded && d.selected) {
+      //  d.selected = false;
+      //  d3.select(this).classed('selected', false);
+      //}
+      //if (d.excluded) {
+      //  d.lastScale = d.scale;
+      //}
 
-      if (d.excluded && d.selected) {
-        d.selected = false;
-        _d3.select(this).classed('selected', false);
-      }
-      if (d.excluded) {
-        d.lastScale = d.scale;
-      }
+      //d3.select(this).select('.frame')
+      //  .transition()
+      //  .duration(opt.canvas.duration)
+      //  .style('opacity', d.excluded ? 1 : 0);
 
-      _d3.select(this).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', d.excluded ? 1 : 0);
-
-      selection.exclude(d.tag, d.excluded);
+      _selection.exclude(d.tag, !d.excluded);
     }
 
     function selectionChanged() {
       if (graph == undefined) return;
 
-      graph.domain = selection.domain;
+      var tag = undefined,
+          state = new Map();
+      var changed = [];
+
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = _selection.selected()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          tag = _step.value;
+          state.set(tag, 'selected');
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator['return']) {
+            _iterator['return']();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+
+      var _iteratorNormalCompletion2 = true;
+      var _didIteratorError2 = false;
+      var _iteratorError2 = undefined;
+
+      try {
+        for (var _iterator2 = _selection.excluded()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          tag = _step2.value;
+          state.set(tag, 'excluded');
+        }
+      } catch (err) {
+        _didIteratorError2 = true;
+        _iteratorError2 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion2 && _iterator2['return']) {
+            _iterator2['return']();
+          }
+        } finally {
+          if (_didIteratorError2) {
+            throw _iteratorError2;
+          }
+        }
+      }
+
+      prevVisible = null;
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = graph.node[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var node = _step3.value;
+
+          var s = state.get(node.tag);
+          if (!s) {
+            if (node.selected || node.excluded) {
+              node.selected = node.excluded = false;
+              changed.push(node);
+            }
+          }
+          if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
+            if (!node.selected && s == 'selected' && partialLayout['delete'](node.tag)) {
+              prevVisible = _2['default'].filter(graph.node, function (node) {
+                return node.visible;
+              });
+            }
+            if (!node.excluded && s == 'excluded') {
+              node.lastScale = node.scale;
+            }
+            node.selected = s == 'selected';
+            node.excluded = s == 'excluded';
+            changed.push(node);
+          }
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
+
+      svgNodes.selectAll('.node').data(changed, function (d) {
+        return d.id;
+      }).classed('selected', function (d) {
+        return d.selected;
+      }).classed('excluded', function (d) {
+        return d.excluded;
+      }).select('.frame').transition().duration(_config.cg.canvas.duration).style('opacity', function (d) {
+        return d.selected || d.excluded ? 1 : 0;
+      });
+
+      graph.domain = _selection.domain;
+
       if (prevVisible) {
         adjustLayout();
         prevVisible = null;
       }
       render(_config.cg.canvas.duration);
+
+      updateNodesSelector();
+      updateEdgesSelector();
     }
 
     /*
@@ -225,16 +377,16 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
     })();
 
     function relayout(iter) {
-      selection.tags().forEach(function (tag) {
+      _selection.selected().forEach(function (tag) {
         partialLayout.add(tag);
       });
 
       iter = iter || 0;
 
-      activeNodes = graph.nodes.filter(function (node) {
+      activeNodes = graph.node.filter(function (node) {
         return node.visible;
       });
-      activeEdges = graph.edges;
+      activeEdges = graph.edge;
 
       if (_config.cg.layout.onlyVisibleEdges) {
         var edgeStrength = _config.cg.canvas.edgeStrength;
@@ -247,7 +399,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
 
       exec_forceDone = true;
       clock.start();
-      force.nodes(activeNodes).links(activeEdges).on('tick', null).on('end', forceDone).start();
+      force.node(activeNodes).links(activeEdges).on('tick', null).on('end', forceDone).start();
 
       // reduce visible cloud movements
       clock.mark('loop');
@@ -270,44 +422,44 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
       clock.mark('force done');
       clock.print();
 
-      _.forEach(graph.nodes, function (n) {
+      _2['default'].forEach(graph.node, function (n) {
         n.px = x;n.py = y;
       });
     }
 
     function adjustLayout() {
       console.log('adjust layout');
-      var notFixed = _.filter(prevVisible, function (node) {
+      var notFixed = _2['default'].filter(prevVisible, function (node) {
         return !(node.fixed & 1);
       });
-      _.forEach(notFixed, function (node) {
+      _2['default'].forEach(notFixed, function (node) {
         node.fixed |= 1;
       });
 
-      graph.nodes.forEach(function (node) {
+      graph.node.forEach(function (node) {
         node.visible = node.items.length > 0 || node.excluded;
         if (node.excluded) {
           node.scale = node.lastScale;
         }
       });
 
-      var nodes = _.filter(graph.nodes, function (node) {
+      var nodes = _2['default'].filter(graph.node, function (node) {
         return node.visible;
       });
-      var edges = _.filter(graph.edges, function (edge) {
+      var edges = _2['default'].filter(graph.edge, function (edge) {
         return edge.source.visible && edge.target.visible;
       });
 
-      force.nodes(nodes).links(edges).on('tick', null).on('end', null).start();
+      force.node(nodes).links(edges).on('tick', null).on('end', null).start();
 
       for (var i = 0; i < 250; i++) force.tick();
 
       force.stop();
 
-      _.forEach(notFixed, function (node) {
+      _2['default'].forEach(notFixed, function (node) {
         node.fixed &= ~1;
       });
-      _.forEach(graph.nodes, function (n) {
+      _2['default'].forEach(graph.node, function (n) {
         n.px = x;n.py = y;
       });
       updatePosition();
@@ -322,7 +474,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
       //console.log('update pos');
 
       if (_config.cg.layout.clampToWindow) {
-        _.forEach(activeNodes, function (node) {
+        _2['default'].forEach(activeNodes, function (node) {
           node.x = clamp(node.x, 0, width - node.w);
           node.y = clamp(node.y, 0, height - node.h);
         });
@@ -340,7 +492,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
           sum = 0,
           zero = 0,
           one = 0;
-      _.each(activeNodes, function (node) {
+      _2['default'].each(activeNodes, function (node) {
         var dx = Math.abs(node.x - node.px);
         var dy = Math.abs(node.y - node.py);
         var speed = Math.sqrt(dx * dx + dy + dy);
@@ -407,7 +559,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
     function nudge() {
       computeBboxes();
       show(_config.cg['control'].overlap);
-      _d3.timer(function () {
+      _d32['default'].timer(function () {
         var r = nudge_step();
         updatePosition();
         return r;
@@ -490,7 +642,7 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
         name = name.splice(1);
         pos = false;
       }
-      return _.find(bboxes, function (n) {
+      return _2['default'].find(bboxes, function (n) {
         return n.label == name && n.tag.positive == pos;
       });
     }
@@ -531,9 +683,9 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
         d.w = bbox.width;
         d.h = bbox.height;
 
-        _d3.select(this).select('.bg').attr('width', bbox.width - 2).attr('height', bbox.height - 2).attr('x', bbox.x + 1).attr('y', bbox.y + 1);
+        _d32['default'].select(this).select('.bg').attr('width', bbox.width - 2).attr('height', bbox.height - 2).attr('x', bbox.x + 1).attr('y', bbox.y + 1);
 
-        _d3.select(this).select('.border').attr('width', bbox.width).attr('height', bbox.height).attr('y', bbox.y);
+        _d32['default'].select(this).select('.border').attr('width', bbox.width).attr('height', bbox.height).attr('y', bbox.y);
       });
 
       scaled.call(scaleNode);
@@ -613,11 +765,11 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
     var edgeRenderer = LineRenderer;
 
     function highlightEdge(d) {
-      _d3.select(this).classed('highlight', true).style('opacity', 1);
+      _d32['default'].select(this).classed('highlight', true).style('opacity', 1);
     }
 
     function unhighlightEdge(d) {
-      _d3.select(this).classed('highlight', false).style('opacity', _config.cg.canvas.edgeOpacity);
+      _d32['default'].select(this).classed('highlight', false).style('opacity', _config.cg.canvas.edgeOpacity);
     }
 
     function updateForce() {
@@ -667,93 +819,205 @@ define(['exports', 'module', 'd3', 'postal', 'services/data', 'config', './graph
       });
 
       ctrl.subscribe('layout', function () {
-        updateForce();
+        updates();
         relayout();
         render(_config.cg.canvas.fastDuration);
       });
 
-      _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
+      _postal2['default'].subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
           force.stop();
-          var nodes = _servicesData.tags.map(function (d) {
+          var current = new Map();
+          var n = graph.node;
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
+
+          try {
+            for (var _iterator4 = graph.node[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              var node = _step4.value;
+
+              current.set(node.id, node);
+              if (node.label == 'wheezing') {
+                console.log('new data: wheezing:', node);
+              }
+            }
+          } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+                _iterator4['return']();
+              }
+            } finally {
+              if (_didIteratorError4) {
+                throw _iteratorError4;
+              }
+            }
+          }
+
+          var nodes = _data.selected.map(function (d) {
+            var node = current.get(d.id);
+            if (node) return node;
             return {
               id: d.id,
               label: d.concept.label,
               tag: d,
-              items: d.items
+              items: d.items,
+              x: Math.random() * width,
+              y: Math.random() * height,
+              scale: 1,
+              visible: true,
+              selected: false,
+              excluded: false
             };
           });
           graph.update(nodes);
 
-          // random initial pos instead of the default (0,0)
-          _.forEach(graph.nodes, function (node) {
-            if (!node.hasOwnProperty('x')) {
-              node.x = Math.random() * width;
-              node.y = Math.random() * height;
-            }
-          });
-
           render(_config.cg.canvas.duration);
           relayout(_config.cg.layout.initIterations);
+
+          selectionChanged();
           return _this;
         } });
+
+      _postal2['default'].subscribe({ channel: 'events', topic: 'tag.highlight', callback: highlight });
+    }
+
+    function highlight(item) {
+      svgNodes.selectAll('.node').filter(function (d) {
+        return d.label == item.name;
+      }).classed('highlight', item.show);
+    }
+
+    function updateNodesSelector() {
+      var values = [];
+      var _iteratorNormalCompletion5 = true;
+      var _didIteratorError5 = false;
+      var _iteratorError5 = undefined;
+
+      try {
+        for (var _iterator5 = graph.node[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var node = _step5.value;
+
+          if (node.items.length > 0) values.push(node.scale);
+        }
+      } catch (err) {
+        _didIteratorError5 = true;
+        _iteratorError5 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+            _iterator5['return']();
+          }
+        } finally {
+          if (_didIteratorError5) {
+            throw _iteratorError5;
+          }
+        }
+      }
+
+      nodesSelector.data(values);
+    }
+
+    function updateEdgesSelector() {
+      var active = [];
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = graph.edge[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var edge = _step6.value;
+
+          if (edge.source.visible && edge.target.visible) active.push(edge.value);
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+            _iterator6['return']();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
+          }
+        }
+      }
+
+      edgesSelector.data(active);
     }
 
     /*
      * API
      */
 
-    var cg = {};
+    return {
 
-    cg.init = function (el) {
-      width = _d3.select(el).attr('width');
-      height = _d3.select(el).attr('height');
-      svgContainer = _d3.select(el).classed('cg', true).append('svg');
-      svg = svgContainer.append('g');
+      init: function init(el) {
+        width = _d32['default'].select(el).attr('width');
+        height = _d32['default'].select(el).attr('height');
+        svgContainer = _d32['default'].select(el).classed('cg', true).append('svg');
+        svg = svgContainer.append('g');
 
-      // transparent bg to catch pan/zoom mouse actions
-      svg.append('rect').attr('class', 'overlay').attr('width', width).attr('height', height);
+        // transparent bg to catch pan/zoom mouse actions
+        svg.append('rect').attr('class', 'overlay').attr('width', width).attr('height', Math.max(0, height - edgesSelector.height() - 10));
 
-      svgLinks = svg.append('g').attr('class', 'links');
-      svgNodes = svg.append('g').attr('class', 'nodes');
+        svgLinks = svg.append('g').attr('class', 'links');
+        svgNodes = svg.append('g').attr('class', 'nodes');
 
-      force.on('tick', updatePosition).on('end', forceDone);
+        var g = svgContainer.append('g').attr('class', 'cgSelectors');
 
-      addListeners();
-      return this;
-    };
+        nodesSelector(g.append('g').attr('class', 'nodesSelector'));
 
-    cg.resize = function (size) {
-      force.stop();
+        g.append('text').attr('transform', 'translate(20,' + (nodesSelector.height() + 5) + ')').text('nodes');
 
-      width = size[0];
-      height = size[1];
+        edgesSelector(g.append('g').attr('class', 'edgesSelector').attr('transform', 'translate(' + (nodesSelector.width() + 10) + ',0)'));
 
-      svgContainer.attr('width', width).attr('height', height);
-      force.size([width, height]);
+        g.append('text').attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) + ',' + (nodesSelector.height() + 5) + ')').text('edges').on('click', function () {
+          showEdges = !showEdges;render();
+        });
 
-      x.domain([0, width]).range([0, width]);
+        force.on('tick', updatePosition).on('end', forceDone);
 
-      y.domain([0, height]).range([0, height]);
+        addListeners();
+        return this;
+      },
 
-      zoom = _d3.behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
-      svg.call(zoom);
+      resize: function resize(size) {
+        force.stop();
 
-      svg.select('.overlay').attr('width', width).attr('height', height);
+        width = size[0];
+        height = size[1];
 
-      if (graph) {
-        relayout();
-        render(_config.cg.canvas.fastDuration);
+        svgContainer.attr('width', width).attr('height', height);
+        force.size([width, height]);
+
+        x.domain([0, width]).range([0, width]);
+        y.domain([0, height]).range([0, height]);
+
+        zoom = _d32['default'].behavior.zoom().x(x).y(y).scaleExtent([0.5, 8]).on('zoom', onZoom);
+        svg.call(zoom);
+
+        svg.select('.overlay').attr('width', width).attr('height', height);
+
+        if (graph) {
+          relayout();
+          render(_config.cg.canvas.fastDuration);
+        }
+
+        svgContainer.select('.cgSelectors').attr('transform', 'translate(10,' + (height - nodesSelector.height() - 15) + ')');
+
+        return this;
+      },
+
+      selection: function selection(s) {
+        _selection = s;
+        _selection.on('changed.cg', selectionChanged);
       }
-
-      return this;
     };
-
-    cg.selection = function (s) {
-      selection = s;
-      selection.on('changed.cg', selectionChanged);
-    };
-
-    return cg;
   };
 });
 

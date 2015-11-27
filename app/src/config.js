@@ -8,6 +8,11 @@ define(['exports', 'd3'], function (exports, _d3) {
   Object.defineProperty(exports, '__esModule', {
     value: true
   });
+
+  function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+  var _d32 = _interopRequireDefault(_d3);
+
   var MAP_DEFAULTS = {
     mapbox: {
       url: 'https://a.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={access_token}',
@@ -22,6 +27,9 @@ define(['exports', 'd3'], function (exports, _d3) {
   };
 
   exports.MAP_DEFAULTS = MAP_DEFAULTS;
+  var pathogens_duration = 4;
+
+  exports.pathogens_duration = pathogens_duration;
   var cg = {
     canvas: {
       colors: {},
@@ -31,11 +39,11 @@ define(['exports', 'd3'], function (exports, _d3) {
       edgeValueSelection: [0, 1],
       edgeOpacity: 0.2,
       edgeStrength: 0,
-      edgeScale: _d3.scale.log().domain([0.1, 1]).range([0.4, 2.5]),
+      edgeScale: _d32['default'].scale.log().domain([0.1, 1]).range([0.4, 2.5]),
 
       // nodes
       nodeRadius: 3,
-      nodeScale: _d3.scale.linear().domain([0.3, 1]).range([0.3, 1]).clamp(true),
+      nodeScale: _d32['default'].scale.linear().domain([0.4, 1]).range([0.4, 1]).clamp(true),
 
       duration: 500,
       fastDuration: 50
@@ -53,7 +61,7 @@ define(['exports', 'd3'], function (exports, _d3) {
 
       minSpeed: 2,
       separation: 50,
-      distScale: _d3.scale.log().domain([0.1, 1]).range([300, 50]),
+      distScale: _d32['default'].scale.log().domain([0.1, 1]).range([300, 50]),
 
       //force
       charge: -500,

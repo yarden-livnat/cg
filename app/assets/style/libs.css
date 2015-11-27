@@ -1,4 +1,4 @@
-@import '../../lib/fontawesome/css/font-awesome.min.css';
-@import '../../lib/leaflet/dist/leaflet.css';
-@import '../../lib/bootstrap/dist/css/bootstrap.min.css';
-@import '../../lib/bootstrap-multiselect/dist/css/bootstrap-multiselect.css';
+@import '../../jspm_packages/github/Leaflet/Leaflet@0.7.7/dist/leaflet.css';
+@import '../../jspm_packages/npm/font-awesome@4.4.0/css/font-awesome.css';
+/*@import '../../jspm_packages/github/twbs/bootstrap@3.3.5/css/bootstrap.min.css';*/
+/*@import '../../jspm_packages/github/davidstutz/bootstrap-multiselect@0.9.13/dist/css/bootstrap-multiselect.css';*/

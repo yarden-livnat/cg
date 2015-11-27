@@ -1,187 +1,145 @@
 /**
- * Created by yarden on 12/29/14.
+ * Created by yarden on 8/4/15.
  */
 
 import * as d3 from 'd3'
-import {capitalize} from 'utils'
 
-export default function() {
-  var SORT_OP = [
+export default function(container, id) {
+  let SORT_OP = [
     { func: d3.ascending, symbol: "fa-sort-asc"},
     { func: d3.descending, symbol: "fa-sort-desc"}
-    ];
+  ];
 
-  var d3el, header, data;
-  var width, height;
-  var valid = false;
-  var columns = [];
-  var sortCol;
-  var table, thead, tbody;
-  var dispatch = d3.dispatch('click');
+  container = container instanceof Array && container || d3.select(container);
 
-  function identity() {
-    return this;
+  let table = container.append('table').attr('id', id),
+      thead = table.append('thead').append('tr'),
+      tbody = table.append('tbody'),
+      dispatch = d3.dispatch('click', 'mouseover', 'mouseout'),
+      columns,
+      sortCol, sortHeader,
+      data;
+
+  function capitalize(str, def = "") {
+    return str && str.length > 0 && str[0].toUpperCase() + str.substr(1) || def;
   }
 
-  function validate() {
-    valid =  d3el && data; // && key; //&& width && height
-  }
-
-  function showSort(name, opt) {
-    var node = header.select('#'+name).select('.fa');
-    if (opt !== false) {
-      node.classed(SORT_OP[1 - opt].symbol, false);
-      node.classed(SORT_OP[opt].symbol, true);
-    }
-    node.style('visibility',opt === false ? 'hidden' : 'visible');
-  }
-
-  function sort(col) {
-    sortCol = col;
-    showSort(col.name,  col.sortOrder);
-
-    var compare = SORT_OP[col.sortOrder].func;
-    var field = sortCol.name;
-    data.sort(function(a, b) { return compare(a[field], b[field]); });
-
-    update();
+  function f(field) {
+    return typeof field == 'string' ? o => o[field] : o => field;
   }
 
   function onSort(col) {
-    if (sortCol && sortCol.name != col.name)
-      showSort(sortCol.name, false);
-    else
-      col.sortOrder = 1-col.sortOrder;
-    sort(col);
+    if (sortHeader == this) {
+      col.sortOrder = !col.sortOrder;
+    } else if (sortHeader) {
+      d3.select(sortHeader).classed('asc desc', false);
+    }
+
+    d3.select(this)
+      .classed({asc: col.sortOrder, desc: !col.sortOrder});
+
+    sortHeader = this;
+    sortCol = col;
+
+    sortTable();
   }
 
-  function update() {
-   if (!valid) return;
+  function sortTable() {
+    if (!sortCol) return;
+    let sortFunc = sortCol.sortOrder && d3.ascending || d3.descending;
+    tbody.selectAll('tr')
+      .sort( (a, b) => sortFunc(sortCol.cellValue(a), sortCol.cellValue(b)));
+  }
 
-    header = thead.selectAll('th').data(columns);
+  return {
+    header(columnsDef) {
+      columnsDef = typeof columnsDef == 'string' && columnsDef.split(',') || columnsDef;
+      columns = columnsDef.map( col => {
+        col = typeof col == 'string' && { name: col } || col;
+        col.title = col.title || capitalize(col.name, '?');
+        col.cellValue = col.cellValue || f(col.name);
+        col.cellAttr = col.cellAttr || f({});
+        col.attr = col.attr || '';
+        col.sortOrder = col.sortOrder || 0;
+        col.render = col.render || 'text';
 
-    var colHeader = header.enter()
-      .append('th')
-      .attr('class', function(d) { return d.class; })
-      .append('g')
-      .attr('id', function(d) {return d.name; });
-
-    colHeader.append('text')
-      .text(function(col) { return col.title;} )
-      .on('click', onSort);
-
-    colHeader.append('i')
-      .attr('class', 'fa')
-      .attr('width', '10px')
-      .style('padding-left', '5px');
-
-    header.exit().remove();
-
-    var rows = tbody.selectAll('tr')
-      .data(data);
-
-    rows.enter().append('tr')
-      .selectAll('td')
-      .data(columns);
-
-    rows.exit().remove();
-
-    // update
-    var cells = rows.selectAll('td')
-      .data(function(row) {
-        return columns.map(function(col) {
-          return {col: col.name, value: row[col.name], class: col.class, row:row};
-        })
+        return col;
       });
 
-    cells.enter().append('td')
-      .on('click', function(d) {
-        dispatch.click(d.row);
-      });
+      let h = thead.selectAll('th')
+        .data(columns);
 
-    cells
-      .text(function(d) { return d.value; })
-      .attr('class', function(d) { return d.class;});
+      h.enter().append('th')
+        .attr('class', 'tableColHeader')
+        .on('click', onSort);
 
-    cells.exit().remove();
-  }
+      h.text(c => c.title);
 
-  function convert(cols) {
-    cols = typeof cols == 'string' ? cols.split(', ') : cols;
-    return cols.map(function(col) {
-      if (typeof col == 'string')
-        col = {name: col};
+      h.exit().remove();
 
-      col.title = col.title || capitalize(col.name);
-      col.sortOrder = col.sortOrder || 0;
-      return col;
-    });
-  }
+      h.each( function(d) { d.minWidth = d3.select(this).style('width'); });
 
-  function api() {}
+      return this;
+    },
 
-  api.el = function(el) {
-    if (!arguments.length) return d3el;
-    d3el = typeof el == 'string' ? d3.select(el) : el;
-    //table = d3el.append('table')
-    //  .classed('table', true);
-    table = d3el;
+    data(list) {
+      if (!arguments.length) return data;
 
-    if (width) table.attr('width', width);
-    if (height) table.attr('height', height);
+      data = list;
+      let rows = tbody.selectAll('tr')
+        .data(list, columns[0].cellValue);
 
-    thead = table.append('thead').append('tr');
-    tbody = table.append('tbody');
+      rows.enter().append('tr');
+      rows.exit().remove();
 
-    validate();
-    update();
-    return this;
-  };
+      let cells = rows.selectAll('td')
+        .data(row => columns.map(c => ({ col: c, value: c.cellValue(row), attr: c.cellAttr(row), row:row })));
 
-  api.width = function(value) {
-    if (!arguments.length) return width;
-    width = value;
-    if (table) {
-      table.attr('width', width);
+      cells.enter().append('td')
+        .attr('class', d => d.col.attr)
+        .attr('width', d => d.col.minWidth)
+        .on('click', function(d)  {dispatch.click(d); })
+        .on('mouseover', function(d) { dispatch.mouseover(d); })
+        .on('mouseout', function(d) { dispatch.mouseout(d); });
+
+      cells.filter(d => d.col.render == 'text')
+        .text( d => d.value)
+        .classed( d => d.attr );
+
+      for (let col of columns) {
+        if (col.render != 'text') {
+          cells.filter( d => d.col == col)
+            .call(col.render);
+        }
+      }
+
+      cells.exit().remove();
+
+      sortTable();
+
+      // adjust header cols width
+      let i = 0;
+      for (let c of tbody.select('tr').selectAll('td')[0]) {
+        columns[i++].width = parseInt(d3.select(c).style('width'));
+      }
+      if (columns.length > 0) columns[columns.length-1].width += 15;
+      thead.selectAll('th').data(columns).attr('width', d => d.width);
+
+      return this;
+    },
+
+
+    row(filter) {
+      return tbody.selectAll('tr').filter(filter);
+    },
+
+    cell(rfilter, cfilter) {
+      return row(rfilter).filter(cfilter);
+    },
+
+    on(type, cb) {
+      dispatch.on(type, cb);
+      return this;
     }
-    return this;
-  };
-
-  api.height = function(value) {
-    if (!arguments.length) return height;
-    height = value;
-    if (table) {
-      table.attr('height', height);
-    }
-    return this;
-  };
-
-  api.data = function(value) {
-    if (!arguments.length) return data;
-    data = value;
-    if (sortCol) sort(sortCol);
-    validate();
-    update();
-    return this;
-  };
-
-  api.columns = function(value) {
-    if (!arguments.length) return columns;
-    columns = convert(value);
-    validate();
-    update();
-    return this;
-  };
-
-  api.on = function(type, listener) {
-    dispatch.on(type, listener);
-    return this;
-  };
-
-  api.update = function() {
-    update();
-    return this;
-  };
-
-  return api;
+  }
 }

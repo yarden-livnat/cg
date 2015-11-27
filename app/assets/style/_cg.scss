@@ -7,14 +7,8 @@
   fill: steelblue;
   opacity: 0.3;
 }
-.cg {
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 200px;
-  right: 0;
 
-  .node {
+.cg .node {
     .circle {
       fill: lightgray;
       stroke: green; //#fff;
@@ -38,26 +32,47 @@
     }
 
     &.selected {
+      //.circle {
+      //  fill: red;
+      //}
+    }
+
+    &.excluded {
+      .scaledTag .bg {
+        //fill: yellow;
+        fill: #fafafa;
+      }
+    }
+
+    &.fixed {
+      //text-decoration:underline;
       .circle {
         fill: red;
       }
     }
 
-    &.excluded {
-      .scaledTag .bg {
-        fill: yellow;
-      }
-    }
+    &.highlight {
+      fill: red;
 
-    &.fixed {
-      text-decoration:underline;
+      //.scaleTag .frame {
+      //  opacity: 1;
+      //}
+      //
+      //.scaledTag .bg {
+      //  fill: yellow;
+      //}
+      //
+      //.frame {
+      //  opacity: 1.0;
+      //}
     }
   }
 
-  .link {
+.cg .link {
     fill: none;
     stroke: #666;
-    stroke-width: 1.5px;
+    stroke-width: 1px;
+    //shape-rendering: crispEdges;
 
     &.highlight {
       stroke: red;
@@ -65,4 +80,32 @@
     }
 
   }
+
+//#relayout {
+//  rect {
+//    fill: white;
+//    stroke: #666;
+//    stroke-width: 0.5;
+//
+//    &:hover {
+//      stroke-width: 1;
+//    }
+//  }
+//
+//  text {
+//    color: green;
+//    pointer-events: none;
+//  }
+//}
+
+#relayout {
+  position: relative;
+  left: 250px;
+  bottom: 35px;
+}
+
+#edgeMeasure {
+  position: relative;
+  left: 280px;
+  bottom: 35px;
 }

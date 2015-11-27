@@ -1,4 +1,4 @@
-define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './services/data', 'query', 'map/map', 'cg/cg', 'info', 'model/models'], function (exports, _componentsXpanel, _formatter, _d3, _postal, _servicesData, _query, _mapMap, _cgCg, _info, _modelModels) {
+define(['exports', './components/xpanel', 'd3', 'postal', './data', './query', './map', './cg/cg', './info/info', './model/models'], function (exports, _componentsXpanel, _d3, _postal, _data, _query, _map, _cgCg, _infoInfo, _modelModels) {
   /**
    * Created by yarden on 6/30/15.
    */
@@ -9,13 +9,20 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
 
   var _CG = _interopRequireDefault(_cgCg);
 
-  var map = (0, _mapMap)();
+  var map = (0, _map)();
   var selection = _modelModels.selection();
   var cg = (0, _CG['default'])();
-  var info = (0, _info)();
+  var info = (0, _infoInfo)();
 
-  _postal.subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
-      selection.domain = _servicesData.domain;
+  var preSelection = undefined;
+
+  _postal.subscribe({ channel: 'data', topic: 'pre-changed', callback: function callback() {
+      selection.reset(_data.domain, _data.selected);
+    } });
+
+  //postal.subscribe({channel:'data', topic:'changed', callback: () => { selection.domain = data.domain; }});
+  _postal.subscribe({ channel: 'data', topic: 'post-changed', callback: function callback() {
+      selection.update();
     } });
 
   _postal.subscribe({ channel: 'data', topic: 'ready', callback: function callback() {
@@ -23,15 +30,10 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
     } });
 
   initHTML();
-  _servicesData.init();
+  _data.init();
 
   function getSize(el) {
     var d3el = _d3.select(el);
-    var w = parseInt(d3el.style('width'));
-    var h = parseInt(d3el.style('height'));
-
-    console.log('resize ' + el + ': ' + parseInt(d3el.style('width')) + 'x' + parseInt(d3el.style('height')));
-
     return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
   }
 
@@ -43,12 +45,12 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
   function initHTML() {
     _componentsXpanel.init();
 
-    var duration_input = document.getElementById('duration-input');
-    if (duration_input) {
-      new _formatter(duration_input, {
-        pattern: '{{99}}'
-      });
-    }
+    //let duration_input = document.getElementById('duration-input');
+    //if (duration_input) {
+    //  new Formater(duration_input, {
+    //    pattern: "{{99}}"
+    //  });
+    //}
 
     window.addEventListener('resize', resize);
   }
@@ -56,7 +58,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
   function initModules() {
     _query.init();
 
-    map.population(_servicesData.population).selection(selection).init();
+    map.population(_data.population).selection(selection).init();
 
     cg.init('#cg').selection(selection);
 
@@ -65,5 +67,7 @@ define(['exports', './components/xpanel', 'formatter', 'd3', 'postal', './servic
     resize();
   }
 });
+
+//import * as Formater from 'formatter.js'
 
 //# sourceMappingURL=app.js.map

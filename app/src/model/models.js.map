@@ -1,1 +1,1 @@
-{"version":3,"sources":["models.es6"],"names":[],"mappings":";;;;;;;;;;;;;UAImB,SAAS","file":"models.js","sourcesContent":["/**\n * Created by yarden on 7/19/15.\n */\n\nexport {default as selection} from './selection';\n"]}
+{"version":3,"sources":["models.es6"],"names":[],"mappings":";;;;;;;;;;;;;UAImB,SAAS","file":"models.js","sourcesContent":["/**\n * Created by yarden on 7/19/15.\n */\n\nexport {default as selection} from './selection' ;\n"]}

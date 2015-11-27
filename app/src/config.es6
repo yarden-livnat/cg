@@ -2,11 +2,11 @@
  * Created by yarden on 7/3/15.
  */
 
-import * as d3 from 'd3';
+import d3 from 'd3';
 
-export const MAP_DEFAULTS =  {
+export let MAP_DEFAULTS =  {
     mapbox: {
-      url: "https://a.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={access_token}",
+       url: "https://a.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token={access_token}",
       opt: {
         id:           'yarden.mi9kei3m',
         access_token: 'pk.eyJ1IjoieWFyZGVuIiwiYSI6ImM5NzdkZTdhZTBlOWFmNDlkM2M1MmEyY2M1NjkzOTg3In0.VZytH8boHpDX-J9PaxDjpA'
@@ -15,7 +15,9 @@ export const MAP_DEFAULTS =  {
     center: [39.58, -111.5],
     zoom: 6,
     zipcodes_file: "assets/maps/ut-zipcodes.json"
-  }
+  };
+
+export let pathogens_duration = 4;
 
 export let cg = {
   canvas: {
@@ -33,8 +35,8 @@ export let cg = {
     // nodes
     nodeRadius: 3,
     nodeScale: d3.scale.linear()
-                  .domain([0.3, 1])
-                  .range([0.3, 1])
+                  .domain([0.4, 1])
+                  .range([0.4, 1])
                   .clamp(true),
 
     duration: 500,
@@ -65,3 +67,5 @@ export let cg = {
     linkDistanceFactor: 100
   }
 }
+
+
