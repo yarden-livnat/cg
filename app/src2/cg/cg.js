@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_selection', '../patients', '../components/selector', './graph', './renderers'], function (exports, module, _d3, _postal, _config, _service, _tag_selection, _patients, _componentsSelector, _graph, _renderers) {
+define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../service', '../tag_selection', '../patients', '../components/selector', './graph', './renderers'], function (exports, module, _d3, _postal, _utils, _config, _service, _tag_selection, _patients, _componentsSelector, _graph, _renderers) {
   /**
    * Created by yarden on 8/24/15.
    */
@@ -82,7 +82,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       var _iteratorError = undefined;
 
       try {
-        for (var _iterator = graph.nodes()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        for (var _iterator = graph.node()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
           var node = _step.value;
 
           if (node.items.length > 0) values.push(node.scale);
@@ -112,10 +112,10 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = graph.edges()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+        for (var _iterator2 = graph.edge()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
           var edge = _step2.value;
 
-          if (edge.source.visible && edge.target.visible) active.push(edge.value);
+          if (edge.source.visible && edge.target.visible) active.push(edge.r);
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -222,7 +222,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     function update(doLayout) {
       //force.stop();
 
-      graph.nodes(group.all().map(function (item) {
+      graph.node(group.all().map(function (item) {
         var topic = _service.topicsMap.get(item.key);
         var node = cache.get(topic.id);
         if (!node) {
@@ -266,7 +266,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
     var TWO_STEPS_LAYOUT = false;
     function layout(iter) {
-      var visibleEdges = graph.edges().filter(function (edge) {
+      var visibleEdges = graph.edge().filter(function (edge) {
         return edge.source.visible && edge.target.visible && edge.value >= edgesRange[0] && edge.value <= edgesRange[1];
       });
 
@@ -296,9 +296,9 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
           }
         }
 
-        force.nodes(activeNodes).links(visibleEdges /*graph.edges()*/).on('end', layout2).start();
+        force.node(activeNodes).links(visibleEdges /*graph.edges()*/).on('end', layout2).start();
       } else {
-        force.nodes(graph.nodes()).links(visibleEdges /*graph.edges()*/).on('end', null).start();
+        force.node(graph.node()).links(visibleEdges /*graph.edges()*/).on('end', null).start();
       }
     }
 
@@ -330,7 +330,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       }
 
       // layout using all nodes
-      force.nodes(graph.nodes()).links(graph.edges()).on('end', null).start();
+      force.node(graph.node()).links(graph.edge()).on('end', null).start();
 
       for (var i = 0; i < 100; i++) {
         force.tick();
@@ -461,7 +461,7 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       var _iteratorError9 = undefined;
 
       try {
-        for (var _iterator9 = graph.nodes()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+        for (var _iterator9 = graph.node()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
           var node = _step9.value;
 
           if (node.excluded) {
@@ -506,8 +506,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
       d3Nodes.exit().transition().duration(duration).style('opacity', 0.000001).remove();
 
-      activeEdges = showEdges && graph.edges().filter(function (edge) {
-        return edge.source.visible && edge.target.visible && edge.value >= edgesRange[0] && edge.value <= edgesRange[1];
+      activeEdges = showEdges && graph.edge().filter(function (edge) {
+        return edge.source.visible && edge.target.visible && edge.r >= edgesRange[0] && edge.r <= edgesRange[1];
       }) || [];
 
       d3Links = svgLinks.selectAll('.link').data(activeEdges, function (d) {
@@ -521,8 +521,8 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
       d3Links.exit().transition().duration(duration).style('opacity', 0.000001).remove();
 
       _d32['default'].select('#encounters').text(_patients.numActiveEncounters);
-      _d32['default'].select('#topics').text(activeNodes.length + ' of ' + graph.nodes().length);
-      _d32['default'].select('#relations').text(activeEdges.length + ' of ' + graph.edges().length);
+      _d32['default'].select('#topics').text(activeNodes.length + ' of ' + graph.node().length);
+      _d32['default'].select('#relations').text(activeEdges.length + ' of ' + graph.edge().length);
 
       // performance
       //console.log('render: ', Date.now() -t, 'msec');
@@ -534,7 +534,11 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
     function node_behavior(selection) {
       selection.call(drag);
 
-      selection.selectAll('.scaledTag').on('mousedown', node_mousedown).on('mouseup', node_mouseup);
+      selection.selectAll('.scaledTag').on('mousedown', node_mousedown).on('mouseup', node_mouseup).on('mouseenter', function (d) {
+        node_highlight(d, true);
+      }).on('mouseleave', function (d) {
+        node_highlight(d, false);
+      });
       //.on("dblclick", node_dblclick)
 
       selection.selectAll('circle').on('click', function (d) {
@@ -559,6 +563,16 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
           _tag_selection.select(d.topic.id);
         }
       }
+    }
+
+    function node_highlight(d, show) {
+      d.highlight = show;
+      if (show) {
+        _utils.assign_color(d);
+      } else {
+        _utils.release_color(d);
+      }
+      _postal2['default'].publish({ channel: 'global', topic: 'highlight.topic', data: { topic: d, show: show } });
     }
 
     /* init */
@@ -591,6 +605,15 @@ define(['exports', 'module', 'd3', 'postal', '../config', '../service', '../tag_
 
       b.append('rect').attr('x', 0.5).attr('y', 0.5).attr('width', 54).attr('height', 20).attr('rx', 5).attr('ry', 5);
       b.append('text').attr('x', 5).attr('y', 14).text('relayout');
+
+      //selection.append('select')
+      //  .attr('id', 'edgeMeasure')
+      //  .on('click', function(d) { console.log(this, d, d3.select(this).property('value')); })
+      //  .selectAll('.option')
+      //  .data(Object.keys(graph.measures.edge))
+      //  .enter()
+      //  .append('option')
+      //  .text(function(d) { return d; });
 
       /* graph */
       svgLinks = g.append('g').attr('class', 'links');

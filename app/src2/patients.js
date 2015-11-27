@@ -17,10 +17,17 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
   var _crossfilter2 = _interopRequireDefault(_crossfilter);
 
+  var dateFormat = d3.time.format('%Y-%m-%d');
+
   var fromDate = undefined;
   exports.fromDate = fromDate;
   var toDate = undefined;
   exports.toDate = toDate;
+  var datesRange = undefined;
+  exports.datesRange = datesRange;
+  var datesScale = undefined;
+
+  exports.datesScale = datesScale;
   var encounters = undefined;
   exports.encounters = encounters;
   var encountersMap = undefined;
@@ -112,12 +119,19 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     exports.fromDate = fromDate = data.from;
     exports.toDate = toDate = data.to;
 
+    var from = d3.time.day.ceil(dateFormat.parse(fromDate)),
+        to = d3.time.day.offset(d3.time.day.ceil(dateFormat.parse(toDate)), 1);
+
+    exports.datesRange = datesRange = d3.time.day.range(from, to);
+    exports.datesScale = datesScale = d3.time.scale().domain([from, to]).rangeRound([0, datesRange.length]);
+
     exports.encounters = encounters = data.encounters;
     exports.relations = relations = data.relations;
 
     exports.encountersMap = encountersMap = new Map();
     encounters.forEach(function (e) {
       e.tags = new Set();
+      e.day = datesScale(e.date);
       encountersMap.set(e.id, e);
     });
 

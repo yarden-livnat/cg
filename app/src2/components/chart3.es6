@@ -193,13 +193,19 @@ export default function(el, useRight) {
 
       areas
         .style('fill', d => { return d.color; })
-        //.attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
         .attr('d', d => area(d.values));
 
       areas.exit().remove();
 
-      let lines = svg.selectAll('path.line')
-        .data(series.filter(d => d.type == 'line'))
+      let lines = svg.selectAll('.line')
+        .data(series.filter(d => d.type == 'line'));
+
+      lines.enter()
+        .append('path')
+        .attr('class', 'line')
+        .attr("clip-path", "url(#clip)");
+
+      lines
         .attr('stroke', d => { return d.color; })
         .attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
         .attr('d', d => line.y( d.right ? ry : ly ).interpolate(d.interpolate || 'cardinal')(d.values));
@@ -240,13 +246,6 @@ export default function(el, useRight) {
 
         zoom.x(x);
       }
-
-      let lines = svg.selectAll('path.line')
-        .data(series)
-        .enter()
-        .append('path')
-        .attr('class', 'line')
-        .attr("clip-path", "url(#clip)");
 
       draw();
       return this;

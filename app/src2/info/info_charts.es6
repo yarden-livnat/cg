@@ -22,6 +22,7 @@ export default function() {
 
   let group;
   let selected = new Map();
+  let highlighted;
 
   let charts = new Map([
     ['#summary-chart', summaryChart]
@@ -30,7 +31,7 @@ export default function() {
 
   postal.subscribe({channel: 'global', topic: 'data.changed', callback: dataChanged});
   postal.subscribe({channel: 'global', topic: 'render', callback: render});
-
+  postal.subscribe({channel: 'global', topic: 'highlight.topic', callback: highlight});
 
   function dataChanged(data) {
     fromDate = dateFormat.parse(data.from);
@@ -44,7 +45,6 @@ export default function() {
         scale = d3.time.scale()
           .domain([from, to])
           .rangeRound([0, Math.max(range.length, MIN_Y)]);  // hack: rangeRound still give fraction if range is 0-1
-
 
     if (selected.size > 0) {
       for(let entry of selected.entries()) {
@@ -64,24 +64,38 @@ export default function() {
 
     let selectedSeries = [];
 
-    let map = new Map();
-    //git s
-    for (let r of patients.rel_tid.top(Infinity)) {
-      let entry = map.get(r.tag_id);
-      if (!entry) map.set(r.tag_id, entry = []);
-      entry.push(patients.encountersMap.get(r.enc_id));
-    }
-
-    for (let entry of map) {
-      let topic = topicsMap.get(entry[0]);
+    if (highlighted) {
+      /* test */
+      let enc = patients.tag_enc_group.all().filter(function (d) { return d.key == highlighted.id;});
+      let records = enc[0].value.map(v => patients.encountersMap.get(v.enc_id));
       selectedSeries.push({
-        label:  topic.name,
-        color:  topic.color,
+        label:  highlighted.name,
+        color:  highlighted.color,
         type:   'line',
         marker: 'solid',
-        values: histogram(entry[1], range, scale)
+        values: histogram(records, range, scale)
       });
     }
+
+    //let map = new Map();
+    //
+    //for (let r of patients.rel_tid.)) {
+    //  let entry = map.get(r.tag_id);
+    //  if (!entry) map.set(r.tag_id, entry = []);
+    //  entry.push(patients.encountersMap.get(r.enc_id));
+    //}
+    //
+    //for (let entry of map) {
+    //  let topic = topicsMap.get(entry[0]);
+    //  console.log('info: topic ',topic.name );
+    //  selectedSeries.push({
+    //    label:  topic.name,
+    //    color:  topic.color,
+    //    type:   'line',
+    //    marker: 'solid',
+    //    values: histogram(entry[1], range, scale)
+    //  });
+    //}
 
     var current = [];
     for (let eid of patients.currentEncounters.values()) {
@@ -133,6 +147,12 @@ export default function() {
 
     //selectedSeries.push(summaryData[0]);
     summaryChart.data(selectedSeries);
+  }
+
+  function highlight(node) {
+    if (node.show)  highlighted = node.topic;
+    else highlighted = null;
+    render();
   }
 
   function toArray(iter) {

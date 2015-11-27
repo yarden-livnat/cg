@@ -153,8 +153,8 @@ export default function() {
    */
 
   var graph = {
-    get nodes() { return nodes; },
-    get edges() { return edges; },
+    get node() { return nodes; },
+    get edge() { return edges; },
 
     set domain(list) {
       if (domain == list) return;

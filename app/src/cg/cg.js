@@ -58,7 +58,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
      */
 
     function visibleNodes() {
-      return graph.nodes.filter(function (node) {
+      return graph.node.filter(function (node) {
         return node.visible || node.excluded;
       });
     }
@@ -66,7 +66,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     function visibleEdges() {
       if (!showEdges) return [];
 
-      return graph.edges.filter(function (edge) {
+      return graph.edge.filter(function (edge) {
         return edge.source.visible && edge.target.visible
         //&& (selection.isAnySelected(edge.source.tag, edge.target.tag))
          && (edge.value >= edgesRange[0] && edge.value <= edgesRange[1]);
@@ -86,7 +86,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
     function render(duration) {
       duration = duration || _config.cg.canvas.duration;
       // mark visible nodes
-      graph.nodes.forEach(function (node) {
+      graph.node.forEach(function (node) {
         node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1] || node.excluded;
         if (node.excluded) {
           node.scale = node.lastScale;
@@ -291,7 +291,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       var _iteratorError3 = undefined;
 
       try {
-        for (var _iterator3 = graph.nodes[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+        for (var _iterator3 = graph.node[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
           var node = _step3.value;
 
           var s = state.get(node.tag);
@@ -303,7 +303,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
           }
           if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
             if (!node.selected && s == 'selected' && partialLayout['delete'](node.tag)) {
-              prevVisible = _2['default'].filter(graph.nodes, function (node) {
+              prevVisible = _2['default'].filter(graph.node, function (node) {
                 return node.visible;
               });
             }
@@ -383,10 +383,10 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
       iter = iter || 0;
 
-      activeNodes = graph.nodes.filter(function (node) {
+      activeNodes = graph.node.filter(function (node) {
         return node.visible;
       });
-      activeEdges = graph.edges;
+      activeEdges = graph.edge;
 
       if (_config.cg.layout.onlyVisibleEdges) {
         var edgeStrength = _config.cg.canvas.edgeStrength;
@@ -399,7 +399,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
 
       exec_forceDone = true;
       clock.start();
-      force.nodes(activeNodes).links(activeEdges).on('tick', null).on('end', forceDone).start();
+      force.node(activeNodes).links(activeEdges).on('tick', null).on('end', forceDone).start();
 
       // reduce visible cloud movements
       clock.mark('loop');
@@ -422,7 +422,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       clock.mark('force done');
       clock.print();
 
-      _2['default'].forEach(graph.nodes, function (n) {
+      _2['default'].forEach(graph.node, function (n) {
         n.px = x;n.py = y;
       });
     }
@@ -436,21 +436,21 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
         node.fixed |= 1;
       });
 
-      graph.nodes.forEach(function (node) {
+      graph.node.forEach(function (node) {
         node.visible = node.items.length > 0 || node.excluded;
         if (node.excluded) {
           node.scale = node.lastScale;
         }
       });
 
-      var nodes = _2['default'].filter(graph.nodes, function (node) {
+      var nodes = _2['default'].filter(graph.node, function (node) {
         return node.visible;
       });
-      var edges = _2['default'].filter(graph.edges, function (edge) {
+      var edges = _2['default'].filter(graph.edge, function (edge) {
         return edge.source.visible && edge.target.visible;
       });
 
-      force.nodes(nodes).links(edges).on('tick', null).on('end', null).start();
+      force.node(nodes).links(edges).on('tick', null).on('end', null).start();
 
       for (var i = 0; i < 250; i++) force.tick();
 
@@ -459,7 +459,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       _2['default'].forEach(notFixed, function (node) {
         node.fixed &= ~1;
       });
-      _2['default'].forEach(graph.nodes, function (n) {
+      _2['default'].forEach(graph.node, function (n) {
         n.px = x;n.py = y;
       });
       updatePosition();
@@ -827,13 +827,13 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       _postal2['default'].subscribe({ channel: 'data', topic: 'changed', callback: function callback() {
           force.stop();
           var current = new Map();
-          var n = graph.nodes;
+          var n = graph.node;
           var _iteratorNormalCompletion4 = true;
           var _didIteratorError4 = false;
           var _iteratorError4 = undefined;
 
           try {
-            for (var _iterator4 = graph.nodes[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            for (var _iterator4 = graph.node[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
               var node = _step4.value;
 
               current.set(node.id, node);
@@ -897,7 +897,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       var _iteratorError5 = undefined;
 
       try {
-        for (var _iterator5 = graph.nodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+        for (var _iterator5 = graph.node[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
           var node = _step5.value;
 
           if (node.items.length > 0) values.push(node.scale);
@@ -927,7 +927,7 @@ define(['exports', 'module', 'd3', 'postal', 'lodash', '../data', '../config', '
       var _iteratorError6 = undefined;
 
       try {
-        for (var _iterator6 = graph.edges[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+        for (var _iterator6 = graph.edge[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
           var edge = _step6.value;
 
           if (edge.source.visible && edge.target.visible) active.push(edge.value);

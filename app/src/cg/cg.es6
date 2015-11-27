@@ -56,7 +56,7 @@ export default function() {
    */
 
     function visibleNodes() {
-      return graph.nodes.filter(function(node) {
+      return graph.node.filter(function(node) {
         return node.visible || node.excluded;
       });
     }
@@ -64,7 +64,7 @@ export default function() {
     function visibleEdges() {
       if (!showEdges) return [];
 
-      return graph.edges.filter(function (edge) {
+      return graph.edge.filter(function (edge) {
         return edge.source.visible && edge.target.visible
           //&& (selection.isAnySelected(edge.source.tag, edge.target.tag))
           && (edge.value >= edgesRange[0] && edge.value <= edgesRange[1]);
@@ -84,7 +84,7 @@ export default function() {
     function render(duration) {
       duration = duration || opt.canvas.duration;
       // mark visible nodes
-      graph.nodes.forEach(function(node) {
+      graph.node.forEach(function(node) {
           node.visible = node.items.length > 0 && node.scale >= nodesRange[0] && node.scale <= nodesRange[1]|| node.excluded;
           if (node.excluded) {
             node.scale = node.lastScale;
@@ -259,7 +259,7 @@ export default function() {
       for (tag of selection.excluded()) { state.set(tag, 'excluded');}
 
       prevVisible = null;
-      for (let node of graph.nodes) {
+      for (let node of graph.node) {
         let s = state.get(node.tag);
         if (!s) {
           if (node.selected || node.excluded) {
@@ -269,7 +269,7 @@ export default function() {
         }
         if (node.selected != (s == 'selected') || node.excluded != (s == 'excluded')) {
           if (!node.selected && s == 'selected' && partialLayout.delete(node.tag)) {
-            prevVisible = _.filter(graph.nodes, function(node) { return node.visible; });
+            prevVisible = _.filter(graph.node, function(node) { return node.visible; });
           }
           if (!node.excluded && (s == 'excluded')) {
             node.lastScale = node.scale;
@@ -335,8 +335,8 @@ export default function() {
 
       iter = iter || 0;
 
-      activeNodes = graph.nodes.filter(function (node) { return node.visible; });
-      activeEdges = graph.edges;
+      activeNodes = graph.node.filter(function (node) { return node.visible; });
+      activeEdges = graph.edge;
 
       if (opt.layout.onlyVisibleEdges) {
         var edgeStrength = opt.canvas.edgeStrength;
@@ -350,7 +350,7 @@ export default function() {
       exec_forceDone = true;
       clock.start();
       force
-        .nodes(activeNodes)
+        .node(activeNodes)
         .links(activeEdges)
         .on('tick', null)
         .on('end', forceDone)
@@ -378,7 +378,7 @@ export default function() {
       clock.mark('force done');
       clock.print();
 
-      _.forEach(graph.nodes, function(n) { n.px = x; n.py = y;});
+      _.forEach(graph.node, function(n) { n.px = x; n.py = y;});
     }
 
     function adjustLayout() {
@@ -387,7 +387,7 @@ export default function() {
       _.forEach(notFixed, function(node) { node.fixed |= 1; });
 
 
-      graph.nodes.forEach(function(node) {
+      graph.node.forEach(function(node) {
           node.visible = node.items.length > 0 || node.excluded;
           if (node.excluded) {
             node.scale = node.lastScale;
@@ -395,13 +395,13 @@ export default function() {
         }
       );
 
-      var nodes = _.filter(graph.nodes, function(node) { return node.visible; });
-      var edges = _.filter(graph.edges, function(edge) {
+      var nodes = _.filter(graph.node, function(node) { return node.visible; });
+      var edges = _.filter(graph.edge, function(edge) {
         return edge.source.visible && edge.target.visible;
       });
 
       force
-        .nodes(nodes)
+        .node(nodes)
         .links(edges)
         .on('tick', null)
         .on('end', null)
@@ -412,7 +412,7 @@ export default function() {
       force.stop();
 
       _.forEach(notFixed, function(node) { node.fixed &= ~1;});
-      _.forEach(graph.nodes, function(n) { n.px = x; n.py = y;});
+      _.forEach(graph.node, function(n) { n.px = x; n.py = y;});
       updatePosition();
     }
 
@@ -801,8 +801,8 @@ export default function() {
     postal.subscribe({channel: 'data', topic: 'changed', callback: () => {
       force.stop();
       let current = new Map();
-      let n = graph.nodes;
-      for (let node of graph.nodes) {
+      let n = graph.node;
+      for (let node of graph.node) {
         current.set(node.id, node);
         if (node.label == 'wheezing') {
           console.log('new data: wheezing:', node);
@@ -845,7 +845,7 @@ export default function() {
 
   function updateNodesSelector() {
     let values = [];
-    for (let node of graph.nodes) {
+    for (let node of graph.node) {
       if (node.items.length > 0) values.push(node.scale);
     }
     nodesSelector.data(values);
@@ -853,7 +853,7 @@ export default function() {
 
   function updateEdgesSelector() {
     let active = [];
-    for (let edge of graph.edges) {
+    for (let edge of graph.edge) {
       if (edge.source.visible && edge.target.visible) active.push(edge.value);
     }
     edgesSelector.data(active);

@@ -108,12 +108,12 @@ define(['exports'], function (exports) {
     };
 
     function renderer(selection) {
-      selection.append('line').attr('class', 'link').style('stroke-width', '1px') //function (d) { return scale(d.value) + '1px'; })
+      selection.append('line').attr('class', 'link').style('stroke-width', '2px') //function (d) { return scale(d.value) + '1px'; })
       .style('stroke', d3.hsl(0, 1, 1))
       //.on('mouseover', highlightEdge)
       //.on('mouseout', unhighlightEdge)
       .style('opacity', 0).transition().duration(duration).style('opacity', opacity).style('stroke', function (d) {
-        return d3.hsl(0, 0.8, scale(d.value));
+        return d3.hsl(d.r > 0 ? 0 : 130, 0.8, scale(d.value));
       });
     }
 

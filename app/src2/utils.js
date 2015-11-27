@@ -24,6 +24,7 @@ define(["exports", "d3"], function (exports, _d3) {
         obj.color = available_colors.shift() || default_color;
       } else {
         available_colors.splice(i, 1);
+        obj.color = obj.prevColor;
       }
     }
   }

@@ -118,7 +118,7 @@ export function EdgeRenderer() {
   function renderer(selection) {
       selection.append('line')
         .attr('class', 'link')
-        .style('stroke-width', '1px') //function (d) { return scale(d.value) + '1px'; })
+        .style('stroke-width', '2px') //function (d) { return scale(d.value) + '1px'; })
         .style('stroke', d3.hsl(0, 1, 1))
         //.on('mouseover', highlightEdge)
         //.on('mouseout', unhighlightEdge)
@@ -126,7 +126,7 @@ export function EdgeRenderer() {
         .transition()
         .duration(duration)
           .style('opacity', opacity)
-          .style('stroke', function(d) { return d3.hsl(0, 0.8, scale(d.value)); })
+          .style('stroke', function(d) { return d3.hsl(d.r > 0 ? 0 : 130, 0.8, scale(d.value)); })
           //.styleTween('stroke', function(d, a) { return d3.interpolateHsl(a /*d3.hsl(0, 1, 1)*/, d3.hsl(0, 0.8, scale(d.value))); })
       ;
   }

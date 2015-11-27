@@ -5,6 +5,7 @@
 import d3 from 'd3';
 import postal from 'postal'
 
+import * as utils from '../utils';
 import {cgOptions} from '../config';
 import {topicsMap} from '../service';
 import * as tagSelection from '../tag_selection';
@@ -97,7 +98,7 @@ export default function() {
 
   function updateNodesSelector() {
     let values = [];
-    for(let node of graph.nodes()) {
+    for(let node of graph.node()) {
       if (node.items.length > 0) values.push(node.scale);
     }
     nodesSelector.data(values);
@@ -105,8 +106,8 @@ export default function() {
 
   function updateEdgesSelector() {
     let active = [];
-    for(let edge of graph.edges()) {
-      if (edge.source.visible && edge.target.visible) active.push(edge.value);
+    for(let edge of graph.edge()) {
+      if (edge.source.visible && edge.target.visible) active.push(edge.r);
     }
     edgesSelector.data(active);
   }
@@ -178,7 +179,7 @@ export default function() {
   function update(doLayout) {
     //force.stop();
 
-    graph.nodes(group.all().map(item => {
+    graph.node(group.all().map(item => {
       let topic = topicsMap.get(item.key);
       let node = cache.get(topic.id);
       if (!node) {
@@ -218,7 +219,7 @@ export default function() {
 
   const TWO_STEPS_LAYOUT = false;
   function layout(iter) {
-    let visibleEdges = graph.edges().filter(edge => edge.source.visible && edge.target.visible
+    let visibleEdges = graph.edge().filter(edge => edge.source.visible && edge.target.visible
                                              && edge.value >= edgesRange[0] && edge.value <= edgesRange[1]);
 
     if (TWO_STEPS_LAYOUT) {
@@ -226,14 +227,14 @@ export default function() {
         node.fixed &= ~4;
       }
       force
-        .nodes(activeNodes)
+        .node(activeNodes)
         .links(visibleEdges /*graph.edges()*/)
         .on('end', layout2)
         .start();
     }
     else {
       force
-        .nodes(graph.nodes())
+        .node(graph.node())
         .links(visibleEdges /*graph.edges()*/)
         .on('end', null)
         .start();
@@ -247,8 +248,8 @@ export default function() {
     }
     // layout using all nodes
     force
-      .nodes(graph.nodes())
-      .links(graph.edges())
+      .node(graph.node())
+      .links(graph.edge())
       .on('end', null)
       .start();
 
@@ -312,7 +313,7 @@ export default function() {
   function render(duration) {
     let t = Date.now();
     activeNodes = [];
-    for(let node of graph.nodes()) {
+    for(let node of graph.node()) {
       if (node.excluded) {
         node.visible = true;
         node.scale = node.lastScale;
@@ -348,8 +349,8 @@ export default function() {
       .remove();
 
 
-    activeEdges = showEdges && graph.edges().filter(edge => edge.source.visible && edge.target.visible
-      && edge.value >= edgesRange[0] && edge.value <= edgesRange[1]
+    activeEdges = showEdges && graph.edge().filter(edge => edge.source.visible && edge.target.visible
+      && edge.r >= edgesRange[0] && edge.r <= edgesRange[1]
       )
       || [];
 
@@ -369,8 +370,8 @@ export default function() {
       .remove();
 
     d3.select("#encounters").text(patients.numActiveEncounters);
-    d3.select("#topics").text(activeNodes.length+' of '+graph.nodes().length);
-    d3.select("#relations").text(activeEdges.length+' of '+graph.edges().length);
+    d3.select("#topics").text(activeNodes.length+' of '+graph.node().length);
+    d3.select("#relations").text(activeEdges.length+' of '+graph.edge().length);
 
     // performance
     //console.log('render: ', Date.now() -t, 'msec');
@@ -384,7 +385,9 @@ export default function() {
 
     selection.selectAll('.scaledTag')
       .on('mousedown', node_mousedown)
-      .on('mouseup', node_mouseup);
+      .on('mouseup', node_mouseup)
+      .on('mouseenter', function(d) { node_highlight(d, true); })
+      .on('mouseleave', function(d) { node_highlight(d, false); });
       //.on("dblclick", node_dblclick)
 
 
@@ -411,6 +414,15 @@ export default function() {
     }
   }
 
+  function node_highlight(d, show) {
+    d.highlight = show;
+    if (show) {
+      utils.assign_color(d);
+    } else {
+      utils.release_color(d);
+    }
+    postal.publish({channel: 'global', topic: 'highlight.topic', data: {topic: d, show: show}});
+  }
 
   /* init */
   function build(selection) {
@@ -456,7 +468,6 @@ export default function() {
           layout();
       });
 
-
     b.append('rect')
       .attr('x', 0.5)
       .attr('y', 0.5)
@@ -468,6 +479,16 @@ export default function() {
       .attr('x', 5)
       .attr('y', 14)
       .text('relayout');
+
+
+    //selection.append('select')
+    //  .attr('id', 'edgeMeasure')
+    //  .on('click', function(d) { console.log(this, d, d3.select(this).property('value')); })
+    //  .selectAll('.option')
+    //  .data(Object.keys(graph.measures.edge))
+    //  .enter()
+    //  .append('option')
+    //  .text(function(d) { return d; });
 
 
     /* graph */

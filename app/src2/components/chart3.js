@@ -143,17 +143,19 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
           areas.style('fill', function (d) {
             return d.color;
-          })
-          //.attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
-          .attr('d', function (d) {
+          }).attr('d', function (d) {
             return area(d.values);
           });
 
           areas.exit().remove();
 
-          var lines = svg.selectAll('path.line').data(series.filter(function (d) {
+          var lines = svg.selectAll('.line').data(series.filter(function (d) {
             return d.type == 'line';
-          })).attr('stroke', function (d) {
+          }));
+
+          lines.enter().append('path').attr('class', 'line').attr('clip-path', 'url(#clip)');
+
+          lines.attr('stroke', function (d) {
             return d.color;
           }).attr('stroke-dasharray', function (d) {
             return d.marker == 'dash' ? '3' : '0';
@@ -221,8 +223,6 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
           zoom.x(x);
         }
-
-        var lines = svg.selectAll('path.line').data(series).enter().append('path').attr('class', 'line').attr('clip-path', 'url(#clip)');
 
         draw();
         return this;

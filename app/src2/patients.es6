@@ -4,8 +4,13 @@
 
 import crossfilter from 'crossfilter';
 
+let dateFormat = d3.time.format('%Y-%m-%d');
+
 export let fromDate;
 export let toDate;
+export let datesRange;
+export let datesScale;
+
 export let encounters;
 export let encountersMap;
 export let relations;
@@ -52,12 +57,22 @@ function setup(data) {
   fromDate = data.from;
   toDate = data.to;
 
+  let from  = d3.time.day.ceil(dateFormat.parse(fromDate)),
+      to    = d3.time.day.offset(d3.time.day.ceil(dateFormat.parse(toDate)), 1);
+
+  datesRange = d3.time.day.range(from, to);
+  datesScale = d3.time.scale()
+        .domain([from, to])
+        .rangeRound([0, datesRange.length]);
+
+
   encounters = data.encounters;
   relations = data.relations;
 
   encountersMap = new Map();
   encounters.forEach( e => {
     e.tags = new Set();
+    e.day = datesScale(e.date);
     encountersMap.set(e.id, e)
   });
 

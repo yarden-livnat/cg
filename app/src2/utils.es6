@@ -16,6 +16,7 @@ export function assign_color(obj) {
       obj.color = available_colors.shift() || default_color;
     } else {
       available_colors.splice(i, 1);
+      obj.color = obj.prevColor;
     }
   }
 }
