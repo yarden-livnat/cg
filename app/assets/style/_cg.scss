@@ -71,7 +71,8 @@
 .cg .link {
     fill: none;
     stroke: #666;
-    stroke-width: 1.5px;
+    stroke-width: 1px;
+    //shape-rendering: crispEdges;
 
     &.highlight {
       stroke: red;
@@ -80,25 +81,31 @@
 
   }
 
+//#relayout {
+//  rect {
+//    fill: white;
+//    stroke: #666;
+//    stroke-width: 0.5;
+//
+//    &:hover {
+//      stroke-width: 1;
+//    }
+//  }
+//
+//  text {
+//    color: green;
+//    pointer-events: none;
+//  }
+//}
+
 #relayout {
-  rect {
-    fill: white;
-    stroke: #666;
-    stroke-width: 0.5;
-
-    &:hover {
-      stroke-width: 1;
-    }
-  }
-
-  text {
-    color: green;
-    pointer-events: none;
-  }
+  position: relative;
+  left: 250px;
+  bottom: 35px;
 }
 
 #edgeMeasure {
   position: relative;
-  left: 330px;
+  left: 280px;
   bottom: 35px;
 }

@@ -16,6 +16,12 @@ export default function(el, useRight) {
 
   let svg, svgContainer;
 
+  let selection = typeof el =='string' ? d3.select(el) : el;
+  selection.classed('chart', true);
+
+  width= parseInt(selection.style('width')) - margin.left - margin.right;
+  height = parseInt(selection.style('height')) - margin.top - margin.bottom;
+
   let x = d3.time.scale()
     .range([0, width])
     .nice(d3.time.week, 1);
@@ -66,11 +72,6 @@ export default function(el, useRight) {
   let zoom = d3.behavior.zoom()
     .on('zoom', draw);
 
-  let selection = typeof el =='string' ? d3.select(el) : el;
-  selection.attr('class', 'chart');
-
-  width= parseInt(selection.style('width')) - margin.left - margin.right;
-  height = parseInt(selection.style('height')) - margin.top - margin.bottom;
 
   svgContainer = selection.append('svg')
     .attr('width', width + margin.left + margin.right)
@@ -125,6 +126,11 @@ export default function(el, useRight) {
     .attr("width", width)
     .attr("height", height)
     .call(zoom);
+
+  function getSize(el) {
+    let d3el = d3.select(el);
+    return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
+  }
 
   function resize(w, h) {
     svgContainer

@@ -260,24 +260,19 @@ input[type=date]::-webkit-inner-spin-button {
 .cg .link {
   fill: none;
   stroke: #666;
-  stroke-width: 1.5px; }
+  stroke-width: 1px; }
   .cg .link.highlight {
     stroke: red;
     stroke-opacity: 1; }
 
-#relayout rect {
-  fill: white;
-  stroke: #666;
-  stroke-width: 0.5; }
-  #relayout rect:hover {
-    stroke-width: 1; }
-#relayout text {
-  color: green;
-  pointer-events: none; }
+#relayout {
+  position: relative;
+  left: 250px;
+  bottom: 35px; }
 
 #edgeMeasure {
   position: relative;
-  left: 330px;
+  left: 280px;
   bottom: 35px; }
 
 body {
@@ -354,14 +349,22 @@ body {
     overflow-y: auto; }
 
 #pathogens-area {
-  display: inline-block;
   width: 195px;
-  height: auto;
-  vertical-align: top; }
-  #pathogens-area #pathogens-charts {
-    width: auto;
+  position: fixed;
+  top: 150px;
+  bottom: 420px;
+  right: 10px; }
+  #pathogens-area #pathogens {
+    width: 195px;
     overflow-x: hidden;
-    overflow-y: auto; }
+    overflow-y: scroll; }
+
+.pathogen {
+  width: auto;
+  height: 60px;
+  border: none;
+  margin: 0;
+  padding: 0; }
 
 .selected {
   font-weight: bold; }

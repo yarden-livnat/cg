@@ -22,7 +22,7 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
         handle = undefined,
         dispatch = _d32['default'].dispatch('select');
 
-    var x = _d32['default'].scale.linear().domain([-1, 1]).range([0, width]);
+    var x = _d32['default'].scale.linear().domain([0, 1]).range([0, width]);
 
     var y = _d32['default'].scale.linear().domain([0, 1]).rangeRound([height, 0]);
 

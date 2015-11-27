@@ -18,6 +18,12 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     var svg = undefined,
         svgContainer = undefined;
 
+    var selection = typeof el == 'string' ? _d3.select(el) : el;
+    selection.classed('chart', true);
+
+    width = parseInt(selection.style('width')) - margin.left - margin.right;
+    height = parseInt(selection.style('height')) - margin.top - margin.bottom;
+
     var x = _d3.time.scale().range([0, width]).nice(_d3.time.week, 1);
 
     var xAxis = _d3.svg.axis().scale(x).orient('bottom').tickSize(3, 0).tickPadding(4).ticks(2);
@@ -50,12 +56,6 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
 
     var zoom = _d3.behavior.zoom().on('zoom', draw);
 
-    var selection = typeof el == 'string' ? _d3.select(el) : el;
-    selection.attr('class', 'chart');
-
-    width = parseInt(selection.style('width')) - margin.left - margin.right;
-    height = parseInt(selection.style('height')) - margin.top - margin.bottom;
-
     svgContainer = selection.append('svg').attr('width', width + margin.left + margin.right).attr('height', height + margin.top + margin.bottom);
 
     svg = svgContainer.append('g').attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
@@ -84,6 +84,11 @@ define(['exports', 'module', 'd3'], function (exports, module, _d3) {
     svg.append('path').attr('class', 'line').attr('clip-path', 'url(#clip');
 
     svg.append('rect').attr('class', 'pane').attr('width', width).attr('height', height).call(zoom);
+
+    function getSize(el) {
+      var d3el = _d3.select(el);
+      return [parseInt(d3el.style('width')), parseInt(d3el.style('height'))];
+    }
 
     function _resize(w, h) {
       svgContainer.attr('width', w).attr('height', h);

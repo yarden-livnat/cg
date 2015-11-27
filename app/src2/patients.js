@@ -165,6 +165,12 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     topics_tid.filterAll();
     topics_cat.filterAll();
     topics_sys.filterAll();
+
+    exports.currentEncounters = currentEncounters = dimCollect(enc_eid);
+    exports.currentTopics = currentTopics = dimCollect(topics_tid);
+
+    exports.numActiveEncounters = numActiveEncounters = currentEncounters.size;
+    exports.numActiveRelations = numActiveRelations = currentTopics.size;
   }
 
   /* detectors */

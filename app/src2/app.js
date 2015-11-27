@@ -38,6 +38,7 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
       detectors.init(_service.detectors.map(_patients.addDetector));
       cg(d3.select('#cg-area')).resize(getSize('#cg-area'));
       _query.init(updateData);
+      window.dispatchEvent(new Event('resize'));
     }
   });
 
@@ -72,6 +73,7 @@ define(['exports', 'queue', 'postal', './service', './query', './patients', './i
 
   window.addEventListener('resize', function () {
     cg.resize(getSize('#cg-area'));
+    d3.select('#pathogens').style('max-height', getSize('#pathogens-area')[1] - 20 + 'px');
   });
 });
 

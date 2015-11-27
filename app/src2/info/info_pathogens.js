@@ -1,4 +1,4 @@
-define(['exports', 'd3', 'postal', '../config', '../service', '../components/chart3'], function (exports, _d3, _postal, _config, _service, _componentsChart3) {
+define(['exports', 'd3', 'postal', 'lockr', '../config', '../service', '../components/chart3'], function (exports, _d3, _postal, _lockr, _config, _service, _componentsChart3) {
   /**
    * Created by yarden on 11/19/15.
    */
@@ -16,6 +16,8 @@ define(['exports', 'd3', 'postal', '../config', '../service', '../components/cha
 
   var _postal2 = _interopRequireDefault(_postal);
 
+  var _Lockr = _interopRequireDefault(_lockr);
+
   var _chart3 = _interopRequireDefault(_componentsChart3);
 
   var dateFormat = _d32['default'].time.format('%Y-%m-%d');
@@ -30,6 +32,7 @@ define(['exports', 'd3', 'postal', '../config', '../service', '../components/cha
   pathogens_scale.tickFormat(_d32['default'].format('%b %d'));
   pathogens_scale.ticks(_d32['default'].time.week, 1);
 
+  var initialized = false;
   var activePathogens = new Map();
 
   var from = undefined,
@@ -41,7 +44,7 @@ define(['exports', 'd3', 'postal', '../config', '../service', '../components/cha
   _postal2['default'].subscribe({ channel: 'global', topic: 'data.changed', callback: dataChanged });
 
   function init() {
-    /* pathogens */
+
     var items = _d32['default'].select('#pathogens-selection').select('ul').selectAll('li').data(_service.pathogens).enter().append('li');
 
     items.append('input').attr('type', 'checkbox').attr('value', function (d) {
@@ -76,94 +79,57 @@ define(['exports', 'd3', 'postal', '../config', '../service', '../components/cha
     from_week = _d32['default'].time.weekOfYear(from);
     from_year = from.getFullYear();
 
-    var _iteratorNormalCompletion = true;
-    var _didIteratorError = false;
-    var _iteratorError = undefined;
+    if (!initialized) {
+      var _iteratorNormalCompletion;
 
-    try {
-      for (var _iterator = activePathogens.keys()[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-        var _name = _step.value;
+      var _didIteratorError;
 
-        updatePathogens(_name);
-      }
-    } catch (err) {
-      _didIteratorError = true;
-      _iteratorError = err;
-    } finally {
-      try {
-        if (!_iteratorNormalCompletion && _iterator['return']) {
-          _iterator['return']();
+      var _iteratorError;
+
+      var _iterator, _step;
+
+      (function () {
+        initialized = true;
+        var list = _Lockr['default'].get('pathogens', []);
+        _d32['default'].select('#pathogens-selection').selectAll('input').property('checked', function (d) {
+          return list.indexOf(d.name) != -1;
+        });
+
+        _iteratorNormalCompletion = true;
+        _didIteratorError = false;
+        _iteratorError = undefined;
+
+        try {
+          for (_iterator = list[Symbol.iterator](); !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+            var p = _step.value;
+
+            selectPathogen(p, true);
+          }
+        } catch (err) {
+          _didIteratorError = true;
+          _iteratorError = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion && _iterator['return']) {
+              _iterator['return']();
+            }
+          } finally {
+            if (_didIteratorError) {
+              throw _iteratorError;
+            }
+          }
         }
-      } finally {
-        if (_didIteratorError) {
-          throw _iteratorError;
-        }
-      }
-    }
-  }
-
-  function updatePathogens(names) {
-    _service.fetch('pathogens', [names], from, /*params.*/to).then(function (d) {
+      })();
+    } else {
       var _iteratorNormalCompletion2 = true;
       var _didIteratorError2 = false;
       var _iteratorError2 = undefined;
 
       try {
-        for (var _iterator2 = d[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var entry = _step2.value;
+        for (var _iterator2 = activePathogens.keys()[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
+          var _name = _step2.value;
 
-          var positive = range.map(function (d) {
-            return { x: d, value: 0, items: [] };
-          });
-          //let negative = range.map(function (d) { return {x: d, value: 0, items: []}; });
-
-          var _iteratorNormalCompletion3 = true;
-          var _didIteratorError3 = false;
-          var _iteratorError3 = undefined;
-
-          try {
-            for (var _iterator3 = entry.rows[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-              var item = _step3.value;
-
-              if (item.positive) {
-                item.date = dateFormat.parse(item.date);
-                var i = _d32['default'].time.weekOfYear(item.date) + (item.date.getFullYear() - from_year) * 52 - from_week;
-                //let bins = item.positive ? positive : negative;
-                positive[i].value++;
-                positive[i].items.push(item);
-              }
-            }
-          } catch (err) {
-            _didIteratorError3 = true;
-            _iteratorError3 = err;
-          } finally {
-            try {
-              if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-                _iterator3['return']();
-              }
-            } finally {
-              if (_didIteratorError3) {
-                throw _iteratorError3;
-              }
-            }
-          }
-
-          var series = [{
-            label: 'positive',
-            color: 'red',
-            type: 'line',
-            marker: 'solid',
-            interpolate: 'step-after',
-            values: positive
-            //}
-            //{
-            //  label: 'negative',
-            //  color: 'green',
-            //  type: 'line',
-            //  marker: 'solid',
-            //  values: negative
-          }];
-          activePathogens.get(entry.name).data(series);
+          updatePathogens(_name);
         }
       } catch (err) {
         _didIteratorError2 = true;
@@ -179,6 +145,87 @@ define(['exports', 'd3', 'postal', '../config', '../service', '../components/cha
           }
         }
       }
+    }
+  }
+
+  function updatePathogens(names) {
+    _service.fetch('pathogens', [names], from, /*params.*/to).then(function (d) {
+      var _iteratorNormalCompletion3 = true;
+      var _didIteratorError3 = false;
+      var _iteratorError3 = undefined;
+
+      try {
+        for (var _iterator3 = d[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+          var entry = _step3.value;
+
+          var positive = range.map(function (d) {
+            return { x: d, value: 0, items: [] };
+          });
+          //let negative = range.map(function (d) { return {x: d, value: 0, items: []}; });
+
+          var _iteratorNormalCompletion4 = true;
+          var _didIteratorError4 = false;
+          var _iteratorError4 = undefined;
+
+          try {
+            for (var _iterator4 = entry.rows[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+              var item = _step4.value;
+
+              if (item.positive) {
+                item.date = dateFormat.parse(item.date);
+                var i = _d32['default'].time.weekOfYear(item.date) + (item.date.getFullYear() - from_year) * 52 - from_week;
+                //let bins = item.positive ? positive : negative;
+                positive[i].value++;
+                positive[i].items.push(item);
+              }
+            }
+          } catch (err) {
+            _didIteratorError4 = true;
+            _iteratorError4 = err;
+          } finally {
+            try {
+              if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+                _iterator4['return']();
+              }
+            } finally {
+              if (_didIteratorError4) {
+                throw _iteratorError4;
+              }
+            }
+          }
+
+          var series = [{
+            label: 'positive',
+            color: 'red',
+            type: 'line',
+            marker: 'solid',
+            //interpolate: 'step-after',
+            interpolate: 'basis',
+            values: positive
+            //}
+            //{
+            //  label: 'negative',
+            //  color: 'green',
+            //  type: 'line',
+            //  marker: 'solid',
+            //  values: negative
+          }];
+          activePathogens.get(entry.name).data(series);
+        }
+      } catch (err) {
+        _didIteratorError3 = true;
+        _iteratorError3 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+            _iterator3['return']();
+          }
+        } finally {
+          if (_didIteratorError3) {
+            throw _iteratorError3;
+          }
+        }
+      }
     })['catch'](function (reason) {
       console.error('error: ', reason);
     });
@@ -186,7 +233,7 @@ define(['exports', 'd3', 'postal', '../config', '../service', '../components/cha
 
   function selectPathogen(name, show) {
     if (show) {
-      var div = _d32['default'].select('#pathogens').append('div').attr('id', 'chart-' + name);
+      var div = _d32['default'].select('#pathogens').append('div').attr('id', 'chart-' + name).classed('pathogen', true);
       var x = _d32['default'].time.scale().nice(_d32['default'].time.week, 1);
       x.tickFormat(_d32['default'].time.format('%m %d'));
       x.ticks(_d32['default'].time.week, 1);
@@ -198,6 +245,8 @@ define(['exports', 'd3', 'postal', '../config', '../service', '../components/cha
       _d32['default'].select('#pathogens').select('#chart-' + name).remove();
       activePathogens['delete'](name);
     }
+
+    _Lockr['default'].set('pathogens', Array.from(activePathogens.keys()));
   }
 });
 

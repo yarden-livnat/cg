@@ -4,6 +4,7 @@
 
 import d3 from 'd3';
 import postal from 'postal';
+import Lockr from 'lockr';
 
 import {pathogens_duration} from '../config';
 import * as service from '../service';
@@ -16,11 +17,11 @@ let pathogensTimeFormat = d3.time.format.multi([
   ["%B", function(d) { return d.getMonth(); }]
 ]);
 
-let pathogens_scale = d3.time.scale()
-  .nice(d3.time.week, 1);
+let pathogens_scale = d3.time.scale().nice(d3.time.week, 1);
 pathogens_scale.tickFormat(d3.format('%b %d'));
 pathogens_scale.ticks(d3.time.week, 1);
 
+let initialized = false;
 let activePathogens = new Map();
 
 let from, to, range, from_week, from_year;
@@ -29,7 +30,8 @@ postal.subscribe({channel: 'global', topic: 'data.changed', callback: dataChange
 
 
 export function init() {
-  /* pathogens */
+
+
   let items = d3.select('#pathogens-selection').select('ul').selectAll('li')
     .data(service.pathogens)
     .enter()
@@ -68,8 +70,19 @@ function dataChanged(params) {
   from_week = d3.time.weekOfYear(from);
   from_year = from.getFullYear();
 
-  for (let name of activePathogens.keys()) {
-    updatePathogens(name);
+  if (!initialized) {
+    initialized = true;
+    let list = Lockr.get('pathogens', []);
+    d3.select('#pathogens-selection').selectAll('input')
+      .property('checked', function(d) { return list.indexOf(d.name) != -1;});
+
+    for (let p of list) {
+      selectPathogen(p, true);
+    }
+  } else {
+    for(let name of activePathogens.keys()) {
+      updatePathogens(name);
+    }
   }
 }
 
@@ -96,7 +109,8 @@ function updatePathogens(names) {
             color: 'red',
             type: 'line',
             marker: 'solid',
-            interpolate: 'step-after',
+            //interpolate: 'step-after',
+            interpolate: 'basis',
             values: positive
             //}
             //{
@@ -117,7 +131,8 @@ function updatePathogens(names) {
 function selectPathogen(name, show) {
   if (show) {
     let div = d3.select('#pathogens').append('div')
-      .attr('id', 'chart-'+name);
+      .attr('id', 'chart-'+name)
+      .classed('pathogen', true);
     let x = d3.time.scale()
       .nice(d3.time.week, 1);
     x.tickFormat(d3.time.format('%m %d'));
@@ -131,4 +146,6 @@ function selectPathogen(name, show) {
     d3.select('#pathogens').select('#chart-'+name).remove();
     activePathogens.delete(name);
   }
+
+  Lockr.set('pathogens',Array.from(activePathogens.keys()));
 }

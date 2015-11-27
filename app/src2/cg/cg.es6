@@ -98,7 +98,7 @@ export default function() {
 
   function updateNodesSelector() {
     let values = [];
-    for(let node of graph.node()) {
+    for(let node of graph.nodes()) {
       if (node.items.length > 0) values.push(node.scale);
     }
     nodesSelector.data(values);
@@ -106,8 +106,8 @@ export default function() {
 
   function updateEdgesSelector() {
     let active = [];
-    for(let edge of graph.edge()) {
-      if (edge.source.visible && edge.target.visible) active.push(edge.r);
+    for(let edge of graph.edges()) {
+      if (edge.source.visible && edge.target.visible) active.push(edge.value);
     }
     edgesSelector.data(active);
   }
@@ -179,7 +179,7 @@ export default function() {
   function update(doLayout) {
     //force.stop();
 
-    graph.node(group.all().map(item => {
+    graph.nodes(group.all().map(item => {
       let topic = topicsMap.get(item.key);
       let node = cache.get(topic.id);
       if (!node) {
@@ -219,7 +219,7 @@ export default function() {
 
   const TWO_STEPS_LAYOUT = false;
   function layout(iter) {
-    let visibleEdges = graph.edge().filter(edge => edge.source.visible && edge.target.visible
+    let visibleEdges = graph.edges().filter(edge => edge.source.visible && edge.target.visible
                                              && edge.value >= edgesRange[0] && edge.value <= edgesRange[1]);
 
     if (TWO_STEPS_LAYOUT) {
@@ -227,14 +227,14 @@ export default function() {
         node.fixed &= ~4;
       }
       force
-        .node(activeNodes)
+        .nodes(activeNodes)
         .links(visibleEdges /*graph.edges()*/)
         .on('end', layout2)
         .start();
     }
     else {
       force
-        .node(graph.node())
+        .nodes(graph.nodes())
         .links(visibleEdges /*graph.edges()*/)
         .on('end', null)
         .start();
@@ -248,8 +248,8 @@ export default function() {
     }
     // layout using all nodes
     force
-      .node(graph.node())
-      .links(graph.edge())
+      .nodes(graph.nodes())
+      .links(graph.edges())
       .on('end', null)
       .start();
 
@@ -313,7 +313,7 @@ export default function() {
   function render(duration) {
     let t = Date.now();
     activeNodes = [];
-    for(let node of graph.node()) {
+    for(let node of graph.nodes()) {
       if (node.excluded) {
         node.visible = true;
         node.scale = node.lastScale;
@@ -349,7 +349,7 @@ export default function() {
       .remove();
 
 
-    activeEdges = showEdges && graph.edge().filter(edge => edge.source.visible && edge.target.visible
+    activeEdges = showEdges && graph.edges().filter(edge => edge.source.visible && edge.target.visible
       && edge.r >= edgesRange[0] && edge.r <= edgesRange[1]
       )
       || [];
@@ -370,8 +370,8 @@ export default function() {
       .remove();
 
     d3.select("#encounters").text(patients.numActiveEncounters);
-    d3.select("#topics").text(activeNodes.length+' of '+graph.node().length);
-    d3.select("#relations").text(activeEdges.length+' of '+graph.edge().length);
+    d3.select("#topics").text(activeNodes.length+' of '+graph.nodes().length);
+    d3.select("#relations").text(activeEdges.length+' of '+graph.edges().length);
 
     // performance
     //console.log('render: ', Date.now() -t, 'msec');
@@ -461,34 +461,7 @@ export default function() {
         render(cgOptions.canvas.fastDuration);
       });
 
-    let b = sg.append('g')
-      .attr('id', 'relayout')
-      .attr('transform', 'translate(250, 25)')
-      .on('click', function () {
-          layout();
-      });
 
-    b.append('rect')
-      .attr('x', 0.5)
-      .attr('y', 0.5)
-      .attr('width', 54)
-      .attr('height', 20)
-      .attr('rx', 5)
-      .attr('ry', 5);
-    b.append('text')
-      .attr('x', 5)
-      .attr('y', 14)
-      .text('relayout');
-
-
-    //selection.append('select')
-    //  .attr('id', 'edgeMeasure')
-    //  .on('click', function(d) { console.log(this, d, d3.select(this).property('value')); })
-    //  .selectAll('.option')
-    //  .data(Object.keys(graph.measures.edge))
-    //  .enter()
-    //  .append('option')
-    //  .text(function(d) { return d; });
 
 
     /* graph */
@@ -499,12 +472,28 @@ export default function() {
     zoom = d3.behavior.zoom().x(x).y(y).scaleExtent([.5, 20]).on("zoom", onZoom);
     overlay.call(zoom);
 
-    addListeners();
+    selection.append('button')
+      .attr('id', 'relayout')
+      .text('relayout')
+      .on('click', layout);
+
+    selection.append('select')
+      .attr('id', 'edgeMeasure')
+      .on('change', function() {
+        graph.edgeMeasure(d3.select(this).property('value'));
+        render(cgOptions.canvas.fastDuration);
+        layout(cgOptions.layout.initIterations);
+        updateNodesSelector();
+        updateEdgesSelector();
+      })
+      .selectAll('.option')
+      .data(Object.keys(graph.measures.edge))
+      .enter()
+        .append('option')
+        .text(function(d) { return d;})
+        .property('value', function(d) { return d;});
 
     return g;
-  }
-
-  function addListeners() {
   }
 
   let cg = function(selection) {

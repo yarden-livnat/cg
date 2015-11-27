@@ -37,6 +37,7 @@ queue()
       detectors.init(service.detectors.map(patients.addDetector));
       cg(d3.select('#cg-area')).resize(getSize('#cg-area'));
       query.init(updateData);
+      window.dispatchEvent(new Event('resize'));
     }
   });
 
@@ -73,4 +74,5 @@ function getSize(el) {
 
 window.addEventListener('resize', function() {
   cg.resize(getSize('#cg-area'));
+  d3.select('#pathogens').style('max-height', getSize('#pathogens-area')[1]-20+'px');
 });

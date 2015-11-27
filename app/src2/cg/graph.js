@@ -45,7 +45,7 @@ define(['exports', 'module', '../patients'], function (exports, module, _patient
   }
 
   function jaccard(a, b) {
-    var s = shared(a.items, b.item);
+    var s = shared(a.items, b.items);
     return s / (a.items.length + b.items.length - s);
   }
 
@@ -288,7 +288,7 @@ define(['exports', 'module', '../patients'], function (exports, module, _patient
     var max = 0;
 
     var nodesFunc = measures.node.size;
-    var edgeFunc = measures.edge.pearson;
+    var edgeFunc = measures.edge.association;
 
     function recalculate() {
       nodesFunc(nodes, prob);
@@ -302,14 +302,14 @@ define(['exports', 'module', '../patients'], function (exports, module, _patient
       nodesFunc(nodes, prob);
     };
 
-    graph.node = function (_) {
+    graph.nodes = function (_) {
       if (!arguments.length) return nodes;
       nodes = _;
       recalculate();
       return this;
     };
 
-    graph.edge = function (_) {
+    graph.edges = function (_) {
       if (!arguments.length) return edges;
       edges = _;
       return this;
@@ -318,9 +318,16 @@ define(['exports', 'module', '../patients'], function (exports, module, _patient
     graph.edgeFunc = function (f) {
       if (!arguments.length) return edgeFunc;
       edgeFunc = f;
+      return this;
     };
 
     graph.measures = measures;
+
+    graph.edgeMeasure = function (name) {
+      edgeFunc = measures.edge[name];
+      edges = edgeFunc(nodes);
+      return this;
+    };
 
     return graph;
   };

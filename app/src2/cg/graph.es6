@@ -31,7 +31,7 @@ function shared(a, b) {
 }
 
 function jaccard(a, b) {
-  let s = shared(a.items, b.item);
+  let s = shared(a.items, b.items);
   return s/(a.items.length + b.items.length -s);
 }
 
@@ -144,7 +144,7 @@ export default function() {
   let max = 0;
 
   let nodesFunc = measures.node.size;
-  let edgeFunc = measures.edge.pearson;
+  let edgeFunc = measures.edge.association;
 
   function recalculate() {
     nodesFunc(nodes, prob);
@@ -158,14 +158,14 @@ export default function() {
     nodesFunc(nodes, prob);
   };
 
-  graph.node = function(_) {
+  graph.nodes = function(_) {
     if (!arguments.length) return nodes;
     nodes = _;
     recalculate();
     return this;
   };
 
-  graph.edge = function(_) {
+  graph.edges = function(_) {
     if (!arguments.length) return edges;
     edges = _;
     return this;
@@ -174,9 +174,16 @@ export default function() {
   graph.edgeFunc = function(f) {
     if (!arguments.length) return edgeFunc;
     edgeFunc = f;
+    return this;
   };
 
   graph.measures = measures;
+
+  graph.edgeMeasure = function(name) {
+    edgeFunc = measures.edge[name];
+    edges = edgeFunc(nodes);
+    return this;
+  };
 
   return graph;
 }

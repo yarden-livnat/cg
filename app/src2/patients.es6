@@ -105,6 +105,12 @@ export function set(data) {
   topics_cat.filterAll();
   topics_sys.filterAll();
 
+  currentEncounters = dimCollect(enc_eid);
+  currentTopics = dimCollect(topics_tid);
+
+  numActiveEncounters = currentEncounters.size;
+  numActiveRelations = currentTopics.size;
+
 }
 
 

@@ -98,16 +98,30 @@ body {
 }
 
 #pathogens-area {
-  display: inline-block;
+  //display: inline-block;
+  //height: auto;
+  //vertical-align: top;
   width: $info-width/2-5;
-  height: auto;
-  vertical-align: top;
 
-  #pathogens-charts {
-    width: auto;
+  position: fixed;
+  top:$chart-height+50;
+  bottom: $map-height + 20;
+  right: 10px;
+
+  #pathogens {
+    width: $info-width/2-5;
     overflow-x: hidden;
-    overflow-y: auto;
+    overflow-y: scroll;
   }
+}
+
+.pathogen {
+  //box-sizing: border-box;
+  width: auto;
+  height: 60px;
+  border: none;
+  margin: 0;
+  padding: 0;
 }
 
 .selected {

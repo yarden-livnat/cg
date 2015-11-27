@@ -15,7 +15,7 @@ export default function() {
     dispatch = d3.dispatch('select');
 
   let x = d3.scale.linear()
-    .domain([-1, 1])
+    .domain([0, 1])
     .range([0, width]);
 
   let y = d3.scale.linear()
