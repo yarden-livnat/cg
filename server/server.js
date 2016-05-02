@@ -13,7 +13,7 @@ var app = express();
 
 var app_dir = path.join(__dirname, '../app');
 
-app.set('port', process.env.PORT || 3000);
+app.set('port', process.env.PORT || 4000);
 
 app.use(logger('dev'));
 app.use(bodyParser.json());

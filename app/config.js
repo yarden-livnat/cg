@@ -1,25 +1,28 @@
 System.config({
-  baseURL: "/",
-  defaultJSExtensions: true,
-  transpiler: "babel",
-  babelOptions: {
+  "baseURL": "/",
+  "transpiler": "babel",
+  "babelOptions": {
     "optional": [
       "runtime"
     ]
   },
-  paths: {
-    "github:*": "jspm_packages/github/*",
-    "npm:*": "jspm_packages/npm/*"
+  "paths": {
+    "github:*": "jspm_packages/github/*.js",
+    "npm:*": "jspm_packages/npm/*.js",
+    "*": "*.js"
   },
-  shim: {
+  "shim": {
     "bootstrap-multiselect": {
       "deps": [
         "jquery"
       ]
     }
   },
+  "defaultJSExtensions": true
+});
 
-  map: {
+System.config({
+  "map": {
     "babel": "npm:babel-core@5.8.34",
     "babel-runtime": "npm:babel-runtime@5.8.34",
     "bootstrap": "github:twbs/bootstrap@3.3.6",
@@ -91,3 +94,4 @@ System.config({
     }
   }
 });
+

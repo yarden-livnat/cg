@@ -181,14 +181,14 @@ define(['exports', 'module', 'lodash'], function (exports, module, _lodash) {
      */
 
     var graph = Object.defineProperties({}, {
-      nodes: {
+      node: {
         get: function () {
           return nodes;
         },
         configurable: true,
         enumerable: true
       },
-      edges: {
+      edge: {
         get: function () {
           return edges;
         },
