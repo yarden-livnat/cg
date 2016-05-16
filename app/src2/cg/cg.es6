@@ -446,7 +446,7 @@ export default function() {
 
     sg.append('text')
       .attr('transform', 'translate(20,'+(nodesSelector.height()+ 5) + ')')
-      .text('topics');
+      .text('Findings');
 
     edgesSelector(sg.append('g')
       .attr('class', 'edgesSelector')
@@ -454,7 +454,7 @@ export default function() {
 
     sg.append('text')
       .attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) +',' + (nodesSelector.height() + 5) + ')')
-      .text('relations')
+      .text('Relations')
       .on('click', function () {
         showEdges = !showEdges;
         d3.select(this).classed('selected', showEdges);

@@ -589,11 +589,11 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
 
       nodesSelector(sg.append('g').attr('class', 'nodesSelector'));
 
-      sg.append('text').attr('transform', 'translate(20,' + (nodesSelector.height() + 5) + ')').text('topics');
+      sg.append('text').attr('transform', 'translate(20,' + (nodesSelector.height() + 5) + ')').text('Findings');
 
       edgesSelector(sg.append('g').attr('class', 'edgesSelector').attr('transform', 'translate(' + (nodesSelector.width() + 10) + ',0)'));
 
-      sg.append('text').attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) + ',' + (nodesSelector.height() + 5) + ')').text('relations').on('click', function () {
+      sg.append('text').attr('transform', 'translate(' + (20 + nodesSelector.width() + 10) + ',' + (nodesSelector.height() + 5) + ')').text('Relations').on('click', function () {
         showEdges = !showEdges;
         _d32['default'].select(this).classed('selected', showEdges);
         render(_config.cgOptions.canvas.fastDuration);

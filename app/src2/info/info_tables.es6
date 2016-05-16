@@ -32,7 +32,7 @@ let bars = bar();
 let tags = RelTable(container)
   .id('tags-table')
   .header([
-    {name: 'topic', title: 'Topic', cellAttr: r => r.attr && r.attr.name},
+    {name: 'topic', title: 'Findings', cellAttr: r => r.attr && r.attr.name},
     {name: 'value', title: 'Encounters', render: bars}])
   .in_dimension(patients.rel_tid);
   //.out_dimension(patients.enc_tags);
