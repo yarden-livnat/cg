@@ -391,6 +391,12 @@ body {
   right: 10px;
   bottom: 10px; }
 
+#map-info {
+  display: inline-block; }
+
+#map-rate {
+  float: right; }
+
 #map {
   width: 400px;
   height: 400px;

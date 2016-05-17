@@ -38,9 +38,12 @@ let rel_tid_p = relations_cf.dimension(r => r.tag_id);
 
 export let rel_tid_cg = relations_cf.dimension(r => r.tag_id); rel_tid_cg.name = 'relations';
 export let tag_enc_group = rel_tid_cg.group().reduce(
-  (p,v) => { p.push(v); return p; },
-  (p,v) => { p.splice(p.indexOf(v), 1); return p; },
-  () => []);
+  //(p,v) => { p.push(v); return p; },
+  //(p,v) => { p.splice(p.indexOf(v), 1); return p; },
+  //() => []);
+  (p,v) => { p.add(v); return p; },
+  (p,v) => { p.delete(v); return p; },
+  () => {return new Set();});
 
 function TagEnc(eid, tid) {
   this.eid = eid;
@@ -203,5 +206,5 @@ export function update(dimension) {
 
   numActiveEncounters = currentEncounters.size;
   numActiveRelations = currentTopics.size;
-  console.log('patient update [',dimension.name,'] in ', Date.now()-t,'  enc:',currentEncounters.size, 'top:', currentTopics.size);
+  //console.log('patient update [',dimension.name,'] in ', Date.now()-t,'msec  enc:',currentEncounters.size, 'topics:', currentTopics.size);
 }

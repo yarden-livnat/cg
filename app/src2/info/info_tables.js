@@ -27,7 +27,7 @@ define(['exports', 'd3', 'postal', '../patients', '../service', '../tag_selectio
   var sys = Table(container).id('sys-table').header([{ name: 'key', title: 'System' }, { name: 'value', title: '#tags', attr: 'numeric' }]).dimension(_patients.topics_sys);
 
   var bars = (0, _bar['default'])();
-  var tags = RelTable(container).id('tags-table').header([{ name: 'topic', title: 'Topic', cellAttr: function cellAttr(r) {
+  var tags = RelTable(container).id('tags-table').header([{ name: 'topic', title: 'Findings', cellAttr: function cellAttr(r) {
       return r.attr && r.attr.name;
     } }, { name: 'value', title: 'Encounters', render: bars }]).in_dimension(_patients.rel_tid);
   //.out_dimension(patients.enc_tags);

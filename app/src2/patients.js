@@ -92,12 +92,16 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
     return r.tag_id;
   });exports.rel_tid_cg = rel_tid_cg;
   rel_tid_cg.name = 'relations';
-  var tag_enc_group = rel_tid_cg.group().reduce(function (p, v) {
-    p.push(v);return p;
+  var tag_enc_group = rel_tid_cg.group().reduce(
+  //(p,v) => { p.push(v); return p; },
+  //(p,v) => { p.splice(p.indexOf(v), 1); return p; },
+  //() => []);
+  function (p, v) {
+    p.add(v);return p;
   }, function (p, v) {
-    p.splice(p.indexOf(v), 1);return p;
+    p['delete'](v);return p;
   }, function () {
-    return [];
+    return new Set();
   });
 
   exports.tag_enc_group = tag_enc_group;
@@ -322,7 +326,7 @@ define(['exports', 'crossfilter'], function (exports, _crossfilter) {
 
     exports.numActiveEncounters = numActiveEncounters = currentEncounters.size;
     exports.numActiveRelations = numActiveRelations = currentTopics.size;
-    console.log('patient update [', dimension.name, '] in ', Date.now() - t, '  enc:', currentEncounters.size, 'top:', currentTopics.size);
+    //console.log('patient update [',dimension.name,'] in ', Date.now()-t,'msec  enc:',currentEncounters.size, 'topics:', currentTopics.size);
   }
 });
 

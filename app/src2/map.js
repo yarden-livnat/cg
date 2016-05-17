@@ -1,4 +1,4 @@
-define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './patients'], function (exports, module, _d3, _queue, _postal, _leaflet, _config, _patients) {
+define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './patients', './colorbrewer'], function (exports, module, _d3, _queue, _postal, _leaflet, _config, _patients, _colorbrewer) {
   /**
    * Created by yarden on 8/21/15.
    */
@@ -12,6 +12,8 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
   var _queue2 = _interopRequireDefault(_queue);
 
   var _postal2 = _interopRequireDefault(_postal);
+
+  var _colorbrewer2 = _interopRequireDefault(_colorbrewer);
 
   module.exports = function (opt) {
 
@@ -27,6 +29,10 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
     var BOUNDARY_ACTIVE_COLOR = '#333';
     var BOUNDARY_NON_ACTIVE_COLOR = '#333';
 
+    var RATE_POPULATION = 0;
+    var RATE_RELATIVE = 1;
+
+    var color = _d32['default'].scale.quantize().range(_colorbrewer2['default']['YlOrRd'][9]);
     var format = _d32['default'].format('4.2f');
 
     var colorScale = _d32['default'].interpolateLab('#fff', '#f00');
@@ -44,6 +50,7 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
     var dimension = _patients.enc_zipcode;
     var features = undefined;
     var selectedZipcodes = new Set();
+    var rate_mode = RATE_RELATIVE;
 
     //let options = Object.assign({}, MAP_DEFAULTS, opt);
     var options = _config.MAP_DEFAULTS;
@@ -59,6 +66,12 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
 
     svgContainer = _d32['default'].select('#map').select('svg');
     svg = svgContainer.append('g');
+
+    //d3.select('#map-rate')
+    //  .on('change', function() {
+    //    rate_mode = this.value;
+    //    render();
+    //});
 
     function _init(cb) {
       (0, _queue2['default'])().defer(_d32['default'].json, options.zipcodes_file).defer(_d32['default'].csv, '/data/population').await(function (err, collection, pop) {
@@ -99,7 +112,7 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
 
     function showInfo(d, show) {
       if (show) {
-        _d32['default'].select('#map-info').text('Zipcode: ' + d.properties.Zip_Code + ' cases:' + d.active + '  rate:' + format(d.rate));
+        _d32['default'].select('#map-info').text('Zipcode: ' + d.properties.Zip_Code + ' pop:' + d.population + ' cases:' + d.active + '  rate:' + format(d.rate));
         renderOne(d);
       } else {
         _d32['default'].select('#map-info').text('');
@@ -180,6 +193,7 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
         }
 
         var list = [];
+        var max_rate = 0;
         var _iteratorNormalCompletion2 = true;
         var _didIteratorError2 = false;
         var _iteratorError2 = undefined;
@@ -191,6 +205,7 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
             f.active = active.get(f.properties.Zip_Code) || 0;
             f.rate = f.active * f.pop_factor;
             f.selected = selectedZipcodes.has(f.properties.Zip_Code);
+            if (max_rate < f.rate) max_rate = f.rate;
             if (f.active) {
               list.push(f);
             }
@@ -210,6 +225,8 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
           }
         }
 
+        color.domain([0, rate_mode == RATE_RELATIVE && max_rate || 1]);
+
         list.sort(function (a, b) {
           return a.selected == b.selected ? 0 : a.selected ? 1 : -1;
         });
@@ -221,8 +238,8 @@ define(['exports', 'module', 'd3', 'queue', 'postal', 'leaflet', './config', './
         paths.transition().duration(DURATION).style('fill-opacity', function (d) {
           return AREA_ALPHA;
         }).style('fill', function (d) {
-          return colorScale(Math.min(d.rate, 1));
-        });
+          return color(d.rate);
+        }); //colorScale(Math.min(d.rate, 1)); });
 
         paths.exit().transition().duration(DURATION).style('fill-opacity', 0).style('fill', '#fff');
       }

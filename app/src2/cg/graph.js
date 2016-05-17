@@ -44,6 +44,11 @@ define(['exports', 'module', '../patients'], function (exports, module, _patient
     }
   }
 
+  function suggest(a, b) {
+    var s = shared(a.items, b.items);
+    return s / min(a.items.length, b.items.length);
+  }
+
   function jaccard(a, b) {
     var s = shared(a.items, b.items);
     return s / (a.items.length + b.items.length - s);
@@ -291,8 +296,12 @@ define(['exports', 'module', '../patients'], function (exports, module, _patient
     var edgeFunc = measures.edge.association;
 
     function recalculate() {
+      //var t0 = window.performance.now();
       nodesFunc(nodes, prob);
+      //var t1 = window.performance.now();
       edges = edgeFunc(nodes);
+      var t2 = window.performance.now();
+      //console.log('recalculate. nodes:', (t1-t0), ' edges:', (t2-t1));
     }
 
     var graph = {};

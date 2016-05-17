@@ -67,7 +67,11 @@ export default function() {
     if (highlighted) {
       /* test */
       let enc = patients.tag_enc_group.all().filter(function (d) { return d.key == highlighted.id;});
-      let records = enc[0].value.map(v => patients.encountersMap.get(v.enc_id));
+      //let records = enc[0].value.map(v => patients.encountersMap.get(v.enc_id));
+      let records = [];
+      for (let v of enc[0].value) {
+        records.push(patients.encountersMap.get(v.enc_id));
+      }
       selectedSeries.push({
         label:  highlighted.name,
         color:  highlighted.color,

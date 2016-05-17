@@ -9,7 +9,7 @@ import * as L from 'leaflet';
 
 import {MAP_DEFAULTS} from './config';
 import * as patients from './patients';
-
+import colorbrewer from './colorbrewer';
 
 export default function (opt) {
 
@@ -25,6 +25,10 @@ export default function (opt) {
   const BOUNDARY_ACTIVE_COLOR = '#333';
   const BOUNDARY_NON_ACTIVE_COLOR = '#333';
 
+  const RATE_POPULATION = 0;
+  const RATE_RELATIVE = 1;
+
+  let color = d3.scale.quantize().range(colorbrewer['YlOrRd'][9]);
   let format = d3.format('4.2f');
 
   let colorScale = d3.interpolateLab('#fff', '#f00');
@@ -40,6 +44,7 @@ export default function (opt) {
   let dimension = patients.enc_zipcode;
   let features;
   let selectedZipcodes = new Set();
+  let rate_mode = RATE_RELATIVE;
 
   //let options = Object.assign({}, MAP_DEFAULTS, opt);
   let options = MAP_DEFAULTS;
@@ -59,6 +64,11 @@ export default function (opt) {
   svgContainer = d3.select('#map').select('svg');
   svg = svgContainer.append('g');
 
+  //d3.select('#map-rate')
+  //  .on('change', function() {
+  //    rate_mode = this.value;
+  //    render();
+  //});
 
   function init(cb) {
     queue()
@@ -98,7 +108,7 @@ export default function (opt) {
 
   function showInfo(d, show) {
     if (show) {
-      d3.select('#map-info').text(`Zipcode: ${d.properties.Zip_Code} cases:${d.active}  rate:${format(d.rate)}`);
+      d3.select('#map-info').text(`Zipcode: ${d.properties.Zip_Code} pop:${d.population} cases:${d.active}  rate:${format(d.rate)}`);
       renderOne(d);
     } else {
       d3.select('#map-info').text('');
@@ -156,14 +166,18 @@ export default function (opt) {
       }
 
       let list = [];
+      let max_rate = 0;
       for(let f of features) {
         f.active = active.get(f.properties.Zip_Code) || 0;
         f.rate = f.active * f.pop_factor;
         f.selected =  selectedZipcodes.has(f.properties.Zip_Code);
+        if (max_rate < f.rate) max_rate = f.rate;
         if (f.active) {
           list.push(f);
         }
       }
+      color.domain([0, rate_mode == RATE_RELATIVE && max_rate  || 1]);
+
       list.sort(function(a, b) { return a.selected == b.selected ? 0 : a.selected ? 1 : -1; });
 
       let paths = svg.selectAll("path")
@@ -173,7 +187,7 @@ export default function (opt) {
         .transition()
         .duration(DURATION)
         .style('fill-opacity', d => AREA_ALPHA )
-        .style('fill', function (d) { return colorScale(Math.min(d.rate, 1)); });
+        .style('fill', function (d) { return color(d.rate); }); //colorScale(Math.min(d.rate, 1)); });
 
       paths.exit()
         .transition()

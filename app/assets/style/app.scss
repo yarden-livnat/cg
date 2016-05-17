@@ -162,6 +162,14 @@ body {
   bottom: 10px;
 }
 
+#map-info {
+  display: inline-block;
+}
+
+#map-rate {
+  float: right;
+}
+
 #map {
   width: $map-width;
   height: $map-height;
