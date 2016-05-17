@@ -237,9 +237,33 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
           cache.set(topic.id, node);
         }
 
-        node.items = item.value.map(function (entry) {
-          return entry.enc_id;
-        });
+        //node.items = item.value.map(entry => entry.enc_id);
+        node.items = [];
+        var _iteratorNormalCompletion4 = true;
+        var _didIteratorError4 = false;
+        var _iteratorError4 = undefined;
+
+        try {
+          for (var _iterator4 = item.value[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+            var entry = _step4.value;
+
+            node.items.push(entry.enc_id);
+          }
+        } catch (err) {
+          _didIteratorError4 = true;
+          _iteratorError4 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+              _iterator4['return']();
+            }
+          } finally {
+            if (_didIteratorError4) {
+              throw _iteratorError4;
+            }
+          }
+        }
+
         node.items.sort(function (a, b) {
           return a - b;
         });
@@ -271,27 +295,27 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
       });
 
       if (TWO_STEPS_LAYOUT) {
-        var _iteratorNormalCompletion4 = true;
-        var _didIteratorError4 = false;
-        var _iteratorError4 = undefined;
+        var _iteratorNormalCompletion5 = true;
+        var _didIteratorError5 = false;
+        var _iteratorError5 = undefined;
 
         try {
-          for (var _iterator4 = activeNodes[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-            var node = _step4.value;
+          for (var _iterator5 = activeNodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+            var node = _step5.value;
 
             node.fixed &= ~4;
           }
         } catch (err) {
-          _didIteratorError4 = true;
-          _iteratorError4 = err;
+          _didIteratorError5 = true;
+          _iteratorError5 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-              _iterator4['return']();
+            if (!_iteratorNormalCompletion5 && _iterator5['return']) {
+              _iterator5['return']();
             }
           } finally {
-            if (_didIteratorError4) {
-              throw _iteratorError4;
+            if (_didIteratorError5) {
+              throw _iteratorError5;
             }
           }
         }
@@ -304,38 +328,6 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
 
     function layout2() {
       // fix active node positions
-      var _iteratorNormalCompletion5 = true;
-      var _didIteratorError5 = false;
-      var _iteratorError5 = undefined;
-
-      try {
-        for (var _iterator5 = activeNodes[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var node = _step5.value;
-
-          node.fixed |= 4;
-        }
-      } catch (err) {
-        _didIteratorError5 = true;
-        _iteratorError5 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion5 && _iterator5['return']) {
-            _iterator5['return']();
-          }
-        } finally {
-          if (_didIteratorError5) {
-            throw _iteratorError5;
-          }
-        }
-      }
-
-      // layout using all nodes
-      force.nodes(graph.nodes()).links(graph.edges()).on('end', null).start();
-
-      for (var i = 0; i < 100; i++) {
-        force.tick();
-      }force.stop();
-
       var _iteratorNormalCompletion6 = true;
       var _didIteratorError6 = false;
       var _iteratorError6 = undefined;
@@ -344,7 +336,7 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
         for (var _iterator6 = activeNodes[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
           var node = _step6.value;
 
-          node.fixed &= ~4;
+          node.fixed |= 4;
         }
       } catch (err) {
         _didIteratorError6 = true;
@@ -360,6 +352,38 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
           }
         }
       }
+
+      // layout using all nodes
+      force.nodes(graph.nodes()).links(graph.edges()).on('end', null).start();
+
+      for (var i = 0; i < 100; i++) {
+        force.tick();
+      }force.stop();
+
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
+
+      try {
+        for (var _iterator7 = activeNodes[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          var node = _step7.value;
+
+          node.fixed &= ~4;
+        }
+      } catch (err) {
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion7 && _iterator7['return']) {
+            _iterator7['return']();
+          }
+        } finally {
+          if (_didIteratorError7) {
+            throw _iteratorError7;
+          }
+        }
+      }
     }
 
     function clamp(v, min, max) {
@@ -368,28 +392,28 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
 
     function updatePosition() {
       if (_config.cgOptions.layout.clampToWindow) {
-        var _iteratorNormalCompletion7 = true;
-        var _didIteratorError7 = false;
-        var _iteratorError7 = undefined;
+        var _iteratorNormalCompletion8 = true;
+        var _didIteratorError8 = false;
+        var _iteratorError8 = undefined;
 
         try {
-          for (var _iterator7 = activeNodes[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
-            var node = _step7.value;
+          for (var _iterator8 = activeNodes[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
+            var node = _step8.value;
 
             node.x = clamp(node.x, 0, width - node.w);
             node.y = clamp(node.y, 0, height - node.h);
           }
         } catch (err) {
-          _didIteratorError7 = true;
-          _iteratorError7 = err;
+          _didIteratorError8 = true;
+          _iteratorError8 = err;
         } finally {
           try {
-            if (!_iteratorNormalCompletion7 && _iterator7['return']) {
-              _iterator7['return']();
+            if (!_iteratorNormalCompletion8 && _iterator8['return']) {
+              _iterator8['return']();
             }
           } finally {
-            if (_didIteratorError7) {
-              throw _iteratorError7;
+            if (_didIteratorError8) {
+              throw _iteratorError8;
             }
           }
         }
@@ -407,13 +431,13 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
           sum = 0,
           zero = 0,
           one = 0;
-      var _iteratorNormalCompletion8 = true;
-      var _didIteratorError8 = false;
-      var _iteratorError8 = undefined;
+      var _iteratorNormalCompletion9 = true;
+      var _didIteratorError9 = false;
+      var _iteratorError9 = undefined;
 
       try {
-        for (var _iterator8 = activeNodes[Symbol.iterator](), _step8; !(_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done); _iteratorNormalCompletion8 = true) {
-          var node = _step8.value;
+        for (var _iterator9 = activeNodes[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
+          var node = _step9.value;
 
           var dx = Math.abs(node.x - node.px);
           var dy = Math.abs(node.y - node.py);
@@ -434,16 +458,16 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
         //  force.stop();
         //}
       } catch (err) {
-        _didIteratorError8 = true;
-        _iteratorError8 = err;
+        _didIteratorError9 = true;
+        _iteratorError9 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion8 && _iterator8['return']) {
-            _iterator8['return']();
+          if (!_iteratorNormalCompletion9 && _iterator9['return']) {
+            _iterator9['return']();
           }
         } finally {
-          if (_didIteratorError8) {
-            throw _iteratorError8;
+          if (_didIteratorError9) {
+            throw _iteratorError9;
           }
         }
       }
@@ -456,13 +480,13 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
     function render(duration) {
       var t = Date.now();
       activeNodes = [];
-      var _iteratorNormalCompletion9 = true;
-      var _didIteratorError9 = false;
-      var _iteratorError9 = undefined;
+      var _iteratorNormalCompletion10 = true;
+      var _didIteratorError10 = false;
+      var _iteratorError10 = undefined;
 
       try {
-        for (var _iterator9 = graph.nodes()[Symbol.iterator](), _step9; !(_iteratorNormalCompletion9 = (_step9 = _iterator9.next()).done); _iteratorNormalCompletion9 = true) {
-          var node = _step9.value;
+        for (var _iterator10 = graph.nodes()[Symbol.iterator](), _step10; !(_iteratorNormalCompletion10 = (_step10 = _iterator10.next()).done); _iteratorNormalCompletion10 = true) {
+          var node = _step10.value;
 
           if (node.excluded) {
             node.visible = true;
@@ -473,16 +497,16 @@ define(['exports', 'module', 'd3', 'postal', '../utils', '../config', '../servic
           if (node.visible) activeNodes.push(node);
         }
       } catch (err) {
-        _didIteratorError9 = true;
-        _iteratorError9 = err;
+        _didIteratorError10 = true;
+        _iteratorError10 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion9 && _iterator9['return']) {
-            _iterator9['return']();
+          if (!_iteratorNormalCompletion10 && _iterator10['return']) {
+            _iterator10['return']();
           }
         } finally {
-          if (_didIteratorError9) {
-            throw _iteratorError9;
+          if (_didIteratorError10) {
+            throw _iteratorError10;
           }
         }
       }

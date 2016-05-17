@@ -114,9 +114,33 @@ define(['exports', 'module', 'd3', 'postal', '../components/chart3', '../patient
         var enc = _patients.tag_enc_group.all().filter(function (d) {
           return d.key == highlighted.id;
         });
-        var records = enc[0].value.map(function (v) {
-          return _patients.encountersMap.get(v.enc_id);
-        });
+        //let records = enc[0].value.map(v => patients.encountersMap.get(v.enc_id));
+        var records = [];
+        var _iteratorNormalCompletion3 = true;
+        var _didIteratorError3 = false;
+        var _iteratorError3 = undefined;
+
+        try {
+          for (var _iterator3 = enc[0].value[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
+            var v = _step3.value;
+
+            records.push(_patients.encountersMap.get(v.enc_id));
+          }
+        } catch (err) {
+          _didIteratorError3 = true;
+          _iteratorError3 = err;
+        } finally {
+          try {
+            if (!_iteratorNormalCompletion3 && _iterator3['return']) {
+              _iterator3['return']();
+            }
+          } finally {
+            if (_didIteratorError3) {
+              throw _iteratorError3;
+            }
+          }
+        }
+
         selectedSeries.push({
           label: highlighted.name,
           color: highlighted.color,
@@ -147,27 +171,27 @@ define(['exports', 'module', 'd3', 'postal', '../components/chart3', '../patient
       //}
 
       var current = [];
-      var _iteratorNormalCompletion3 = true;
-      var _didIteratorError3 = false;
-      var _iteratorError3 = undefined;
+      var _iteratorNormalCompletion4 = true;
+      var _didIteratorError4 = false;
+      var _iteratorError4 = undefined;
 
       try {
-        for (var _iterator3 = _patients.currentEncounters.values()[Symbol.iterator](), _step3; !(_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done); _iteratorNormalCompletion3 = true) {
-          var eid = _step3.value;
+        for (var _iterator4 = _patients.currentEncounters.values()[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
+          var eid = _step4.value;
 
           current.push(_patients.encountersMap.get(eid));
         }
       } catch (err) {
-        _didIteratorError3 = true;
-        _iteratorError3 = err;
+        _didIteratorError4 = true;
+        _iteratorError4 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion3 && _iterator3['return']) {
-            _iterator3['return']();
+          if (!_iteratorNormalCompletion4 && _iterator4['return']) {
+            _iterator4['return']();
           }
         } finally {
-          if (_didIteratorError3) {
-            throw _iteratorError3;
+          if (_didIteratorError4) {
+            throw _iteratorError4;
           }
         }
       }
@@ -226,49 +250,15 @@ define(['exports', 'module', 'd3', 'postal', '../components/chart3', '../patient
 
     function toArray(iter) {
       var a = [];
-      var _iteratorNormalCompletion4 = true;
-      var _didIteratorError4 = false;
-      var _iteratorError4 = undefined;
-
-      try {
-        for (var _iterator4 = iter[Symbol.iterator](), _step4; !(_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done); _iteratorNormalCompletion4 = true) {
-          var entry = _step4.value;
-
-          a.push(entry);
-        }
-      } catch (err) {
-        _didIteratorError4 = true;
-        _iteratorError4 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion4 && _iterator4['return']) {
-            _iterator4['return']();
-          }
-        } finally {
-          if (_didIteratorError4) {
-            throw _iteratorError4;
-          }
-        }
-      }
-
-      return a;
-    }
-
-    function histogram(items, range, scale) {
-      var bins = range.map(function (d) {
-        return { x: d, value: 0, items: [] };
-      });
       var _iteratorNormalCompletion5 = true;
       var _didIteratorError5 = false;
       var _iteratorError5 = undefined;
 
       try {
-        for (var _iterator5 = items[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
-          var item = _step5.value;
+        for (var _iterator5 = iter[Symbol.iterator](), _step5; !(_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done); _iteratorNormalCompletion5 = true) {
+          var entry = _step5.value;
 
-          var i = scale(item.date);
-          bins[i].value++;
-          bins[i].items.push(item);
+          a.push(entry);
         }
       } catch (err) {
         _didIteratorError5 = true;
@@ -281,6 +271,40 @@ define(['exports', 'module', 'd3', 'postal', '../components/chart3', '../patient
         } finally {
           if (_didIteratorError5) {
             throw _iteratorError5;
+          }
+        }
+      }
+
+      return a;
+    }
+
+    function histogram(items, range, scale) {
+      var bins = range.map(function (d) {
+        return { x: d, value: 0, items: [] };
+      });
+      var _iteratorNormalCompletion6 = true;
+      var _didIteratorError6 = false;
+      var _iteratorError6 = undefined;
+
+      try {
+        for (var _iterator6 = items[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+          var item = _step6.value;
+
+          var i = scale(item.date);
+          bins[i].value++;
+          bins[i].items.push(item);
+        }
+      } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
+            _iterator6['return']();
+          }
+        } finally {
+          if (_didIteratorError6) {
+            throw _iteratorError6;
           }
         }
       }
@@ -298,32 +322,32 @@ define(['exports', 'module', 'd3', 'postal', '../components/chart3', '../patient
     info.resize = function () {
       var name = undefined,
           c = undefined;
-      var _iteratorNormalCompletion6 = true;
-      var _didIteratorError6 = false;
-      var _iteratorError6 = undefined;
+      var _iteratorNormalCompletion7 = true;
+      var _didIteratorError7 = false;
+      var _iteratorError7 = undefined;
 
       try {
-        for (var _iterator6 = charts[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-          var _step6$value = _slicedToArray(_step6.value, 2);
+        for (var _iterator7 = charts[Symbol.iterator](), _step7; !(_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done); _iteratorNormalCompletion7 = true) {
+          var _step7$value = _slicedToArray(_step7.value, 2);
 
-          name = _step6$value[0];
-          c = _step6$value[1];
+          name = _step7$value[0];
+          c = _step7$value[1];
 
           var w = parseInt(_d32['default'].select(name).style('width'));
           var h = parseInt(_d32['default'].select(name).style('height'));
           c.resize([w, h]);
         }
       } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
+        _didIteratorError7 = true;
+        _iteratorError7 = err;
       } finally {
         try {
-          if (!_iteratorNormalCompletion6 && _iterator6['return']) {
-            _iterator6['return']();
+          if (!_iteratorNormalCompletion7 && _iterator7['return']) {
+            _iterator7['return']();
           }
         } finally {
-          if (_didIteratorError6) {
-            throw _iteratorError6;
+          if (_didIteratorError7) {
+            throw _iteratorError7;
           }
         }
       }

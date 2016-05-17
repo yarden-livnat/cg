@@ -194,7 +194,11 @@ export default function() {
         cache.set(topic.id, node);
       }
 
-      node.items = item.value.map(entry => entry.enc_id);
+      //node.items = item.value.map(entry => entry.enc_id);
+      node.items = [];
+     for (let entry of item.value) {
+       node.items.push(entry.enc_id);
+     }
       node.items.sort((a, b) => a - b);
 
       node.selected = tagSelection.isSelected(node.id);
@@ -460,9 +464,6 @@ export default function() {
         d3.select(this).classed('selected', showEdges);
         render(cgOptions.canvas.fastDuration);
       });
-
-
-
 
     /* graph */
     svgLinks = g.append('g').attr('class', 'links');

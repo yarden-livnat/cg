@@ -30,6 +30,11 @@ function shared(a, b) {
   }
 }
 
+function suggest(a, b) {
+  let s = shared(a.items, b.items);
+  return s/min(a.items.length, b.items.length);
+}
+
 function jaccard(a, b) {
   let s = shared(a.items, b.items);
   return s/(a.items.length + b.items.length -s);
@@ -147,8 +152,12 @@ export default function() {
   let edgeFunc = measures.edge.association;
 
   function recalculate() {
+    //var t0 = window.performance.now();
     nodesFunc(nodes, prob);
+    //var t1 = window.performance.now();
     edges = edgeFunc(nodes);
+    var t2 = window.performance.now();
+    //console.log('recalculate. nodes:', (t1-t0), ' edges:', (t2-t1));
   }
 
   let graph = {};
