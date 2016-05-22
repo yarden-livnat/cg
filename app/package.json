@@ -5,7 +5,7 @@
     },
     "dependencies": {
       "bootstrap": "github:twbs/bootstrap@^3.3.5",
-      "d3": "github:d3/d3@^3.5.6",
+      "d3": "npm:d3@^3.5.17",
       "davidstutz/bootstrap-multiselect": "github:davidstutz/bootstrap-multiselect@^0.9.13",
       "firstopinion/formatter.js": "github:firstopinion/formatter.js@^0.1.5",
       "font-awesome": "npm:font-awesome@^4.4.0",
@@ -18,9 +18,9 @@
       "tsironis/lockr": "github:tsironis/lockr@^0.8.4"
     },
     "devDependencies": {
-      "babel": "npm:babel-core@^5.1.13",
-      "babel-runtime": "npm:babel-runtime@^5.1.13",
-      "core-js": "npm:core-js@^0.9.4"
+      "babel": "npm:babel-core@^5.8.24",
+      "babel-runtime": "npm:babel-runtime@^5.8.24",
+      "core-js": "npm:core-js@^1.1.4"
     }
   },
   "devDependencies": {
