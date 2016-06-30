@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>CommonGround</title>
-    <link rel="stylesheet" href="assets/style/libs.css">
-    <link rel="stylesheet" href="assets/style/app.css">
+    <link rel="stylesheet" href="assets/styles/libs.css">
+    <link rel="stylesheet" href="assets/styles/app.css">
 </head>
 <body>
 
@@ -69,10 +69,12 @@
     <div id="map"></div>
 </div>
 
+<script src="src/utils/ResizeSensor.js"></script>
 <script src="jspm_packages/system.js"></script>
-<script src="config.js"></script>
+<script src="jspm.config.js"></script>
 <script>
-    System.import('src2/app')
+    System.import('src/app.js')
+            .catch(console.error.bind(console)); // make sure any errors are print to console
 </script>
 
 </body>
