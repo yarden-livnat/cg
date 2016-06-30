@@ -3,4 +3,7 @@ lib
 .DS_Store
 node_modules
 jspm_packages
-src
+app/.tmp/
+app/config1.js
+app/npm-debug.log
+app/package2.json
