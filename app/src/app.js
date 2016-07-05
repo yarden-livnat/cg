@@ -17,17 +17,14 @@ import InfoCharts from './info/info_charts';
 import Detectors from './info/info_detectors';
 import infoSelection from './info/info_selection';
 import * as InfoPathogens from './info/info_pathogens';
-// import CG from './cg/cg';
 import * as explore from './explore';
 
 import Map from './map';
 
 let geomap = Map();
-// let cg = CG().group(patients.tag_enc_group);
 let detectors = Detectors();
 let infoChart = InfoCharts().group(patients.tag_enc_group);
 
-let dateFormat = d3.timeFormat('%Y-%m-%d');
 let dateParse = d3.timeParse('%Y-%m-%d');
 
 explore.init(patients.tag_enc_group);
@@ -42,7 +39,6 @@ queue()
       infoTables.init();
       InfoPathogens.init();
       detectors.init(service.detectors.map(patients.addDetector));
-      // cg(d3.select('#cg-area')).resize(getSize('#cg-area'));
       query.init(updateData);
       window.dispatchEvent(new Event('resize'));
     }

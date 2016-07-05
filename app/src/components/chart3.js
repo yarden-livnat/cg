@@ -26,19 +26,14 @@ export default function(el, useRight) {
     .nice(d3.timeWeek, 1);
 
   let xAxis = d3.axisBottom(x)
-    // .scale(x)
-    // .orient('bottom')
     .tickSize(3, 0)
     .tickPadding(4)
     .ticks(2);
-  //.tickFormat(d3.time.format("%m/%d"));
 
   let y = d3.scaleLinear()
     .range([height, 0]);
 
   let yAxis = d3.axisLeft(y)
-    // .scale(y)
-    // .orient('left')
     .tickSize(3)
     .tickPadding(6)
     .ticks(4);
@@ -213,7 +208,7 @@ export default function(el, useRight) {
         .merge(lines)
         .attr('stroke', d => { return d.color; })
           .attr('stroke-dasharray', d => { return d.marker == 'dash' ? '3' : '0'; })
-          .attr('d', d => line.y( d.right ? ry : ly ).interpolate(d.interpolate || 'cardinal')(d.values));
+          .attr('d', d => line.y( d.right ? ry : ly ).curve(d.curve || d3.curveMonotoneX)(d.values));
 
       lines.exit().remove();
 
@@ -255,7 +250,7 @@ export default function(el, useRight) {
           yrAxis.ticks(yr_max > 3 && 3 || yr_max);
         }
 
-        zoom.x(x);
+        // zoom.x(x);
       }
 
       draw();

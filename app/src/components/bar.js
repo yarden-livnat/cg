@@ -13,14 +13,14 @@ export default function() {
 
   function widthFunc(x) {
     let x0 = x(0);
-    return function(d) { return Math.abs(x(d) - x0); };
+    return function(d) { console.log('width:',  Math.abs(x(d) - x0)); return Math.abs(x(d) - x0); };
   }
 
   function bar(selection) {
     selection.each( function(d) {
-      let x1 = d3.scale.linear().domain([0, max]).range([0, width - margin.left - margin.right]);
+      let x1 = d3.scaleLinear().domain([0, max]).range([0, width - margin.left - margin.right]);
 
-      let x0 = this.__chart__ || d3.scale.linear()
+      let x0 = this.__chart__ || d3.scaleLinear()
           .domain([0, Infinity])
           .range(x1.range());
 
@@ -31,21 +31,21 @@ export default function() {
       svg.enter().append('svg')
         .attr('class', 'bar')
         .append('g')
-        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')');
-
-      svg.attr('width', width)
-        .attr('height', height);
+        .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
+        .merge(svg)
+          .attr('width', width)
+          .attr('height', height);
 
       let range = svg.select('g').selectAll('rect').data([d.value]);
 
       range.enter().append('rect')
         .attr('width', 0)
-        .attr('height', height);
+        .attr('height', height)
         //.transition()
         //.duration(duration)
-        //.attr('width', w1);
-
-      range.transition()
+        //.attr('width', w1)
+      .merge(range)
+        .transition()
         .duration(duration)
         .attr('width', w1);
         //.attr('height', height);
@@ -53,9 +53,9 @@ export default function() {
       let labels = svg.select('g').selectAll('text').data([d.value]);
       labels.enter().append('text')
         .attr('y', 10)
-        .attr('x', (d, i) => i*(width-20));
-
-      labels.text( d => d);
+        .attr('x', (d, i) => i*(width-20))
+        .merge(labels)
+          .text( d => d);
     });
   }
 

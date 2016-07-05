@@ -116,7 +116,8 @@ function updatePathogens(names) {
             type: 'line',
             marker: 'solid',
             //interpolate: 'step-after',
-            interpolate: 'cardinal',
+            // interpolate: 'cardinal',
+            curve: d3.curveMonotoneX,
             values: positive
             //}
             //{

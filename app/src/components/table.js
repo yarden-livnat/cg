@@ -101,23 +101,24 @@ export default function(container, id) {
       let cells = rows.selectAll('td')
         .data(row => columns.map(c => ({ col: c, value: c.cellValue(row), attr: c.cellAttr(row), row:row })));
 
-      cells.enter().append('td')
+      let all = cells.enter().append('td')
         //.attr('class', d => d.col.attr)
         .attr('width', d => d.col.minWidth)
-        .on('click', function(d)  {dispatch.click.apply(this, arguments); })
-        .on('mouseover', function(d) { dispatch.mouseover.apply(this, arguments); })
-        .on('mouseout', function(d) { dispatch.mouseout.apply(this, arguments); });
+        .on('click', function(d)  {dispatch.call('click', this, arguments); })
+        .on('mouseover', function(d) { dispatch.call('mouseover',this, arguments); })
+        .on('mouseout', function(d) { dispatch.call('mouseout',this, arguments); })
+        .merge(cells);
 
-      cells.filter(d => d.col.render == 'text')
-        .text( d => d.value)
-        //.classed( d => d.attr );
-        .classed('selected', d => d.row.classes && d.row.classes.selected)
-        .classed('excluded', d => d.row.classes && d.row.classes.excluded);
+      all.filter(d => d.col.render == 'text')
+          .text( d => d.value)
+          //.classed( d => d.attr );
+          .classed('selected', d => d.row.classes && d.row.classes.selected)
+          .classed('excluded', d => d.row.classes && d.row.classes.excluded);
 
 
       for (let col of columns) {
         if (col.render != 'text') {
-          cells.filter( d => d.col == col)
+          all.filter( d => d.col == col)
             .call(col.render);
         }
       }

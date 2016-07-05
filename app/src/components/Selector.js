@@ -10,53 +10,49 @@ export default function() {
     margin = {top: 5, right:5, bottom: 10, left: 5},
     width = 100-margin.left-margin.right,
     height = 50 - margin.top - margin.bottom,
-    dx = 5, duration = 500,
-    svg, data, _series, handle,
+    duration = 500,
+    svg, bins, _series, handle,
     dispatch = d3.dispatch('select');
 
-  let x = d3.scale.linear()
+  let x = d3.scaleLinear()
     .domain([0, 1])
     .range([0, width]);
 
-  let y = d3.scale.linear()
+  let y = d3.scaleLinear()
     .domain([0, 1])
     .rangeRound([height, 0]);
 
-  let xAxis = d3.svg.axis()
-    .scale(x)
-    .orient("bottom")
+  let xAxis = d3.axisBottom(x)
     .ticks(0);
 
-  let brush = d3.svg.brush()
-    .x(x)
+  let brush = d3.brushX()
     .extent([0, 1])
     .on('brush', brushed);
 
   function brushed() {
-    dispatch.select(brush.extent());
+    dispatch.call('select', this, brush.extent());
   }
 
   function draw() {
-    if (svg == undefined) return;
+    if (!svg) return;
 
     svg.select('.x')
       .call(xAxis);
 
     let bar = svg.select('#bars').selectAll('.bar')
-      .data(data, function (d, i) { return d.x; });
+      .data(bins, function (d, i) { return d.x0; });
 
-    let enter = bar.enter().append('rect')
+    bar.enter().append('rect')
       .attr('class', 'bar')
       .attr('y', height)
-      .attr('height', 0);
-
-    bar
-      .attr('x', function (d) { return x(d.x); })
-      .attr('width', dx)
-      .transition()
-      .duration(duration)
-      .attr('y', function (d) { return y(d.y); })
-      .attr('height', function (d) { return height - y(d.y); });
+      .attr('height', 0)
+      .merge(bar)
+        .attr('x', function (d) { return x(d.x0); })
+        .attr('width', d => x(d.x1) - x(d.x0) -1)
+        .transition()
+        .duration(duration)
+        .attr('y', function (d) { return y(d.length); })
+        .attr('height', function (d) { return height - y(d.length); });
 
     bar.exit()
       .remove();
@@ -122,15 +118,12 @@ export default function() {
 
   selector.data = function(series) {
     _series = series;
-    data = d3.layout.histogram()
-      .range(x.domain())
-      .bins(x.ticks(20))
+    bins = d3.histogram()
+      .domain(x.domain())
+      .thresholds(x.ticks(20))
     (series);
 
-    dx = data.length > 0 ? data[0].dx : 5;
-    let min = x.domain()[0];
-    dx = x(min+dx)-1;
-    y.domain([0, d3.max(data,  function(d) { return d.y;})]);
+    y.domain([0, d3.max(bins,  d => d.length)]);
 
     draw();
     return selector;
@@ -145,7 +138,7 @@ export default function() {
     x.domain([from,  to]);
     let save=duration;
     duration = 0;
-    this.data(_series);
+    this.bins(_series);
     duration = save;
   };
 

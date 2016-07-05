@@ -34,9 +34,10 @@ SystemJS.config({
     "local:*.json"
   ],
   map: {
+    "cg-core": "local:cg@0.5.0",
+    "d3/d3-queue": "github:d3/d3-queue@3.0.1",
     "d3-time-format": "npm:d3-time-format@2.0.0",
     "d3": "npm:d3@4.0.0",
-    "cg-core": "local:cg@0.5.0",
     "d3-queue": "npm:d3-queue@3.0.1",
     "assert": "github:jspm/nodelibs-assert@0.2.0-alpha",
     "buffer": "github:jspm/nodelibs-buffer@0.2.0-alpha",
@@ -52,6 +53,8 @@ SystemJS.config({
     "plugin-babel": "npm:systemjs-plugin-babel@0.0.12",
     "postal": "npm:postal@2.0.4",
     "process": "github:jspm/nodelibs-process@0.2.0-alpha",
+    "square/crossfilter": "github:square/crossfilter@1.3.12",
+    "tsironis/lockr": "github:tsironis/lockr@0.8.4",
     "url": "github:jspm/nodelibs-url@0.2.0-alpha",
     "util": "github:jspm/nodelibs-util@0.2.0-alpha"
   },
@@ -114,12 +117,6 @@ SystemJS.config({
         "lodash": "npm:lodash@4.13.1"
       }
     },
-    "local:cg@0.5.0": {
-      "map": {
-        "d3": "npm:d3@4.0.0",
-        "css": "github:systemjs/plugin-css@0.1.23"
-      }
-    },
     "npm:d3@4.0.0": {
       "map": {
         "d3-dsv": "npm:d3-dsv@1.0.0",
@@ -166,7 +163,7 @@ SystemJS.config({
         "d3-dispatch": "npm:d3-dispatch@1.0.0",
         "d3-collection": "npm:d3-collection@1.0.0",
         "d3-quadtree": "npm:d3-quadtree@1.0.0",
-        "d3-timer": "npm:d3-timer@1.0.0"
+        "d3-timer": "npm:d3-timer@1.0.1"
       }
     },
     "npm:d3-drag@1.0.0": {
@@ -222,7 +219,7 @@ SystemJS.config({
         "d3-ease": "npm:d3-ease@1.0.0",
         "d3-interpolate": "npm:d3-interpolate@1.0.1",
         "d3-selection": "npm:d3-selection@1.0.0",
-        "d3-timer": "npm:d3-timer@1.0.0"
+        "d3-timer": "npm:d3-timer@1.0.1"
       }
     },
     "npm:d3-brush@1.0.1": {
@@ -242,6 +239,12 @@ SystemJS.config({
     "npm:d3-dsv@1.0.0": {
       "map": {
         "rw": "npm:rw@1.3.2"
+      }
+    },
+    "local:cg@0.5.0": {
+      "map": {
+        "d3": "npm:d3@4.0.0",
+        "css": "github:systemjs/plugin-css@0.1.23"
       }
     }
   }

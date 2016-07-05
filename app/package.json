@@ -78,6 +78,7 @@
     "gulp-newer": "^1.2.0",
     "gulp-sass": "^2.3.1",
     "gulp-size": "^2.1.0",
-    "gulp-sourcemaps": "^1.6.0"
+    "gulp-sourcemaps": "^1.6.0",
+    "jspm": "^0.17.0-beta.22"
   }
 }
