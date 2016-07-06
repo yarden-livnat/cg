@@ -5,9 +5,9 @@
 import * as d3 from 'd3';
 import postal from 'postal'
 
-import * as patients from '../patients';
+import patients from '../model/patients';
 import {topicsMap} from '../service';
-import * as tagSelection from '../tag_selection';
+import * as tagSelection from '../model/tag_selection';
 
 import table from '../components/table';
 import bar from '../components/bar';

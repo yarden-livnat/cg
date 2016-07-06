@@ -33,9 +33,13 @@ export default function(options) {
 
 
   let brush = d3.brushX()
-    // .x(x)
-    .extent([0, 0])
-    .on('end', () => dispatch.range(brush.extent()));
+    .extent([[0, 0], [width, height]])
+    .on('end', brushend);
+
+  function brushend() {
+    if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return;
+    dispatch.call('range', this, d3.event.selection.map(x.invert));
+  }
 
   let detector = function(selection) {
     selection.each( function(d) {
@@ -91,8 +95,6 @@ export default function(options) {
     g.append('g')
       .attr('class', 'data');
 
-
-
     g.append('g')
       .attr('legend');
 
@@ -120,9 +122,8 @@ export default function(options) {
       .attr('class', 'brush')
       .call(brush);
 
-    handle.selectAll('rect')
-      .attr('height', height);
-
+    // handle.selectAll('rect')
+    //   .attr('height', height);
 
     g.append('text')
       .attr('class', 'title')
@@ -130,7 +131,7 @@ export default function(options) {
       .attr('y', 5)
       .text(d => d.name)
       .on('click', function(d) {
-        dispatch.select(d);
+        dispatch.call('select', this, d);
       });
 
     return g;

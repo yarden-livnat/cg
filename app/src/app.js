@@ -8,7 +8,7 @@ import postal from 'postal';
 
 // import {foo, bar, x} from './test';
 
-import * as patients from './patients';
+import patients from './model/patients';
 import * as service from './service';
 import * as query from './query';
 

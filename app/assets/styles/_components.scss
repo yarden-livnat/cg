@@ -206,9 +206,9 @@
     shape-rendering: crispEdges;
   }
 
-  .brush .extent {
+  .brush .selection {
     fill:  #ddd;
-    fill-opacity: 0.2;
+    fill-opacity: 0.3;
     stroke: #888;
     stroke-width: 1px;
     /*fill-opacity: .25;*/
@@ -261,9 +261,9 @@
     font-size: 8pt;
   }
 
-  .brush .extent {
+  .brush .selection {
     fill:  #ddd;
-    fill-opacity: 0.2;
+    fill-opacity: 0.3;
     stroke: #888;
     stroke-width: 1px;
     /*fill-opacity: .25;*/

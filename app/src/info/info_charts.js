@@ -6,8 +6,8 @@ import * as d3 from 'd3';
 import postal from 'postal';
 
 import chart3 from '../components/chart3'
-import * as patients from '../patients';
-import * as tagSelection from '../tag_selection';
+import patients from '../model/patients';
+import * as tagSelection from '../model/tag_selection';
 import {topicsMap} from '../service';
 
 const MIN_Y = 5;

@@ -6,16 +6,15 @@ import postal from 'postal';
 import {panel} from 'cg-core';
 
 import Graph from './model/graph';
-import * as utils from './utils/utils';
-import {cgOptions} from './config';
 import {topicsMap} from './service';
-import * as tagSelection from './tag_selection';
-import * as patients from './patients';
+import * as tagSelection from './model/tag_selection';
+import patients from './model/patients';
 import Selector from './components/selector';
 
 let nodesRange = [0.2, 1],
   edgesRange = [0.7, 1];
 
+let format = d3.format(',d');
 
 let view;
 let group;
@@ -23,7 +22,7 @@ let graph = Graph();
 let activeGraph;
 
 let cache = new Map();
-let nodesSelector, edgesSelector;
+let nodeSelector, edgeSelector;
 
 export function init(_) {
   group = _;
@@ -39,33 +38,36 @@ export function init(_) {
 
   d3.select('#cg-area').call(view);
 
-  nodesSelector = Selector()
+  nodeSelector = Selector()
     .width(100).height(50)
     .select(nodesRange)
     .on('select', r => {
       nodesRange = r;
-      let vg = visibleGraph();
-      view.graph(vg);
-      edgesSelector.data(vg.edges);
+      if (activeGraph) {
+        let vg = visibleGraph(activeGraph);
+        view.graph(vg);
+        updateEdgeSelector();
+      }
     });
 
-  edgesSelector = Selector()
+  edgeSelector = Selector()
     .width(100).height(50)
     .select(edgesRange)
     .on('select', r => {
       edgesRange = r;
-      view.graph(visibleGraph());
+      if (activeGraph)
+       view.graph(visibleGraph(activeGraph));
     });
 
   d3.select('#topics-chart')
     .append('g')
-    .attr('class', 'nodesSelector')
-    .call(nodesSelector);
+    .attr('class', 'nodeSelector')
+    .call(nodeSelector);
 
   d3.select('#relations-chart')
     .append('g')
-    .attr('class', 'edgesSelector')
-    .call(edgesSelector);
+    .attr('class', 'edgeSelector')
+    .call(edgeSelector);
   
   d3.select('#show-relations')
     .on('change', function() {
@@ -79,6 +81,13 @@ export function init(_) {
   });
 }
 
+function updateEdgeSelector() {
+  edgeSelector.data(activeGraph.links.reduce((p,c) => {
+    if (c.source.visible && c.target.visible) p.push(c.value);
+    return p;
+  }, []));
+}
+
 function visibleGraph(graph) {
   let nodes = [];
   for (let node of graph.nodes) {
@@ -86,13 +95,15 @@ function visibleGraph(graph) {
     if (node.visible) nodes.push(node);
   }
 
-  let links = graph.links.filter(e => e.source.visible && e.target.visible);
+  let links = graph.links.filter(e => e.source.visible && e.target.visible
+    && e.value >= edgesRange[0] && e.value <= edgesRange[1]);
   return {nodes: nodes, links: links};
 }
 
 function update() {
   graph.nodes(group.all()
-    .filter( item => item.value.size > 0 || tagSelection.isExcluded(item.key))
+    // .filter( item =>
+    // item.value.size > 0 || tagSelection.isExcluded(item.key))
     .map(item => {
       let topic = topicsMap.get(item.key);
       let node = cache.get(topic.id);
@@ -124,20 +135,33 @@ function update() {
   );
 
   activeGraph = {nodes:graph.nodes(), links:graph.edges()};
-  nodesSelector.data(activeGraph.nodes.reduce( (p, c) => { p.push(c.scale); return p;}, []));
+  nodeSelector.data(activeGraph.nodes.reduce( (p, c) => { p.push(c.scale); return p;}, []));
 
   let vg = visibleGraph(activeGraph);
-  edgesSelector.data(vg.links.reduce((p,c) => { p.push(c.value); return p;}, []));
+  updateEdgeSelector();
 
   view.graph(vg);
+
+  console.log('active encounters', patients.numActiveEncounters);
+  d3.select("#encounters").text(format(patients.numActiveEncounters));
+  d3.select("#topics").text(`${format(vg.nodes.length)} of ${format(activeGraph.nodes.length)}`);
+  d3.select("#relations").text(`${format(vg.links.length)} of ${format(activeGraph.links.length)}`);
+
 }
 
 function dataChanged() {
   update();
 }
 
-function detectorChanged() {
-
+function detectorChanged(prob) {
+  let map = null;
+  if (prob) {
+    map = new Map();
+    for(let entry of prob.top(Infinity))
+      map.set(entry.id, entry.prob);
+  }
+  graph.prob(map);
+  postal.publish({channel: 'global', topic: 'render'});
 }
 
 function select(d) {

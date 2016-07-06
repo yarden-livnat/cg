@@ -13,7 +13,7 @@ export default function() {
 
   function widthFunc(x) {
     let x0 = x(0);
-    return function(d) { console.log('width:',  Math.abs(x(d) - x0)); return Math.abs(x(d) - x0); };
+    return function(d) { return Math.abs(x(d) - x0); };
   }
 
   function bar(selection) {

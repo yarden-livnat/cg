@@ -8,8 +8,8 @@ import postal from 'postal'
 import * as utils from '../utils/utils';
 import {cgOptions} from '../config';
 import {topicsMap} from '../service';
-import * as tagSelection from '../tag_selection';
-import * as patients from '../patients';
+import * as tagSelection from '../model/tag_selection';
+import * as patients from '../model/patients';
 
 import Selector from '../components/selector';
 
@@ -127,7 +127,8 @@ export default function() {
         map.set(entry.id, entry.prob);
     }
     graph.prob(map);
-    postal.publish({channel: 'global', topic: 'render'});  }
+    postal.publish({channel: 'global', topic: 'render'});
+  }
 
   /* nodes behavior */
   function onNodeDragStart(d, mx, my) {

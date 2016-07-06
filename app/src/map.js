@@ -8,8 +8,8 @@ import postal from 'postal';
 import * as L from 'leaflet';
 
 import {MAP_DEFAULTS} from './config';
-import * as patients from './patients';
-import colorbrewer from './colorbrewer';
+import patients from './model/patients';
+import colorbrewer from './utils/colorbrewer';
 
 export default function (opt) {
 

@@ -5,7 +5,7 @@
 import * as d3 from 'd3';
 import postal from 'postal';
 import {DETECTOR_OPT} from '../config';
-import * as patients from '../patients';
+import patients from '../model/patients';
 import {fetch} from '../service';
 import DetectorClass from '../components/detector';
 

@@ -22,7 +22,7 @@ gulp.task('sass', function () {
     .pipe(gulp.dest('assets/styles'));
 });
 
-gulp.task('watch', function () {
+gulp.task('watch', ['sass'], function () {
   gulp.watch('assets/styles/**/*.scss', ['sass'])
 });
 

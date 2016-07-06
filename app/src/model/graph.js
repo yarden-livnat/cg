@@ -2,7 +2,7 @@
  * Created by yarden on 8/25/15.
  */
 
-import * as patients from '../patients';
+import patients from './patients';
 
 function shared(a, b) {
   let count = 0,

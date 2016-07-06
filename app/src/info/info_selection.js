@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 import postal from 'postal';
 
 import {topicsMap} from '../service';
-import * as tagSelection from '../tag_selection';
+import * as tagSelection from '../model/tag_selection';
 
 postal.subscribe({channel: 'global', topic: 'render', callback: update});
 

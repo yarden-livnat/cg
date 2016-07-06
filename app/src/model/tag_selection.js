@@ -4,9 +4,9 @@
 
 import postal from 'postal';
 
-import * as patients from './patients';
-import * as utils from './utils/utils';
-import {topicsMap} from './service';
+import patients from './patients';
+import * as colors from '../utils/colors';
+import {topicsMap} from '../service';
 
 let dimension = patients.rel_tid;
 let selected = new Set();
@@ -42,9 +42,9 @@ function update() {
 function select(item) {
   if (!selected.delete(item)) {
     selected.add(item);
-    utils.assign_color(topicsMap.get(item));
+    colors.assign_color(topicsMap.get(item));
   } else {
-    utils.release_color(topicsMap.get(item));
+    colors.release_color(topicsMap.get(item));
   }
   excluded.delete(item);
   update();
@@ -53,9 +53,9 @@ function select(item) {
 function exclude(item) {
   if (!excluded.delete(item)) {
     excluded.add(item);
-    utils.assign_color(topicsMap.get(item));
+    colors.assign_color(topicsMap.get(item));
   } else {
-    utils.release_color(topicsMap.get(item));
+    colors.release_color(topicsMap.get(item));
   }
   selected.delete(item);
   update();
