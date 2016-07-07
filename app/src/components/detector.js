@@ -38,6 +38,7 @@ export default function(options) {
 
   function brushend() {
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") return;
+    if (!d3.event.selection) return;
     dispatch.call('range', this, d3.event.selection.map(x.invert));
   }
 
@@ -121,9 +122,6 @@ export default function(options) {
     handle = g.append('g')
       .attr('class', 'brush')
       .call(brush);
-
-    // handle.selectAll('rect')
-    //   .attr('height', height);
 
     g.append('text')
       .attr('class', 'title')

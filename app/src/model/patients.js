@@ -138,8 +138,8 @@ let patients = {
 
     /* encounters */
     if (dimension.name === 'encounters') {
-      collection = groupCollect(enc_eid);
-      el_eid_p.filter(e => collection.has(e));
+      collection = groupCollect(this.enc_eid);
+      rel_eid_p.filter(e => collection.has(e));
 
       collection = groupCollect(rel_tid_p);
       this.topics_tid.filter(t => collection.has(t));
@@ -152,7 +152,7 @@ let patients = {
 
     /* topics */
     else if (dimension.name == 'topics') {
-      collection = groupCollect(topics_tid);
+      collection = groupCollect(this.topics_tid);
       rel_tid_p.filter(t => collection.has(t));
 
       collection = groupCollect(rel_eid_p);

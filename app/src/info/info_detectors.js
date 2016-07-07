@@ -55,6 +55,7 @@ export default function() {
     current = current != d ? d : null;
     if (current) {
       Detector.select(elem(current.name), true);
+      current.ext = current.ext || [0, 1];
       update(current.ext, true);
     }
 
@@ -62,7 +63,7 @@ export default function() {
   }
 
   function update(ext, ignore) {
-    if (!current || !ext) return;
+    if (!current) return;
     current.ext = ext;
     current.prob.filter( p => ext[0] <= p && p <= ext[1]);
 

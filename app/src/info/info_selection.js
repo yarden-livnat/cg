@@ -28,8 +28,9 @@ function update() {
   }
 
   let items = d3.select('#selection-list').selectAll('li').data(tags);
-  items.enter().append('li');
-  items.text(d => d.topic.name)
+  items.enter().append('li')
+    .merge(items)
+    .text(d => d.topic.name)
     .attr('class', d => d.attr)
     .on('click', function(d) {
       if (d3.event.metaKey) { tagSelection.exclude(d.topic.id); }

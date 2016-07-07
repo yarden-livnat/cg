@@ -75,15 +75,14 @@ export default function(container, id) {
       let h = thead.selectAll('th')
         .data(columns);
 
-      h.enter().append('th')
-        .attr('class', 'tableColHeader')
-        .on('click', onSort);
-
-      h.text(c => c.title);
-
       h.exit().remove();
 
-      h.each( function(d) { d.minWidth = d3.select(this).style('width'); });
+      h.enter().append('th')
+        .attr('class', 'tableColHeader')
+        .on('click', onSort)
+        .merge(h)
+          .text(c => c.title)
+          .each( function(d) { d.minWidth = parseInt(d3.select(this).style('width')); });
 
       return this;
     },
@@ -95,18 +94,21 @@ export default function(container, id) {
       let rows = tbody.selectAll('tr')
         .data(list, columns[0].cellValue);
 
-      rows.enter().append('tr');
       rows.exit().remove();
+
+      rows = rows.enter().append('tr').merge(rows);
 
       let cells = rows.selectAll('td')
         .data(row => columns.map(c => ({ col: c, value: c.cellValue(row), attr: c.cellAttr(row), row:row })));
 
+      cells.exit().remove();
+
       let all = cells.enter().append('td')
         //.attr('class', d => d.col.attr)
         .attr('width', d => d.col.minWidth)
-        .on('click', function(d)  {dispatch.call('click', this, arguments); })
-        .on('mouseover', function(d) { dispatch.call('mouseover',this, arguments); })
-        .on('mouseout', function(d) { dispatch.call('mouseout',this, arguments); })
+        .on('click', function(d)  {dispatch.call('click', this, d); })
+        .on('mouseover', function(d) { dispatch.call('mouseover',this, d); })
+        .on('mouseout', function(d) { dispatch.call('mouseout',this, d); })
         .merge(cells);
 
       all.filter(d => d.col.render == 'text')
@@ -122,8 +124,6 @@ export default function(container, id) {
             .call(col.render);
         }
       }
-
-      cells.exit().remove();
 
       sortTable();
 

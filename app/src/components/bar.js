@@ -28,13 +28,13 @@ export default function() {
       let w1 = widthFunc(x1);
 
       let svg = d3.select(this).selectAll('svg').data([d]);
-      svg.enter().append('svg')
+      svg = svg.enter().append('svg')
         .attr('class', 'bar')
+        .attr('width', width)
+        .attr('height', height)
         .append('g')
         .attr('transform', 'translate(' + margin.left + ',' + margin.top + ')')
-        .merge(svg)
-          .attr('width', width)
-          .attr('height', height);
+        .merge(svg);
 
       let range = svg.select('g').selectAll('rect').data([d.value]);
 
@@ -44,11 +44,11 @@ export default function() {
         //.transition()
         //.duration(duration)
         //.attr('width', w1)
-      .merge(range)
-        .transition()
-        .duration(duration)
-        .attr('width', w1);
-        //.attr('height', height);
+        .merge(range)
+          .transition()
+          .duration(duration)
+          .attr('width', w1);
+          //.attr('height', height);
 
       let labels = svg.select('g').selectAll('text').data([d.value]);
       labels.enter().append('text')
