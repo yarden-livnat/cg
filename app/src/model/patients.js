@@ -72,11 +72,13 @@ let patients = {
   topics_sys: dimension(topics, d => d.system, 'topics'),
 
 
+  rel_tid: dimension(relations_cf, r => { return new TagEnc(r.enc_id, r.tag_id);}, 'relations'),
   rel_tid_cg: dimension(relations_cf, r => r.tag_id, 'relations'),
+  rel_tid_cat: dimension(relations_cf, r => { return new TagEnc(r.enc_id, r.tag_id);}, 'relations'),
+  rel_tid_sys: dimension(relations_cf, r => { return new TagEnc(r.enc_id, r.tag_id);}, 'relations'),
 
   tag_enc_group: null,
 
-  rel_tid: dimension(relations_cf, r => { return new TagEnc(r.enc_id, r.tag_id);}, 'relations'),
 
   init(_) {
     topics.add(_);

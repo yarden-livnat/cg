@@ -20,7 +20,7 @@ let cat = Table(container)
   .header([
     {name: 'key', title: 'Category'},
     {name: 'value', title: '#tags', attr:'numeric'}])
-    .dimension(patients.topics_cat)
+    .dimensions(patients.topics_cat, patients.rel_tid_cat)
   .color(colorScheme.scheme('category'));
 
 let sys = Table(container)
@@ -28,7 +28,7 @@ let sys = Table(container)
   .header([
     {name: 'key', title: 'System'},
     {name: 'value', title: '#tags', attr:'numeric'}])
-  .dimension(patients.topics_sys)
+  .dimensions(patients.topics_sys, patients.rel_tid_sys)
   .color(colorScheme.scheme('system'));
 
 let bars = bar();
@@ -62,7 +62,7 @@ function render() {
 function Table(div) {
   let selected = new Set();
   let excluded = new Set();
-  let dimension;
+  let dimension, filterDim;
   let group;
   let color = () => 'black';
 
@@ -79,13 +79,32 @@ function Table(div) {
       d.row.classes = { selected: selected.has(d.value), excluded: excluded.has(d.value)};
 
       if (selected.size == 0 && excluded.size == 0)
-        dimension.filterAll();
-      else
-        dimension.filter( v => (selected.size == 0 || selected.has(v)) && (excluded.size == 0 || !excluded.has(v)) );
+        filterDim.filterAll();
+      else {
+        let e = activeEncounters();
+        filterDim.filter( entry => e.has(entry.id));
+        // dimension.filter( v => (selected.size == 0 || selected.has(v)) && (excluded.size == 0 || !excluded.has(v)) );
+      }
 
-      patients.update(dimension);
+      // patients.update(dimension);
+      patients.update(filterDim);
       postal.publish({channel: 'global', topic: 'render'});
     });
+
+  function activeEncounters() {
+    let active = new Set();
+    for (let enc of patients.encountersMap.values())
+      if (accept(enc)) active.add(enc.id);
+    return active;
+  }
+
+  function accept(enc) {
+    for (let s of selected)
+      if (!enc.tags.has(s)) return false;
+    for (let e of excluded)
+      if (enc.tags.has(e)) return false;
+    return true;
+  }
 
   function api(selection) {
     return this;
@@ -101,10 +120,12 @@ function Table(div) {
     return this;
   };
 
-  api.dimension = function(_) {
-    dimension = _;
+  api.dimensions = function(d, f) {
+    dimension = d;
     if (group) group.dispose();
     group = dimension.group();
+
+    filterDim = f;
     return this;
   };
 
@@ -118,7 +139,8 @@ function Table(div) {
   api.color = function(_) {
     color = _;
     return this;
-  }
+  };
+
   return api;
 }
 
