@@ -22,17 +22,46 @@ body {
 }
 
 #info-num {
-
 }
+
 #query-area {
   width: $query-width;
   height: auto;
   padding: 10px;
 }
 
+#options {
+  position: fixed;
+  left: $options-left;
+  top: 10px;
+  width: $options-width;
+  //right: $info-width - 5;
+  //height: $details-height;
+  padding: 10px 5px 0 5px;
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    float: left;
+    clear: left;
+    width: 100%;
+    padding-bottom: 4px;
+  }
+
+  label {
+    float: left;
+    width: 4em;
+    margin-right: 1em;
+  }
+}
+
 #details-area {
   position: fixed;
-  left: $query-width + 5;
+  left: $details-left;
   top: 10px;
   right: $info-width - 5;
   height: $details-height;

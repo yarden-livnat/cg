@@ -11,14 +11,14 @@
 <label id="title">CommonGround</label>
 
 <div id="query-area">
-    <form >
-        <input type="date" id="date" required="required" placeholder="from date">
-        <input type="text" class="input" id="duration" maxlength="3" persistent="true" placeholder="duration"> wks
-        <br><br>
-        <!--<input type="text" id="keywords" name="keywords" placeholder="keywords">-->
-        <!--<br><br>-->
-        <input type="button" value="Search" id="submit">
-    </form>
+<form >
+    <input type="date" id="date" required="required" placeholder="from date">
+    <input type="text" class="input" id="duration" maxlength="3" persistent="true" placeholder="duration"> wks
+    <br><br>
+    <!--<input type="text" id="keywords" name="keywords" placeholder="keywords">-->
+    <!--<br><br>-->
+    <input type="button" value="Search" id="submit">
+</form>
 </div>
 
 <table id="info-num">
@@ -26,6 +26,27 @@
   <tr><td>Findings</td><td id="topics"></td></tr>
   <tr><td>Relations</td><td id="relations"></td></tr>
 </table>
+
+<div id="options">
+    <ul>
+        <li>
+            <label for="nodeMeasure">Findings:</label>
+            <select id="nodeMeasure"></select>
+        </li>
+        <li>
+            <label for="edgeMeasure">Relations:</label>
+            <select id="edgeMeasure"></select>
+        </li>
+        <li>
+            <label for="color">Color:</label>
+            <select id="color">
+                <!--<option value="category">Category</option>-->
+                <!--<option value="system">System</option>-->
+                <!--<option value="none">None</option>-->
+            </select>
+        </li>
+    </ul>
+</div>
 
 <div id="details-area">
     <div id="details-tables"></div>
@@ -54,22 +75,22 @@
             <input id="show-relations" type="checkbox" value="None">
         </div>
     </div>
-    <div class="item-auto">
-        <select id="edgeMeasure"></select>
-        <div>
-            <label for="edgeMeasure">Measure</label>
-        </div>
-    </div>
-    <div class="item-auto">
-        <select id="color">
-            <option value="category">Category</option>
-            <option value="system">System</option>
-            <option value="none">None</option>
-        </select>
-        <div>
-            <label for="color">Color</label>
-        </div>
-    </div>
+    <!--<div class="item-auto">-->
+        <!--<select id="edgeMeasure"></select>-->
+        <!--<div>-->
+            <!--<label for="edgeMeasure">Measure</label>-->
+        <!--</div>-->
+    <!--</div>-->
+    <!--<div class="item-auto">-->
+        <!--<select id="color">-->
+            <!--<option value="category">Category</option>-->
+            <!--<option value="system">System</option>-->
+            <!--<option value="none">None</option>-->
+        <!--</select>-->
+        <!--<div>-->
+            <!--<label for="color">Color</label>-->
+        <!--</div>-->
+    <!--</div>-->
 </div>
 
 <div id="info-area">

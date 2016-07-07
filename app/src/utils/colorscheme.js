@@ -7,19 +7,19 @@ import {schemeSet1, schemeSet2} from 'd3-scale-chromatic';
 
 class Scheme {
   constructor() {
-    this.schemes = new Map();
-    this.schemes.set('category',
+    this.map = new Map();
+    this.map.set('category',
       d3.scaleOrdinal(schemeSet1)
       .domain(['pathogen', 'sign', 'symptom', 'syndrome']));
-    this.schemes.set('system', d3.scaleOrdinal(schemeSet2)
+    this.map.set('system', d3.scaleOrdinal(schemeSet2)
       .domain(['constitutional', 'gastrointestinal', 'neurological', 'respiratory']));
-    this.schemes.set('black', () => 'black');
+    this.map.set('black', () => 'black');
 
     this.current = 'category';
   }
 
   set current(_) {
-    let c = this.schemes.get(_);
+    let c = this.map.get(_);
     if (c) {}
       this._current = _;
       this._color = c;
@@ -27,22 +27,24 @@ class Scheme {
 
   get current() { return this._current; }
 
-  scheme(_) { return this.schemes.get(_); }
+  scheme(_) { return this.map.get(_); }
+
+  schemes() { return this.map.keys(); }
 
   color(_) { return this._color(typeof _ == 'string' ? _ : _[this._current]); }
 }
 
 export default new Scheme();
 
-// let schemes = new Map();
+// let map = new Map();
 //
-// schemes.set('category', d3.scaleOrdinal(schemeSet1)
+// map.set('category', d3.scaleOrdinal(schemeSet1)
 //     .domain(['pathogen', 'sign', 'symptom', 'syndrome']));
 //
-// schemes.set('system', d3.scaleOrdinal(schemeSet2)
+// map.set('system', d3.scaleOrdinal(schemeSet2)
 //   .domain(['constitutional', 'gastrointestinal', 'neurological', 'respiratory']));
 //
-// schemes.set('black', () => 'black');
+// map.set('black', () => 'black');
 //
 // let currentScheme =
 // let currentColor;
@@ -51,7 +53,7 @@ export default new Scheme();
 //   get scheme() { return currentScheme; },
 //
 //   set scheme(_) {
-//     if (schemes.has(_)) {
+//     if (map.has(_)) {
 //       currentScheme = _;
 //       currentColor = scheme.get(_);
 //     }

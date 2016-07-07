@@ -3,6 +3,11 @@ $base-font: 9pt Arial;
 $query-width: 16em;
 $query-height: 150px;
 
+$options-left: $query-width + 2;
+$options-width: 15em;
+
+$details-left: $query-width + $options-width;
+
 $table-max-height: 130px;
 
 $chart-width: auto;

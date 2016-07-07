@@ -166,7 +166,6 @@ function RelTable(div) {
     let max = 0;
     for (let item of items) {
       item.topic = topicsMap.get(item.key.tid).label;
-      if (item.topic == 'ADENOVIRUS') console.log(item.topic, item.value, item);
       item.classes = {
         'selected': tagSelection.isSelected(item.key.tid),
         'excluded': tagSelection.isExcluded(item.key.tid)

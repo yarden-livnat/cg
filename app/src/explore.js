@@ -87,7 +87,7 @@ export function init(_) {
       .text(function(d) { return d;})
       .property('value', function(d) { return d;});
 
-  
+
   d3.select('#color')
     .on('change', function() {
       colorScheme.current = this.value;
@@ -96,7 +96,12 @@ export function init(_) {
       }
       view.update();
       postal.publish({channel: 'global', topic: 'color.change'});
-    });
+    })
+    .selectAll('.option').data(Array.from(colorScheme.schemes()))
+    .enter().append('option')
+      .text( d => d )
+      .property('value', d => d)
+      .property('checked', d => d == colorScheme.current);
   
   window.ResizeSensor(d3.select('#cg-area').node(), () => {
     console.log('cg-area resized');
@@ -172,7 +177,6 @@ function update() {
 
   view.graph(vg);
 
-  console.log('active encounters', patients.numActiveEncounters);
   d3.select("#encounters").text(format(patients.numActiveEncounters));
   d3.select("#topics").text(`${format(vg.nodes.length)} of ${format(activeGraph.nodes.length)}`);
   d3.select("#relations").text(`${format(vg.links.length)} of ${format(activeGraph.links.length)}`);
