@@ -39,22 +39,36 @@
 </div>
 
 <div id="cg-area"></div>
-<div id="controls">
-    <div class="row">
-        <svg  id="topics-chart" class="column column-4"></svg>
-        <div class="column column-1 spacer"> </div>
-        <svg  id="relations-chart" class="column column-4"></svg>
-        <div class="column column-1 spacer"> </div>
+
+<div id="controls" class="container">
+    <div class="item-auto">
+        <svg id="topics-chart"></svg>
+        <div>
+            <label>Findings</label>
+        </div>
     </div>
-    <div class="row">
-        <label class="column column-4">Findings</label>
-        <div class="column column-1 spacer"> </div>
-        <div class="column column-4">
+    <div class="item-auto">
+        <svg  id="relations-chart"></svg>
+        <div>
             <label for="show-relations">Relations</label>
             <input id="show-relations" type="checkbox" value="None">
         </div>
-        <div class="column column-1 spacer"> </div>
-        <label class="column column-2">Measure</label>
+    </div>
+    <div class="item-auto">
+        <select id="edgeMeasure"></select>
+        <div>
+            <label for="edgeMeasure">Measure</label>
+        </div>
+    </div>
+    <div class="item-auto">
+        <select id="color">
+            <option value="category">Category</option>
+            <option value="system">System</option>
+            <option value="none">None</option>
+        </select>
+        <div>
+            <label for="color">Color</label>
+        </div>
     </div>
 </div>
 

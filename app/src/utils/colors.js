@@ -32,3 +32,5 @@ export function release_color(obj) {
 export function reset_colors() {
   available_colors = d3.scale.category10().range().concat();
 }
+
+

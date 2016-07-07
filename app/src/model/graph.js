@@ -2,6 +2,7 @@
  * Created by yarden on 8/25/15.
  */
 
+import * as d3 from 'd3';
 import patients from './patients';
 
 function shared(a, b) {

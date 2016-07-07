@@ -112,10 +112,10 @@ export default function(container, id) {
         .merge(cells);
 
       all.filter(d => d.col.render == 'text')
-          .text( d => d.value)
-          //.classed( d => d.attr );
-          .classed('selected', d => d.row.classes && d.row.classes.selected)
-          .classed('excluded', d => d.row.classes && d.row.classes.excluded);
+        .text( d => d.value)
+        .style('color', d => d.row.color)
+        .classed('selected', d => d.row.classes && d.row.classes.selected)
+        .classed('excluded', d => d.row.classes && d.row.classes.excluded);
 
 
       for (let col of columns) {

@@ -1,0 +1,12 @@
+.container {
+    display: inline-flex;
+    flex-flow: row nowrap;
+    justify-content: flex-start;
+    align-items: flex-end;
+    align-content: flex-start;
+}
+
+.item-auto {
+    flex: 0 0 auto;
+    padding: 0 5px 0 5px;
+}

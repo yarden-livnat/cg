@@ -7,9 +7,10 @@ import postal from 'postal';
 
 import {topicsMap} from '../service';
 import * as tagSelection from '../model/tag_selection';
+import colorScheme from '../utils/colorscheme';
 
 postal.subscribe({channel: 'global', topic: 'render', callback: update});
-
+postal.subscribe({channel: 'global', topic: 'color.change', callback: update});
 
 function update() {
   let tags = [], topic;
@@ -31,6 +32,7 @@ function update() {
   items.enter().append('li')
     .merge(items)
     .text(d => d.topic.name)
+    .style('color', d => colorScheme.color(d.topic))
     .attr('class', d => d.attr)
     .on('click', function(d) {
       if (d3.event.metaKey) { tagSelection.exclude(d.topic.id); }

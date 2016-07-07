@@ -5,6 +5,7 @@
 import * as d3 from 'd3';
 import postal from 'postal'
 
+import colorScheme from '../utils/colorscheme';
 import patients from '../model/patients';
 import {topicsMap} from '../service';
 import * as tagSelection from '../model/tag_selection';
@@ -15,18 +16,20 @@ import bar from '../components/bar';
 let container = d3.select('#details-tables');
 
 let cat = Table(container)
-    .id('cat-table')
-    .header([
-      {name: 'key', title: 'Category'},
-      {name: 'value', title: '#tags', attr:'numeric'}])
-    .dimension(patients.topics_cat);
+  .id('cat-table')
+  .header([
+    {name: 'key', title: 'Category'},
+    {name: 'value', title: '#tags', attr:'numeric'}])
+    .dimension(patients.topics_cat)
+  .color(colorScheme.scheme('category'));
 
 let sys = Table(container)
-    .id('sys-table')
-    .header([
-      {name: 'key', title: 'System'},
-      {name: 'value', title: '#tags', attr:'numeric'}])
-    .dimension(patients.topics_sys);
+  .id('sys-table')
+  .header([
+    {name: 'key', title: 'System'},
+    {name: 'value', title: '#tags', attr:'numeric'}])
+  .dimension(patients.topics_sys)
+  .color(colorScheme.scheme('system'));
 
 let bars = bar();
 
@@ -61,6 +64,7 @@ function Table(div) {
   let excluded = new Set();
   let dimension;
   let group;
+  let color = () => 'black';
 
   let inner = table(div)
     .on('click',  function click(d) {
@@ -105,10 +109,16 @@ function Table(div) {
   };
 
   api.render = function() {
-    inner.data(group.all());
+    let values = group.all();
+    values.forEach( v => v.color = color(v.key));
+    inner.data(values);
     return this;
   };
 
+  api.color = function(_) {
+    color = _;
+    return this;
+  }
   return api;
 }
 

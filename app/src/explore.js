@@ -6,6 +6,7 @@ import postal from 'postal';
 import {panel} from 'cg-core';
 
 import Graph from './model/graph';
+import colorScheme from './utils/colorscheme';
 import {topicsMap} from './service';
 import * as tagSelection from './model/tag_selection';
 import patients from './model/patients';
@@ -27,7 +28,7 @@ let nodeSelector, edgeSelector;
 export function init(_) {
   group = _;
 
-  postal.subscribe({channel: 'global', topic: 'render', callback: update});
+  postal.subscribe({channel: 'global', topic: 'render', callback: updateGraph});
   postal.subscribe({channel: 'global', topic: 'data.changed', callback: dataChanged});
   postal.subscribe({channel: 'detector', topic: 'changed', callback: detectorChanged});
 
@@ -73,6 +74,29 @@ export function init(_) {
     .on('change', function() {
       view.showEdges(this.checked);
     });
+
+  d3.select('#edgeMeasure')
+    .on('change', function() {
+      graph.edgeMeasure(this.value);
+      update();
+    })
+    .selectAll('.option')
+      .data(Object.keys(graph.measures.edge))
+      .enter()
+      .append('option')
+      .text(function(d) { return d;})
+      .property('value', function(d) { return d;});
+
+  
+  d3.select('#color')
+    .on('change', function() {
+      colorScheme.current = this.value;
+      for (let node of graph.nodes()) {
+        node.color = colorScheme.color(node.topic);
+      }
+      view.update();
+      postal.publish({channel: 'global', topic: 'color.change'});
+    });
   
   window.ResizeSensor(d3.select('#cg-area').node(), () => {
     console.log('cg-area resized');
@@ -100,22 +124,24 @@ function visibleGraph(graph) {
   return {nodes: nodes, links: links};
 }
 
-function update() {
+function updateGraph() {
   graph.nodes(group.all()
-    // .filter( item =>
-    // item.value.size > 0 || tagSelection.isExcluded(item.key))
+    .filter(item =>
+    item.value.size > 0 || tagSelection.isExcluded(item.key))
     .map(item => {
       let topic = topicsMap.get(item.key);
       let node = cache.get(topic.id);
       if (!node) {
         node = {
-          id:    item.key,
+          id: item.key,
           label: topic.label,
           topic: topic,
           scale: 1
         };
         cache.set(topic.id, node);
       }
+
+      node.color = colorScheme.color(node.topic);
 
       //node.items = item.value.map(entry => entry.enc_id);
       node.items = [];
@@ -134,6 +160,10 @@ function update() {
     })
   );
 
+  update();
+}
+
+function update() {
   activeGraph = {nodes:graph.nodes(), links:graph.edges()};
   nodeSelector.data(activeGraph.nodes.reduce( (p, c) => { p.push(c.scale); return p;}, []));
 
@@ -150,7 +180,7 @@ function update() {
 }
 
 function dataChanged() {
-  update();
+  updateGraph();
 }
 
 function detectorChanged(prob) {

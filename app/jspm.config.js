@@ -34,6 +34,7 @@ SystemJS.config({
     "local:*.json"
   ],
   map: {
+    "d3-scale-chromatic": "npm:d3-scale-chromatic@1.0.0",
     "cg-core": "local:cg@0.5.0",
     "d3/d3-queue": "github:d3/d3-queue@3.0.1",
     "d3-time-format": "npm:d3-time-format@2.0.0",
@@ -245,6 +246,16 @@ SystemJS.config({
       "map": {
         "d3": "npm:d3@4.0.0",
         "css": "github:systemjs/plugin-css@0.1.23"
+      }
+    },
+    "npm:d3-scale-chromatic@1.0.0": {
+      "map": {
+        "d3-interpolate": "npm:d3-interpolate@1.1.0"
+      }
+    },
+    "npm:d3-interpolate@1.1.0": {
+      "map": {
+        "d3-color": "npm:d3-color@1.0.0"
       }
     }
   }
