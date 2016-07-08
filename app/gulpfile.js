@@ -4,6 +4,7 @@
 
 var gulp = require('gulp');
 var $ = require('gulp-load-plugins')();
+var exec = require('child_process').exec;
 
 // Compile and automatically prefix stylesheets
 gulp.task('sass', function () {
@@ -21,6 +22,23 @@ gulp.task('sass', function () {
     .pipe($.sourcemaps.write('./'))
     .pipe(gulp.dest('assets/styles'));
 });
+
+gulp.task('build', function(cb) {
+  exec('jspm build cg - d3 - css - cg-core build/cg.js --format umd  --skip-rollup --dev', function(err) {
+    console.log('jspm build ', err || '');
+    if (err) return cb(err);
+    cb();
+  });
+});
+
+gulp.task('dist', ['sass'], function(cb) {
+  exec('jspm build cg dist/cg.js --format umd', function(err) {
+    console.log('jspm dist ', err || '');
+    if (err) return cb(err);
+    cb();
+  });
+});
+
 
 gulp.task('watch', ['sass'], function () {
   gulp.watch('assets/styles/**/*.scss', ['sass'])

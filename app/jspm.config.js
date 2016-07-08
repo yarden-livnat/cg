@@ -35,10 +35,10 @@ SystemJS.config({
   ],
   map: {
     "d3-scale-chromatic": "npm:d3-scale-chromatic@1.0.0",
-    "cg-core": "local:cg@0.5.0",
+    "cg-core": "local:cg-core@0.6.0",
     "d3/d3-queue": "github:d3/d3-queue@3.0.1",
     "d3-time-format": "npm:d3-time-format@2.0.0",
-    "d3": "npm:d3@4.0.0",
+    "d3": "npm:d3@4.1.0",
     "d3-queue": "npm:d3-queue@3.0.1",
     "assert": "github:jspm/nodelibs-assert@0.2.0-alpha",
     "buffer": "github:jspm/nodelibs-buffer@0.2.0-alpha",
@@ -57,7 +57,8 @@ SystemJS.config({
     "square/crossfilter": "github:square/crossfilter@1.3.12",
     "tsironis/lockr": "github:tsironis/lockr@0.8.4",
     "url": "github:jspm/nodelibs-url@0.2.0-alpha",
-    "util": "github:jspm/nodelibs-util@0.2.0-alpha"
+    "util": "github:jspm/nodelibs-util@0.2.0-alpha",
+    "yarden-livnat/cg-core": "github:yarden-livnat/cg-core@master"
   },
   packages: {
     "npm:font-awesome@4.6.3": {
@@ -118,39 +119,6 @@ SystemJS.config({
         "lodash": "npm:lodash@4.13.1"
       }
     },
-    "npm:d3@4.0.0": {
-      "map": {
-        "d3-dsv": "npm:d3-dsv@1.0.0",
-        "d3-color": "npm:d3-color@1.0.0",
-        "d3-array": "npm:d3-array@1.0.0",
-        "d3-request": "npm:d3-request@1.0.0",
-        "d3-force": "npm:d3-force@1.0.0",
-        "d3-ease": "npm:d3-ease@1.0.0",
-        "d3-random": "npm:d3-random@1.0.0",
-        "d3-dispatch": "npm:d3-dispatch@1.0.0",
-        "d3-drag": "npm:d3-drag@1.0.0",
-        "d3-path": "npm:d3-path@1.0.0",
-        "d3-interpolate": "npm:d3-interpolate@1.0.0",
-        "d3-collection": "npm:d3-collection@1.0.0",
-        "d3-format": "npm:d3-format@1.0.0",
-        "d3-polygon": "npm:d3-polygon@1.0.0",
-        "d3-quadtree": "npm:d3-quadtree@1.0.0",
-        "d3-scale": "npm:d3-scale@1.0.0",
-        "d3-zoom": "npm:d3-zoom@1.0.1",
-        "d3-hierarchy": "npm:d3-hierarchy@1.0.0",
-        "d3-time": "npm:d3-time@1.0.0",
-        "d3-time-format": "npm:d3-time-format@2.0.0",
-        "d3-voronoi": "npm:d3-voronoi@1.0.0",
-        "d3-timer": "npm:d3-timer@1.0.0",
-        "d3-selection": "npm:d3-selection@1.0.0",
-        "d3-shape": "npm:d3-shape@1.0.0",
-        "d3-axis": "npm:d3-axis@1.0.0",
-        "d3-transition": "npm:d3-transition@1.0.0",
-        "d3-brush": "npm:d3-brush@1.0.1",
-        "d3-queue": "npm:d3-queue@3.0.1",
-        "d3-geo": "npm:d3-geo@1.0.0"
-      }
-    },
     "npm:d3-request@1.0.0": {
       "map": {
         "d3-dsv": "npm:d3-dsv@1.0.0",
@@ -173,32 +141,22 @@ SystemJS.config({
         "d3-selection": "npm:d3-selection@1.0.0"
       }
     },
-    "npm:d3-interpolate@1.0.0": {
-      "map": {
-        "d3-color": "npm:d3-color@1.0.0"
-      }
-    },
     "npm:d3-scale@1.0.0": {
       "map": {
         "d3-array": "npm:d3-array@1.0.0",
         "d3-collection": "npm:d3-collection@1.0.0",
         "d3-color": "npm:d3-color@1.0.0",
         "d3-format": "npm:d3-format@1.0.0",
-        "d3-interpolate": "npm:d3-interpolate@1.0.1",
+        "d3-interpolate": "npm:d3-interpolate@1.1.0",
         "d3-time": "npm:d3-time@1.0.0",
         "d3-time-format": "npm:d3-time-format@2.0.0"
-      }
-    },
-    "npm:d3-interpolate@1.0.1": {
-      "map": {
-        "d3-color": "npm:d3-color@1.0.0"
       }
     },
     "npm:d3-zoom@1.0.1": {
       "map": {
         "d3-dispatch": "npm:d3-dispatch@1.0.0",
         "d3-drag": "npm:d3-drag@1.0.0",
-        "d3-interpolate": "npm:d3-interpolate@1.0.1",
+        "d3-interpolate": "npm:d3-interpolate@1.1.0",
         "d3-selection": "npm:d3-selection@1.0.0",
         "d3-transition": "npm:d3-transition@1.0.0"
       }
@@ -218,7 +176,7 @@ SystemJS.config({
         "d3-color": "npm:d3-color@1.0.0",
         "d3-dispatch": "npm:d3-dispatch@1.0.0",
         "d3-ease": "npm:d3-ease@1.0.0",
-        "d3-interpolate": "npm:d3-interpolate@1.0.1",
+        "d3-interpolate": "npm:d3-interpolate@1.1.0",
         "d3-selection": "npm:d3-selection@1.0.0",
         "d3-timer": "npm:d3-timer@1.0.1"
       }
@@ -227,25 +185,14 @@ SystemJS.config({
       "map": {
         "d3-dispatch": "npm:d3-dispatch@1.0.0",
         "d3-drag": "npm:d3-drag@1.0.0",
-        "d3-interpolate": "npm:d3-interpolate@1.0.1",
+        "d3-interpolate": "npm:d3-interpolate@1.1.0",
         "d3-selection": "npm:d3-selection@1.0.0",
         "d3-transition": "npm:d3-transition@1.0.0"
-      }
-    },
-    "npm:d3-geo@1.0.0": {
-      "map": {
-        "d3-array": "npm:d3-array@1.0.0"
       }
     },
     "npm:d3-dsv@1.0.0": {
       "map": {
         "rw": "npm:rw@1.3.2"
-      }
-    },
-    "local:cg@0.5.0": {
-      "map": {
-        "d3": "npm:d3@4.0.0",
-        "css": "github:systemjs/plugin-css@0.1.23"
       }
     },
     "npm:d3-scale-chromatic@1.0.0": {
@@ -256,6 +203,63 @@ SystemJS.config({
     "npm:d3-interpolate@1.1.0": {
       "map": {
         "d3-color": "npm:d3-color@1.0.0"
+      }
+    },
+    "npm:d3@4.1.0": {
+      "map": {
+        "d3-chord": "npm:d3-chord@1.0.0",
+        "d3-geo": "npm:d3-geo@1.1.0",
+        "d3-polygon": "npm:d3-polygon@1.0.0",
+        "d3-format": "npm:d3-format@1.0.0",
+        "d3-axis": "npm:d3-axis@1.0.0",
+        "d3-drag": "npm:d3-drag@1.0.0",
+        "d3-collection": "npm:d3-collection@1.0.0",
+        "d3-random": "npm:d3-random@1.0.0",
+        "d3-voronoi": "npm:d3-voronoi@1.0.0",
+        "d3-time": "npm:d3-time@1.0.0",
+        "d3-hierarchy": "npm:d3-hierarchy@1.0.0",
+        "d3-interpolate": "npm:d3-interpolate@1.1.0",
+        "d3-force": "npm:d3-force@1.0.0",
+        "d3-shape": "npm:d3-shape@1.0.0",
+        "d3-selection": "npm:d3-selection@1.0.0",
+        "d3-request": "npm:d3-request@1.0.0",
+        "d3-ease": "npm:d3-ease@1.0.0",
+        "d3-color": "npm:d3-color@1.0.0",
+        "d3-queue": "npm:d3-queue@3.0.1",
+        "d3-time-format": "npm:d3-time-format@2.0.0",
+        "d3-quadtree": "npm:d3-quadtree@1.0.0",
+        "d3-timer": "npm:d3-timer@1.0.1",
+        "d3-brush": "npm:d3-brush@1.0.1",
+        "d3-scale": "npm:d3-scale@1.0.0",
+        "d3-path": "npm:d3-path@1.0.0",
+        "d3-array": "npm:d3-array@1.0.0",
+        "d3-transition": "npm:d3-transition@1.0.0",
+        "d3-dsv": "npm:d3-dsv@1.0.0",
+        "d3-zoom": "npm:d3-zoom@1.0.1",
+        "d3-dispatch": "npm:d3-dispatch@1.0.0"
+      }
+    },
+    "npm:d3-chord@1.0.0": {
+      "map": {
+        "d3-path": "npm:d3-path@1.0.0",
+        "d3-array": "npm:d3-array@1.0.0"
+      }
+    },
+    "npm:d3-geo@1.1.0": {
+      "map": {
+        "d3-array": "npm:d3-array@1.0.0"
+      }
+    },
+    "local:cg-core@0.6.0": {
+      "map": {
+        "d3": "npm:d3@4.1.0",
+        "css": "github:systemjs/plugin-css@0.1.23"
+      }
+    },
+    "github:yarden-livnat/cg-core@master": {
+      "map": {
+        "d3": "npm:d3@4.1.0",
+        "css": "github:systemjs/plugin-css@0.1.23"
       }
     }
   }

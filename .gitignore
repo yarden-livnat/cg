@@ -4,6 +4,4 @@ lib
 node_modules
 jspm_packages
 app/.tmp/
-app/config1.js
-app/npm-debug.log
-app/package2.json
+dist/
