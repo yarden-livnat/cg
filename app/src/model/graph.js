@@ -77,6 +77,40 @@ function nodesSizeMeasure(nodes, prob) {
   }
 }
 
+function nodesCategoryMeasure(nodes, prob) {
+  nodesGroupSizeMeasure(nodes, prob, 'category');
+}
+
+function nodesSystemMeasure(nodes, prob) {
+  nodesGroupSizeMeasure(nodes, prob, 'system');
+}
+
+function nodesGroupSizeMeasure(nodes, prob, group) {
+  let max = {};
+
+  if (prob) {
+    for(let node of nodes) {
+      node.scale = 0;
+      for(let item of node.items) {
+        node.scale += prob.get(item) || 0;
+      }
+      let type = node.topic[group];
+      max[type] = max[type] == undefined ? node.scale : Math.max(max[type] || 0, node.scale);
+    }
+  } else {
+    for(let node of nodes) {
+      node.scale = node.items.length;
+      let type = node.topic[group];
+      max[type] = max[type] == undefined ? node.scale : Math.max(max[type] || 0, node.scale);
+    }
+  }
+
+  // scale nodes
+  for (let node of nodes) {
+    node.scale /= max[node.topic[group]];
+  }
+}
+
 /*
    Edge Measures
  */
@@ -114,7 +148,7 @@ function edgeAssociationMeasure(nodes) {
 
 function edgeCorrelationMeasure(nodes) {
   for (let node of nodes) {
-    node.days = Array(patients.datesRange.length).fill(0);
+    node.days = new Array(patients.datesRange.length).fill(0);
     for (let e of node.items) {
       let d = patients.encountersMap.get(e).day;
       node.days[d]++;
@@ -135,7 +169,9 @@ function edgeCorrelationMeasure(nodes) {
 
 let measures = {
   node: {
-    size: nodesSizeMeasure
+    size: nodesSizeMeasure,
+    category: nodesCategoryMeasure,
+    system: nodesSystemMeasure
   },
   edge: {
     association: edgeAssociationMeasure,
@@ -149,12 +185,12 @@ export default function() {
   let prob = null;
   let max = 0;
 
-  let nodesFunc = measures.node.size;
+  let nodeFunc = measures.node.size;
   let edgeFunc = measures.edge.association;
 
   function recalculate() {
     //var t0 = window.performance.now();
-    nodesFunc(nodes, prob);
+    nodeFunc(nodes, prob);
     //var t1 = window.performance.now();
     edges = edgeFunc(nodes);
     var t2 = window.performance.now();
@@ -165,7 +201,7 @@ export default function() {
 
   graph.prob = function(_) {
     prob = _;
-    nodesFunc(nodes, prob);
+    nodeFunc(nodes, prob);
   };
 
   graph.nodes = function(_) {
@@ -192,6 +228,18 @@ export default function() {
   graph.edgeMeasure = function(name) {
     edgeFunc = measures.edge[name];
     edges = edgeFunc(nodes);
+    return this;
+  };
+
+  graph.nodeMeasure = function(name) {
+    nodeFunc = measures.node[name];
+    nodeFunc(nodes, prob);
+    return this;
+  };
+
+  graph.group = function(_) {
+    if (!arguments.length) return group;
+    group = _;
     return this;
   };
 

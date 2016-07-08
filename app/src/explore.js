@@ -75,6 +75,19 @@ export function init(_) {
       view.showEdges(this.checked);
     });
 
+  d3.select('#nodeMeasure')
+    .on('change', function() {
+      graph.nodeMeasure(this.value);
+      update();
+    })
+    .selectAll('.option')
+    .data(Object.keys(graph.measures.node))
+    .enter()
+    .append('option')
+    .text(function(d) { return d;})
+    .property('value', function(d) { return d;});
+
+
   d3.select('#edgeMeasure')
     .on('change', function() {
       graph.edgeMeasure(this.value);

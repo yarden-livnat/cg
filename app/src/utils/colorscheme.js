@@ -13,7 +13,7 @@ class Scheme {
       .domain(['pathogen', 'sign', 'symptom', 'syndrome']));
     this.map.set('system', d3.scaleOrdinal(schemeSet2)
       .domain(['constitutional', 'gastrointestinal', 'neurological', 'respiratory']));
-    this.map.set('black', () => 'black');
+    this.map.set('none', () => 'black');
 
     this.current = 'category';
   }

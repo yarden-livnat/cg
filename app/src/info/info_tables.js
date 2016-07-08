@@ -50,6 +50,13 @@ let tags = RelTable(container)
 
 
 postal.subscribe({channel: 'global', topic: 'render', callback: render});
+postal.subscribe({channel: 'global', topic: 'color.change', callback: updateColors});
+
+
+function updateColors() {
+  cat.color(colorScheme.scheme( colorScheme.current == 'category' ? 'category' : 'none')).render();
+  sys.color(colorScheme.scheme( colorScheme.current == 'system' ? 'system' : 'none')).render();
+}
 
 export function init() {
   //for (let topic of topics) topicsMap.set(topic.id, topic.label);
@@ -63,8 +70,6 @@ function render() {
   sys.render();
   tags.render();
 }
-
-
 
 function filter() {
   selected = new Set();
