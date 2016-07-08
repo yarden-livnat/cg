@@ -10,7 +10,7 @@ let dateParse = d3.timeParse('%Y-%m-%d');
 let detectors = new Map();
 
 let encounters_cf = crossfilter();
-let topics = crossfilter();
+let topics_cf = crossfilter();
 let relations_cf = crossfilter();
 
 let rel_eid_p = dimension(relations_cf, r => r.enc_id, 'relations');
@@ -48,6 +48,8 @@ function dimCollect(dim) {
 
 
 let patients = {
+  topics: new Set(),
+
   fromDate: null,
   toDate: null,
   datesRange: null,
@@ -67,21 +69,21 @@ let patients = {
   enc_eid_det: dimension(encounters_cf, d => d.id, 'encounters'),
 
 
-  topics_tid: dimension(topics, d => d.id, 'topics'),
-  topics_cat: dimension(topics, d => d.category, 'topics'),
-  topics_sys: dimension(topics, d => d.system, 'topics'),
+  topics_tid: dimension(topics_cf, d => d.id, 'topics'),
+  topics_cat: dimension(topics_cf, d => d.category, 'topics'),
+  topics_sys: dimension(topics_cf, d => d.system, 'topics'),
 
 
   rel_tid: dimension(relations_cf, r => { return new TagEnc(r.enc_id, r.tag_id);}, 'relations'),
   rel_tid_cg: dimension(relations_cf, r => r.tag_id, 'relations'),
-  rel_tid_cat: dimension(relations_cf, r => { return new TagEnc(r.enc_id, r.tag_id);}, 'relations'),
-  rel_tid_sys: dimension(relations_cf, r => { return new TagEnc(r.enc_id, r.tag_id);}, 'relations'),
+  rel_tid_topic: dimension(relations_cf, r => { return r.enc_id;}, 'relations'),
 
   tag_enc_group: null,
 
-
   init(_) {
-    topics.add(_);
+    topics_cf.add(_);
+    this.topics.clear();
+    for (let topic of _) { this.topics.add(topic); }
   },
 
   set(data) {

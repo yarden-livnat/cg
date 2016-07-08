@@ -154,7 +154,7 @@ export default function() {
         thresholdId == 2 ? d3.thresholdScott : d3.thresholdSturges;
 
     let v = f(values, min, max);
-    console.log(`\n${thresholdId}: ${values.length} ${v}`);
+    // console.log(`\n${thresholdId}: ${values.length} ${v}`);
     return v;
   }
 

@@ -13,6 +13,9 @@ import * as tagSelection from '../model/tag_selection';
 import table from '../components/table';
 import bar from '../components/bar';
 
+let selected;
+let excluded;
+
 let container = d3.select('#details-tables');
 
 let cat = Table(container)
@@ -20,16 +23,18 @@ let cat = Table(container)
   .header([
     {name: 'key', title: 'Category'},
     {name: 'value', title: '#tags', attr:'numeric'}])
-    .dimensions(patients.topics_cat, patients.rel_tid_cat)
-  .color(colorScheme.scheme('category'));
+    .dimension(patients.topics_cat)
+  .color(colorScheme.scheme('category'))
+  .on('change', filter);
 
 let sys = Table(container)
   .id('sys-table')
   .header([
     {name: 'key', title: 'System'},
     {name: 'value', title: '#tags', attr:'numeric'}])
-  .dimensions(patients.topics_sys, patients.rel_tid_sys)
-  .color(colorScheme.scheme('system'));
+  .dimension(patients.topics_sys)
+  .color(colorScheme.scheme('system'))
+  .on('change', filter);
 
 let bars = bar();
 
@@ -59,12 +64,59 @@ function render() {
   tags.render();
 }
 
+
+
+function filter() {
+  selected = new Set();
+  excluded = new Set();
+
+  collect('category', cat.selected(), selected);
+  collect('category', cat.excluded(), excluded);
+  collect('system', sys.selected(), selected);
+  collect('system', sys.excluded(), excluded);
+
+  if (selected.size == 0 && excluded.size == 0)
+    patients.rel_tid_topic.filterAll();
+  else {
+    let active = activeEncounters();
+    patients.rel_tid_topic.filter(eid => active.has(eid));
+  }
+
+  patients.update(patients.rel_tid_topic);
+  postal.publish({channel: 'global', topic: 'render'});
+
+}
+
+function collect(field, from, to) {
+  if (from.size == 0) return;
+  for (let topic of patients.topics) {
+    if (from.has(topic[field])) to.add(topic.id);
+  }
+}
+
+function activeEncounters() {
+  let active = new Set();
+  for (let enc of patients.encountersMap.values())
+    if (accept(enc)) active.add(enc.id);
+  return active;
+}
+
+function accept(enc) {
+  let select = selected.size == 0;
+  for (let tid of enc.tags) {
+    if (excluded.has(tid)) return false;
+    select = select || selected.has(tid);
+  }
+  return select;
+}
+
 function Table(div) {
   let selected = new Set();
   let excluded = new Set();
-  let dimension, filterDim;
+  let dimension;
   let group;
   let color = () => 'black';
+  let event = d3.dispatch('change');
 
   let inner = table(div)
     .on('click',  function click(d) {
@@ -78,33 +130,9 @@ function Table(div) {
 
       d.row.classes = { selected: selected.has(d.value), excluded: excluded.has(d.value)};
 
-      if (selected.size == 0 && excluded.size == 0)
-        filterDim.filterAll();
-      else {
-        let e = activeEncounters();
-        filterDim.filter( entry => e.has(entry.id));
-        // dimension.filter( v => (selected.size == 0 || selected.has(v)) && (excluded.size == 0 || !excluded.has(v)) );
-      }
-
-      // patients.update(dimension);
-      patients.update(filterDim);
-      postal.publish({channel: 'global', topic: 'render'});
+      event.call('change', this, selected, excluded);
     });
 
-  function activeEncounters() {
-    let active = new Set();
-    for (let enc of patients.encountersMap.values())
-      if (accept(enc)) active.add(enc.id);
-    return active;
-  }
-
-  function accept(enc) {
-    for (let s of selected)
-      if (!enc.tags.has(s)) return false;
-    for (let e of excluded)
-      if (enc.tags.has(e)) return false;
-    return true;
-  }
 
   function api(selection) {
     return this;
@@ -120,12 +148,10 @@ function Table(div) {
     return this;
   };
 
-  api.dimensions = function(d, f) {
+  api.dimension = function(d) {
     dimension = d;
     if (group) group.dispose();
     group = dimension.group();
-
-    filterDim = f;
     return this;
   };
 
@@ -140,6 +166,15 @@ function Table(div) {
     color = _;
     return this;
   };
+
+  api.on = function(type, listener) {
+    event.on(type, listener);
+    return this;
+  };
+
+  api.selected = function() { return selected; };
+
+  api.excluded = function() { return excluded; };
 
   return api;
 }
