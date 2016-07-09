@@ -23,7 +23,6 @@ Add './node_modules/.bin' to your PATH, e.g. `export PATH=./node_modules/.bin:$P
 cd app
 npm install
 jspm install
-gulp dist
 ```
 
 ### Running CommonGround
