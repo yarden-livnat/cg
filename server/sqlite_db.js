@@ -1,6 +1,7 @@
 /**
  * Created by yarden on 7/9/15.
  */
+const path = require('path');
 var sqlite = require('sqlite3');
 
 var DB_FILE = 'cg.sqlite';
@@ -9,7 +10,7 @@ var DB_DIR = process.env.CG_DIR || '../data';
 //debugging
 sqlite.verbose();
 
-var db = new sqlite.Database(DB_DIR+ '/' + DB_FILE);
+var db = new sqlite.Database(path.join(DB_DIR,DB_FILE));
 db.on('profile', function(sql, time) {
   console.log('['+time/1000+' secs] query:'+sql);
 });

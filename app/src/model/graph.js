@@ -56,24 +56,25 @@ function pearson(a, b) {
 
 function nodesSizeMeasure(nodes, prob) {
   let max = 0;
-  if (prob) {
-    for(let node of nodes) {
-      node.scale = 0;
-      for(let item of node.items) {
-        node.scale += prob.get(item) || 0;
+  for(let node of nodes) {
+    if (node.excluded) {
+      node.scale = node.lastScale;
+    } else {
+      if (!prob) {
+        node.scale = node.items.length;
+      } else {
+        node.scale = 0;
+        for(let item of node.items) {
+          node.scale += prob.get(item) || 0;
+        }
       }
-      max = Math.max(max, node.scale);
-    }
-  } else {
-    for(let node of nodes) {
-      node.scale = node.items.length;
       max = Math.max(max, node.scale);
     }
   }
 
   // scale nodes
   for (let node of nodes) {
-    node.scale /= max;
+    if (!node.excluded) node.scale /= max;
   }
 }
 
@@ -88,18 +89,17 @@ function nodesSystemMeasure(nodes, prob) {
 function nodesGroupSizeMeasure(nodes, prob, group) {
   let max = {};
 
-  if (prob) {
-    for(let node of nodes) {
-      node.scale = 0;
-      for(let item of node.items) {
-        node.scale += prob.get(item) || 0;
+  for(let node of nodes) {
+    if (node.excluded) node.scale = node.lastScale;
+    else {
+      if (prob) {
+        node.scale = 0;
+        for(let item of node.items) {
+          node.scale += prob.get(item) || 0;
+        }
+      } else {
+        node.scale = node.items.length;
       }
-      let type = node.topic[group];
-      max[type] = max[type] == undefined ? node.scale : Math.max(max[type] || 0, node.scale);
-    }
-  } else {
-    for(let node of nodes) {
-      node.scale = node.items.length;
       let type = node.topic[group];
       max[type] = max[type] == undefined ? node.scale : Math.max(max[type] || 0, node.scale);
     }
@@ -107,6 +107,8 @@ function nodesGroupSizeMeasure(nodes, prob, group) {
 
   // scale nodes
   for (let node of nodes) {
+    if (!node.excluded)
+      // node.scale = Math.log2(1 + node.scale/max[node.topic[group]]);
     node.scale /= max[node.topic[group]];
   }
 }

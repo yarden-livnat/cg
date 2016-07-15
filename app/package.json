@@ -7,6 +7,7 @@
     "name": "cg",
     "main": "app.js",
     "dependencies": {
+      "cg": "local:cg@0.6.0",
       "cg-core": "local:cg-core@0.6.0",
       "d3": "npm:d3@^4.0.0",
       "d3-queue": "npm:d3-queue@^3.0.1",

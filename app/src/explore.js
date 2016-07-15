@@ -172,7 +172,10 @@ function updateGraph() {
 
       let prev = node.excluded;
       node.excluded = tagSelection.isExcluded(node.id);
-      if (node.excluded && !prev) node.lastScale = node.scale;
+      if (node.excluded) {
+        if (!prev) node.lastScale = node.scale;
+        else node.scale = node.lastScale;
+      }
 
       return node;
     })
@@ -212,12 +215,10 @@ function detectorChanged(prob) {
 }
 
 function select(d) {
-  // console.log('select', d);
   tagSelection.select(d.topic.id);
 }
 
 function exclude(d) {
-  // console.log('exclude', d);
   tagSelection.exclude(d.topic.id);
 }
 
