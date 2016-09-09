@@ -34,6 +34,7 @@ SystemJS.config({
     "local:*.json"
   ],
   map: {
+    "babel-polyfill": "npm:babel-polyfill@6.13.0",
     "es6-shim": "github:es-shims/es6-shim@0.35.1",
     "cg-core": "github:yarden-livnat/cg-core@master",
     "constants": "github:jspm/nodelibs-constants@0.2.0-alpha",
@@ -453,6 +454,19 @@ SystemJS.config({
     "github:Leaflet/Leaflet@0.7.7": {
       "map": {
         "css": "github:systemjs/plugin-css@0.1.27"
+      }
+    },
+    "npm:babel-polyfill@6.13.0": {
+      "map": {
+        "regenerator-runtime": "npm:regenerator-runtime@0.9.5",
+        "babel-runtime": "npm:babel-runtime@6.11.6",
+        "core-js": "npm:core-js@2.4.1"
+      }
+    },
+    "npm:babel-runtime@6.11.6": {
+      "map": {
+        "regenerator-runtime": "npm:regenerator-runtime@0.9.5",
+        "core-js": "npm:core-js@2.4.1"
       }
     }
   }

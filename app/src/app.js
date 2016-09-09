@@ -3,6 +3,7 @@
  */
 
 import 'es6-shim';
+import 'babel-polyfil';
 import * as d3 from 'd3';
 import {queue} from 'd3-queue';
 import postal from 'postal';

@@ -7,6 +7,7 @@
     "name": "cg",
     "main": "app.js",
     "dependencies": {
+      "babel-polyfill": "npm:babel-polyfill@^6.13.0",
       "cg-core": "github:yarden-livnat/cg-core@master",
       "d3": "npm:d3@^4.0.0",
       "d3-queue": "npm:d3-queue@^3.0.1",
