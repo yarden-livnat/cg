@@ -5,3 +5,5 @@ node_modules
 jspm_packages
 app/.tmp/
 dist/
+/app/assets/maps/bak/
+/app/assets/maps/ZipCodes.kmz
