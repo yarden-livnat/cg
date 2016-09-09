@@ -2,6 +2,7 @@
  * Created by yarden on 8/21/15.
  */
 
+import 'es6-shim';
 import * as d3 from 'd3';
 import {queue} from 'd3-queue';
 import postal from 'postal';

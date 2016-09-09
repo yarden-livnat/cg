@@ -34,6 +34,7 @@ SystemJS.config({
     "local:*.json"
   ],
   map: {
+    "es6-shim": "github:es-shims/es6-shim@0.35.1",
     "cg-core": "github:yarden-livnat/cg-core@master",
     "constants": "github:jspm/nodelibs-constants@0.2.0-alpha",
     "crypto": "github:jspm/nodelibs-crypto@0.2.0-alpha",

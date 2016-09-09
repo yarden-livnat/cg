@@ -13,6 +13,7 @@
       "d3-scale-chromatic": "npm:d3-scale-chromatic@^1.0.0",
       "d3-time-format": "npm:d3-time-format@^2.0.0",
       "d3/d3-queue": "github:d3/d3-queue@^3.0.1",
+      "es6-shim": "github:es-shims/es6-shim@^0.35.1",
       "firstopinion/formatter.js": "github:firstopinion/formatter.js@^0.1.5",
       "font-awesome": "npm:font-awesome@^4.6.3",
       "leaflet": "github:Leaflet/Leaflet@^0.7.7",
