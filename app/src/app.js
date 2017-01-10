@@ -8,8 +8,6 @@ import * as d3 from 'd3';
 import {queue} from 'd3-queue';
 import postal from 'postal';
 
-// import {foo, bar, x} from './test';
-
 import patients from './model/patients';
 import * as service from './service';
 import * as query from './query';
@@ -27,7 +25,7 @@ let geomap = Map();
 let detectors = Detectors();
 let infoChart = InfoCharts().group(patients.tag_enc_group);
 
-let dateParse = d3.timeParse('%Y-%m-%d');
+let dateParse = d3.timeParse('%Y-%m-%dT%H:%M:%S.%LZ');
 
 explore.init(patients.tag_enc_group);
 

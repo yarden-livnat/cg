@@ -24,6 +24,7 @@ function kb(req, res, next) {
   db.serialize(function() {
     db.all('select id, category, name, system, details from kb', function(err, rows) {
       if (err) next(err);
+      // console.log('kb:');sqlite_db.js
       res.send(JSON.stringify(rows));
     });
   });
@@ -125,6 +126,10 @@ function query(req, res, next) {
     association_stmt.all(query.from, query.to,
       function(err, rows) {
         associations = rows;
+        // console.log('*** enc:');
+        // console.log(enc);
+        // console.log('*** association:');
+        // console.log(associations);
         res.send(JSON.stringify({from: query.from, to: query.to, enc: enc, associations: associations}));
       });
   });

@@ -30,6 +30,8 @@ export default function() {
 
   function init(list) {
     detectors = list;
+    if (!list || list.length == 0) return;
+
     detectors.forEach( d => {
       d.probGroup = d.prob.group( p => Math.floor((p-MIN_PROB)/PROB_RANGE * N_BINS));
       d.similarGroup = d.similar.group( p => Math.floor((p-MIN_PROB)/PROB_RANGE * N_BINS));

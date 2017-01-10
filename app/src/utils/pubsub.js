@@ -14,7 +14,7 @@ export function unsubscribe(topic, listener) {
   let channel = channels.get(topic);
   if (channel) {
     channel.delete(listener);
-    if (channel.length == 0) channels.delete(topic);
+    if (channel.size == 0) channels.delete(topic);
   }
   return this;
 }

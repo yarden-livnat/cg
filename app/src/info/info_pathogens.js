@@ -36,7 +36,6 @@ postal.subscribe({channel: 'global', topic: 'data.changed', callback: dataChange
 
 export function init() {
 
-
   let items = d3.select('#pathogens-selection').select('ul').selectAll('li')
     .data(service.pathogens)
     .enter()

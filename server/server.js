@@ -6,8 +6,8 @@ var path = require('path');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
 var methodOverride = require('method-override');
-var db = require('./sqlite_db');
-
+// var db = require('./sqlite_db');
+var db = require('./sql_db');
 
 var app = express();
 
