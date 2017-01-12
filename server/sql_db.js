@@ -28,7 +28,7 @@ function kb(req, res, next) {
   sql.connect(config1).then(function() {
     new sql.Request()
       .query('select id, category, name, system, details from common_ground.kb').then(function(rows) {
-        console.log('kb:'+rows);
+        // console.log('kb:'+rows);
         res.send(JSON.stringify(rows));
     }).catch(function(err) {
       console.log('kb err:', err);
