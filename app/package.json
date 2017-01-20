@@ -58,7 +58,7 @@
           }
         }
       },
-      "npm:font-awesome@4.6.3": {
+      "npm:font-awesome@4.7.0": {
         "main": "css/font-awesome.css!",
         "jspmNodeConversion": false,
         "registry": "jspm",
@@ -71,7 +71,7 @@
           "test.js"
         ]
       },
-      "npm:lodash@4.15.0": {
+      "npm:lodash@4.17.4": {
         "map": {
           "buffer": "@empty",
           "process": "@empty"
