@@ -122,7 +122,7 @@ export default function (opt) {
     let active = selectedZipcodes.has(zipcode);
     let add = false;
 
-    if (!d3.event.metaKey) {
+    if (!d3.event.altlKey) {
       selectedZipcodes.clear();
       add = !active;
     } else {

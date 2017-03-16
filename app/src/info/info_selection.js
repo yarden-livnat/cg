@@ -35,7 +35,7 @@ function update() {
     .style('color', d => colorScheme.color(d.topic))
     .attr('class', d => d.attr)
     .on('click', function(d) {
-      if (d3.event.metaKey) { tagSelection.exclude(d.topic.id); }
+      if (d3.event.altKey) { tagSelection.exclude(d.topic.id); }
       else                  { tagSelection.select(d.topic.id); }
     });
 
