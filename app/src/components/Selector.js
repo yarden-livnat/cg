@@ -22,15 +22,18 @@ export default function() {
     .domain([0, 1])
     .range([0, width]);
 
-  let y = d3.scaleLinear()
-    .domain([0, 1])
-    .rangeRound([height, 0]);
+  let y = d3.scaleLog()
+    .domain([0.1, 1])
+    .rangeRound([height, 0])
+    .clamp(true);
+
+  // y.tickFormat(3);
 
   let xAxis = d3.axisBottom(x)
     .ticks(2);
 
   let yAxis = d3.axisLeft(y)
-    .ticks(2);
+    .ticks(2, '.0f');
 
   let brush = d3.brushX()
     .extent([[0, 0], [width, height]])
@@ -42,10 +45,11 @@ export default function() {
       return;
     }
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") {
-      console.log('event = brush');
+      console.log('brush ignore');
       return;
     }
-    dispatch.call('select', this, d3.event.selection.map(x.invert));
+    range = d3.event.selection.map(x.invert);
+    dispatch.call('select', this, range);
   }
 
   function draw() {
@@ -152,7 +156,7 @@ export default function() {
         if (bin.x0 <= ignore && ignore <= bin.x1) bin.splice(0, bin.length);
       }
     }
-    y.domain([0, d3.max(bins,  d => d.length)]);
+    y.domain([0.1, d3.max(d3.max(bins,  d => d.length), 1)]);
 
     draw();
     return selector;
@@ -180,13 +184,18 @@ export default function() {
     return this;
   };
 
-  selector.xdomain = function(range) {
-    x.domain(range);
-    let save=duration;
-    duration = 0;
-    if (_series)
-     selector.data(_series);
-    duration = save;
+  selector.xdomain = function(_) {
+    let d = x.domain();
+    if (d[0] != _[0] || d[1] != _[1]) {
+      x.domain(_);
+      let save=duration;
+      duration = 0;
+      if (_series)
+       selector.data(_series);
+      duration = save;
+      selector.select([Math.max(range[0], _[0]), Math.min(range[1], _[1])]);
+    }
+    return selector;
   };
 
   selector.on = function(type, listener) {

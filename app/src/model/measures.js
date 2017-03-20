@@ -2,6 +2,8 @@
  * Created by yarden on 3/19/17.
  */
 
+import {mean} from 'd3';
+
 let measures = [];
 
 function shared(a, b) {
@@ -231,12 +233,27 @@ measures.push( {name: 'AV', f: added_value, range:[-0.5,1], ind: 0} );
 
 function pearson(a, b) {
 
+  init(a);
+  init(b);
   let r = 0, n=a.length;
   for (let i=0; i<n; i++) {
     r += a[i] * b[i];
   }
-  r = r/((n-1)*a.var*b.var);
+  r = r/((n-1) * a.ss * b.ss);
   return r;
+
+  function init(a) {
+    if (a.mean) return;
+    a.mean = mean(a);
+    let ss = 0;  // standard score
+    let n = a.length;
+    for (let i = 0; i < n; i++) {
+      let v = a[i] - a.mean;
+      a[i] = v;
+      ss += v * v;
+    }
+    a.ss = Math.sqrt(ss / (n - 1));
+  }
 }
 measures.push( {name: 'pearson', f: pearson, range:[-1,1], ind: 0, type: 'correlation'} );
 

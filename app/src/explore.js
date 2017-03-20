@@ -23,6 +23,7 @@ let view;
 let group;
 let graph = Graph();
 let activeGraph;
+let visibleGraph;
 
 let cache = new Map();
 let nodeSelector, edgeSelector;
@@ -48,9 +49,8 @@ export function init(_) {
     .on('select', r => {
       nodesRange = r;
       if (activeGraph) {
-        let vg = visibleGraph(activeGraph);
-        view.graph(vg);
-        updateEdgeSelector();
+        update_nodes();
+        view.graph(visibleGraph);
       }
     });
 
@@ -60,7 +60,8 @@ export function init(_) {
     .on('select', r => {
       edgesRange = r;
       if (activeGraph)
-       view.graph(visibleGraph(activeGraph));
+        update_edges();
+        view.graph(visibleGraph);
     });
 
   d3.select('#topics-chart')
@@ -133,24 +134,25 @@ export function init(_) {
   });
 }
 
-function updateEdgeSelector() {
-  edgeSelector.data(activeGraph.links.reduce((p,c) => {
-    if (c.source.visible && c.target.visible) p.push(c.value);
-    return p;
-  }, []));
-}
+// function updateEdgeSelector(links) {
+//   edgeSelector.data(links.reduce((p,c) => {
+//     if (c.source.visible && c.target.visible) p.push(c.value);
+//     return p;
+//   }, []));
+// }
 
-function visibleGraph(graph) {
-  let nodes = [];
-  for (let node of graph.nodes) {
-    node.visible = node.excluded || node.selected || (node.scale >= nodesRange[0] && node.scale <= nodesRange[1]);
-    if (node.visible) nodes.push(node);
-  }
-
-  let links = graph.links.filter(e => e.source.visible && e.target.visible
-    && e.r >= edgesRange[0] && e.r <= edgesRange[1]);
-  return {nodes: nodes, links: links};
-}
+// function visibleGraph(graph) {
+//   let nodes = [];
+//   for (let node of graph.nodes) {
+//     node.visible = node.excluded || node.selected || (node.scale >= nodesRange[0] && node.scale <= nodesRange[1]);
+//     if (node.visible) nodes.push(node);
+//   }
+//
+//   let links = graph.links.filter(e => e.source.visible && e.target.visible);
+//   updateEdgeSelector(links);
+//   links = links.filter(e => e.r >= edgesRange[0] && e.r <= edgesRange[1]);
+//   return {nodes: nodes, links: links};
+// }
 
 function updateGraph() {
   graph.nodes(group.all()
@@ -196,17 +198,51 @@ function updateGraph() {
 
 function update() {
   activeGraph = {nodes:graph.nodes(), links:graph.edges()};
+  update_nodes();
+
   nodeSelector.data(activeGraph.nodes.reduce( (p, c) => { p.push(c.scale); return p;}, []));
 
-  let vg = visibleGraph(activeGraph);
-  updateEdgeSelector();
+  // let vg = visibleGraph(activeGraph);
+  // updateEdgeSelector();
 
-  view.graph(vg);
+  view.graph(visibleGraph);
 
   d3.select("#encounters").text(format(patients.numActiveEncounters));
-  d3.select("#topics").text(`${format(vg.nodes.length)} of ${format(activeGraph.nodes.length)}`);
-  d3.select("#relations").text(`${format(vg.links.length)} of ${format(activeGraph.links.length)}`);
+  d3.select("#topics").text(`${format(visibleGraph.nodes.length)} of ${format(activeGraph.nodes.length)}`);
+  d3.select("#relations").text(`${format(visibleGraph.links.length)} of ${format(activeGraph.links.length)}`);
+}
 
+function update_nodes() {
+  let nodes = [];
+  for (let node of activeGraph.nodes) {
+    node.visible = node.excluded || node.selected || (node.scale >= nodesRange[0] && node.scale <= nodesRange[1]);
+    if (node.visible) nodes.push(node);
+  }
+  // update links based on visible nodes
+  let links = [];
+  for (let link of activeGraph.links) {
+    link.visible = link.source.visible && link.target.visible;
+  }
+  // update edgeSelector
+  edgeSelector.data(links.filter(l => l.visible));
+
+  // update visible edges based on edge selector
+  for (let link of activeGraph.links) {
+    link.visible = link.visible && edgesRange[0] <= link.r && link.r <= edgesRange[1];
+    if (link.visible) links.push(link);
+  }
+  visibleGraph = {nodes: nodes, links: links};
+  // view.graph(visibleGraph);
+}
+
+function update_edges() {
+  let links = [];
+  for (let link of activeGraph.links) {
+    link.visible = link.source.visible && link.target.visible && edgesRange[0] <= link.r && link.r <= edgesRange[1];
+    if (link.visible) links.push(link);
+  }
+  visibleGraph.links = links;
+  // view.graph(visibleGraph);
 }
 
 function dataChanged() {
