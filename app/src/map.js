@@ -2,10 +2,12 @@
  * Created by yarden on 8/21/15.
  */
 
+import * as L1 from 'leaflet';
 import * as d3 from 'd3';
 import {queue} from 'd3-queue';
 import postal from 'postal';
-import * as L from 'leaflet';
+
+let L = window.L;
 
 import {MAP_DEFAULTS} from './config';
 import patients from './model/patients';

@@ -26,6 +26,7 @@
   <tr><td>Encounters</td><td id="encounters"></td></tr>
   <tr><td>Findings</td><td id="topics"></td></tr>
   <tr><td>Relations</td><td id="relations"></td></tr>
+  <tr><td></td><td id="highlight"></td></tr>
 </table>
 
 <div id="options">
@@ -107,10 +108,8 @@
 <script src="jspm_packages/system.js"></script>
 <script src="jspm.config.js"></script>
 <script>
-    <!-- Distribution -->
-    <!-- System.import('dist/cg.js') -->
-    <!-- Development -->
-    System.import('src/app.js')
+	System.config({ warnings: true });
+	System.import('src/app.js')
             .catch(console.error.bind(console)); // make sure any errors are print to console
 </script>
 

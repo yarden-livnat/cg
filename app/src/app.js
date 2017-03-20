@@ -2,15 +2,13 @@
  * Created by yarden on 8/21/15.
  */
 
-import 'es6-shim';
-import 'babel-polyfill';
+// import 'es6-shim';
+// import 'babel-polyfill';
 import * as d3 from 'd3';
 import {queue} from 'd3-queue';
 import postal from 'postal';
 
-// import {foo, bar, x} from './test';
-
-import patients from './model/patients';
+import patients from 'cg/model/patients';
 import * as service from './service';
 import * as query from './query';
 

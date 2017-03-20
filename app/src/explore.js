@@ -5,6 +5,7 @@ import * as d3 from 'd3';
 import postal from 'postal';
 import {panel} from 'cg-core';
 
+import edgeMeasures from './model/measures';
 import Graph from './model/graph';
 import colorScheme from './utils/colorscheme';
 import {topicsMap} from './service';
@@ -16,6 +17,7 @@ let nodesRange = [0.2, 1],
   edgesRange = [0.7, 1];
 
 let format = d3.format(',d');
+let scale_fmt = d3.format('3.1f');
 
 let view;
 let group;
@@ -35,7 +37,8 @@ export function init(_) {
   view = panel()
     .on('select', select)
     .on('exclude', exclude)
-    .on('highlight', highlight);
+    .on('highlight', highlight)
+    .on('highlight_link', highlight_link);
 
   d3.select('#cg-area').call(view);
 
@@ -90,16 +93,23 @@ export function init(_) {
 
   d3.select('#edgeMeasure')
     .on('change', function() {
-      graph.edgeMeasure(this.value);
+      let measure = edgeMeasures.find( m => m.name == this.value);
+      graph.edgeMeasure(measure);
+      edgeSelector.xdomain(measure.range, measure.ind);
       update();
     })
     .selectAll('.option')
-      .data(Object.keys(graph.measures.edge))
+      // .data(Object.keys(graph.measures.edge))
+      .data(edgeMeasures)
       .enter()
-      .append('option')
-      .text(function(d) { return d;})
-      .property('value', function(d) { return d;});
+        .append('option')
+        .text(function(d) { return d.name;})
+        .property('value', function(d) { return d.name;});
 
+  graph.edgeMeasure(edgeMeasures[0]);
+  edgeSelector
+    .ignore(edgeMeasures[0].ind)
+    .xdomain(edgeMeasures[0].range);
 
   d3.select('#color')
     .on('change', function() {
@@ -133,12 +143,12 @@ function updateEdgeSelector() {
 function visibleGraph(graph) {
   let nodes = [];
   for (let node of graph.nodes) {
-    node.visible = node.excluded || (node.scale >= nodesRange[0] && node.scale <= nodesRange[1]);
+    node.visible = node.excluded || node.selected || (node.scale >= nodesRange[0] && node.scale <= nodesRange[1]);
     if (node.visible) nodes.push(node);
   }
 
   let links = graph.links.filter(e => e.source.visible && e.target.visible
-    && e.value >= edgesRange[0] && e.value <= edgesRange[1]);
+    && e.r >= edgesRange[0] && e.r <= edgesRange[1]);
   return {nodes: nodes, links: links};
 }
 
@@ -222,6 +232,12 @@ function exclude(d) {
   tagSelection.exclude(d.topic.id);
 }
 
-function highlight(d) {
-  // console.log('highlight', d);
+function highlight(node, on) {
+  d3.select('#highlight')
+    .text(on ? `${node.label}: findings:${node.items.length}  importance: ${scale_fmt(node.scale)} ` : '');
+}
+
+function highlight_link(link, on) {
+  d3.select('#highlight')
+    .text( on ? `${scale_fmt(link.r)}: [${link.source.label}: ${link.source.items.length}]   [${link.target.label}: ${link.source.items.length}]` : '');
 }

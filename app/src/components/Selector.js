@@ -15,7 +15,8 @@ export default function() {
     range = [0, 1],
     dispatch = d3.dispatch('select');
 
-  let thresholdId = 0;
+  let thresholdId = 0,
+    ignore = undefined;
 
   let x = d3.scaleLinear()
     .domain([0, 1])
@@ -36,6 +37,10 @@ export default function() {
     .on('brush', brushed);
 
   function brushed() {
+    if (d3.event == null) {
+      console.log('brushed null');
+      return;
+    }
     if (d3.event.sourceEvent && d3.event.sourceEvent.type === "brush") {
       console.log('event = brush');
       return;
@@ -142,6 +147,11 @@ export default function() {
         .thresholds(thresholds)
       (series);
 
+    if (ignore != undefined) {
+      for (let bin of bins) {
+        if (bin.x0 <= ignore && ignore <= bin.x1) bin.splice(0, bin.length);
+      }
+    }
     y.domain([0, d3.max(bins,  d => d.length)]);
 
     draw();
@@ -165,11 +175,17 @@ export default function() {
     return this;
   };
 
-  selector.xdomain = function(from, to) {
-    x.domain([from,  to]);
+  selector.ignore = function(_) {
+    ignore = _;
+    return this;
+  };
+
+  selector.xdomain = function(range) {
+    x.domain(range);
     let save=duration;
     duration = 0;
-    this.bins(_series);
+    if (_series)
+     selector.data(_series);
     duration = save;
   };
 

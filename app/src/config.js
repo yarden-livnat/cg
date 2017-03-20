@@ -40,7 +40,7 @@ export let cgOptions = {
       //.domain([0.4, 1])
       //.range([0.4, 1])
      .domain([0, 1])
-     .range([0.4, 1])
+     .range([0.2, 1])
      .clamp(true),
 
     duration: 500,
