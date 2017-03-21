@@ -3,6 +3,7 @@
  */
 import * as d3 from 'd3';
 import postal from 'postal';
+import Lockr from 'lockr';
 import {panel} from 'cg-core';
 
 import edgeMeasures from './model/measures';
@@ -13,8 +14,11 @@ import * as tagSelection from './model/tag_selection';
 import patients from './model/patients';
 import Selector from './components/selector';
 
-let nodesRange = [0.2, 1],
-  edgesRange = [0.7, 1];
+let nodesMeasureName = Lockr.get('explore.nodesMeasureName','category');
+let edgesMeasureName = Lockr.get('expore.edgesMeasureName', 'cosine');
+let nodesRange = Lockr.get('explore.nodesRange', [0.2, 1]);
+let edgesRange = Lockr.get('explore.edgesRange', [0.7, 1]);
+
 
 let format = d3.format(',d');
 let scale_fmt = d3.format('3.1f');
@@ -30,8 +34,9 @@ let nodeSelector, edgeSelector;
 
 export function init(_) {
   group = _;
+  colorScheme.current = Lockr.get('explore.colorScheme', colorScheme.current);
 
-  postal.subscribe({channel: 'global', topic: 'render', callback: updateGraph});
+  postal.subscribe({channel: 'global', topic: 'render', callback: dataChanged});
   postal.subscribe({channel: 'global', topic: 'data.changed', callback: dataChanged});
   postal.subscribe({channel: 'detector', topic: 'changed', callback: detectorChanged});
 
@@ -47,6 +52,7 @@ export function init(_) {
     .width(100).height(50)
     .select(nodesRange)
     .on('select', r => {
+      Lockr.set('explore.nodesRange', r);
       nodesRange = r;
       if (activeGraph) {
         update_nodes();
@@ -58,6 +64,7 @@ export function init(_) {
     .width(100).height(50)
     .select(edgesRange)
     .on('select', r => {
+      Lockr.set('explore.edgesRange', r);
       edgesRange = r;
       if (activeGraph) {
         update_edges();
@@ -76,26 +83,33 @@ export function init(_) {
     .call(edgeSelector);
   
   d3.select('#show-relations')
+    .property('checked', Lockr.get('explore.showRelations', false))
     .on('change', function() {
       view.showEdges(this.checked);
+      Lockr.set('explore.showRelations', this.checked);
     });
+  view.showEdges(Lockr.get('explore.showRelations', false));
 
   d3.select('#nodeMeasure')
     .on('change', function() {
+      Lockr.set('explore.nodesMeasure', this.value);
       graph.nodeMeasure(this.value);
       update();
       show();
     })
     .selectAll('.option')
-    .data(Object.keys(graph.measures.node))
-    .enter()
-    .append('option')
-    .text(function(d) { return d;})
-    .property('value', function(d) { return d;});
+      .data(Object.keys(graph.measures.node))
+      .enter()
+        .append('option')
+        .text(function(d) { return d;})
+        .property('value', function(d) { return d;})
+        .property('selected', d => d == nodesMeasureName);
+  graph.nodeMeasure(nodesMeasureName);
 
 
   d3.select('#edgeMeasure')
     .on('change', function() {
+      Lockr.set('explore.edgesMeasure', this.value);
       let measure = edgeMeasures.find( m => m.name == this.value);
       graph.edgeMeasure(measure);
       edgeSelector.xdomain(measure.range, measure.ind);
@@ -103,20 +117,23 @@ export function init(_) {
       show();
     })
     .selectAll('.option')
-      // .data(Object.keys(graph.measures.edge))
       .data(edgeMeasures)
       .enter()
         .append('option')
         .text(function(d) { return d.name;})
-        .property('value', function(d) { return d.name;});
+        .property('value', function(d) { return d.name;})
+        .property('selected', d => d.name == edgesMeasureName);
 
-  graph.edgeMeasure(edgeMeasures[0]);
+  let measure = (edgeMeasures.find(d => d.name == edgesMeasureName) || edgeMeasures[0]);
+  graph.edgeMeasure(measure);
+
   edgeSelector
-    .ignore(edgeMeasures[0].ind)
-    .xdomain(edgeMeasures[0].range);
+    .ignore(measure.ind)
+    .xdomain(measure.range);
 
   d3.select('#color')
     .on('change', function() {
+      Lockr.set('explore.colorScheme', this.value);
       colorScheme.current = this.value;
       for (let node of graph.nodes()) {
         node.color = colorScheme.color(node.topic);
@@ -125,16 +142,24 @@ export function init(_) {
       postal.publish({channel: 'global', topic: 'color.change'});
     })
     .selectAll('.option').data(Array.from(colorScheme.schemes()))
-    .enter().append('option')
-      .text( d => d )
-      .property('value', d => d)
-      .property('checked', d => d == colorScheme.current);
+      .enter().append('option')
+        .text( d => d )
+        .property('value', d => d)
+        .property('selected', d => d == colorScheme.current);
   
   window.ResizeSensor(d3.select('#cg-area').node(), () => {
     console.log('cg-area resized');
     let node = d3.select('#cg-area').node();
     view.resize(node.offsetWidth, node.offsetHeight);
   });
+
+
+  d3.select('#charge')
+    .on('change', function() { view.charge(+this.value);} );
+  d3.select('#dist')
+    .on('change', function() { view.charge_dist(+this.value);} );
+  d3.select('#factor')
+    .on('change', function() { view.linkFactor(+this.value);} );
 }
 
 function updateGraph() {

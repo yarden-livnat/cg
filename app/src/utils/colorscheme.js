@@ -8,11 +8,14 @@ import {schemeSet1, schemeSet2} from 'd3-scale-chromatic';
 class Scheme {
   constructor() {
     this.map = new Map();
+
     this.map.set('category',
       d3.scaleOrdinal(schemeSet1)
       .domain(['pathogen', 'sign', 'symptom', 'syndrome']));
+
     this.map.set('system', d3.scaleOrdinal(schemeSet2)
       .domain(['constitutional', 'gastrointestinal', 'neurological', 'respiratory']));
+
     this.map.set('none', () => 'black');
 
     this.current = 'category';
@@ -35,29 +38,3 @@ class Scheme {
 }
 
 export default new Scheme();
-
-// let map = new Map();
-//
-// map.set('category', d3.scaleOrdinal(schemeSet1)
-//     .domain(['pathogen', 'sign', 'symptom', 'syndrome']));
-//
-// map.set('system', d3.scaleOrdinal(schemeSet2)
-//   .domain(['constitutional', 'gastrointestinal', 'neurological', 'respiratory']));
-//
-// map.set('black', () => 'black');
-//
-// let currentScheme =
-// let currentColor;
-//
-// export default {
-//   get scheme() { return currentScheme; },
-//
-//   set scheme(_) {
-//     if (map.has(_)) {
-//       currentScheme = _;
-//       currentColor = scheme.get(_);
-//     }
-//   },
-//
-//   color: currentColor;
-// }

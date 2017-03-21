@@ -41,7 +41,7 @@ export function init(cb) {
   d3.select('#submit').on('click', submit);
 
   // default dates
-  let date = Lockr.get('query.date', '2007-12-14');
+  let date = Lockr.get('query.date', '2008-03-30');
   let duration = Lockr.get('query.duration', 1);
   let context = Lockr.get('query.context', 4);
 
