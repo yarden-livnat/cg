@@ -156,7 +156,7 @@ export default function() {
         if (bin.x0 <= ignore && ignore <= bin.x1) bin.splice(0, bin.length);
       }
     }
-    y.domain([0.1, d3.max(d3.max(bins,  d => d.length), 1)]);
+    y.domain([0.1, Math.max(d3.max(bins,  d => d.length), 10)]);
 
     draw();
     return selector;

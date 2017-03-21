@@ -155,7 +155,6 @@ function mutual_information(a, b, N) {
   let da = -d(f0p) - d(f1p);
   let db = -d(fp0) - d(fp1);
 
-  console.log(f11, f1p, fp1, ': ', v, da, db);
   v = v / Math.min(da, db);
 
   return v;

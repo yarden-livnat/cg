@@ -50,7 +50,7 @@ export function init(_) {
       nodesRange = r;
       if (activeGraph) {
         update_nodes();
-        view.graph(visibleGraph);
+        show();
       }
     });
 
@@ -59,9 +59,10 @@ export function init(_) {
     .select(edgesRange)
     .on('select', r => {
       edgesRange = r;
-      if (activeGraph)
+      if (activeGraph) {
         update_edges();
-        view.graph(visibleGraph);
+        show();
+      }
     });
 
   d3.select('#topics-chart')
@@ -83,6 +84,7 @@ export function init(_) {
     .on('change', function() {
       graph.nodeMeasure(this.value);
       update();
+      show();
     })
     .selectAll('.option')
     .data(Object.keys(graph.measures.node))
@@ -98,6 +100,7 @@ export function init(_) {
       graph.edgeMeasure(measure);
       edgeSelector.xdomain(measure.range, measure.ind);
       update();
+      show();
     })
     .selectAll('.option')
       // .data(Object.keys(graph.measures.edge))
@@ -134,26 +137,6 @@ export function init(_) {
   });
 }
 
-// function updateEdgeSelector(links) {
-//   edgeSelector.data(links.reduce((p,c) => {
-//     if (c.source.visible && c.target.visible) p.push(c.value);
-//     return p;
-//   }, []));
-// }
-
-// function visibleGraph(graph) {
-//   let nodes = [];
-//   for (let node of graph.nodes) {
-//     node.visible = node.excluded || node.selected || (node.scale >= nodesRange[0] && node.scale <= nodesRange[1]);
-//     if (node.visible) nodes.push(node);
-//   }
-//
-//   let links = graph.links.filter(e => e.source.visible && e.target.visible);
-//   updateEdgeSelector(links);
-//   links = links.filter(e => e.r >= edgesRange[0] && e.r <= edgesRange[1]);
-//   return {nodes: nodes, links: links};
-// }
-
 function updateGraph() {
   graph.nodes(group.all()
     .filter(item =>
@@ -173,7 +156,6 @@ function updateGraph() {
 
       node.color = colorScheme.color(node.topic);
 
-      //node.items = item.value.map(entry => entry.enc_id);
       node.items = [];
       for (let entry of item.value) {
         node.items.push(entry.enc_id);
@@ -193,23 +175,21 @@ function updateGraph() {
     })
   );
 
-  update();
 }
 
-function update() {
-  activeGraph = {nodes:graph.nodes(), links:graph.edges()};
-  update_nodes();
-
-  nodeSelector.data(activeGraph.nodes.reduce( (p, c) => { p.push(c.scale); return p;}, []));
-
-  // let vg = visibleGraph(activeGraph);
-  // updateEdgeSelector();
-
+function show() {
   view.graph(visibleGraph);
 
   d3.select("#encounters").text(format(patients.numActiveEncounters));
   d3.select("#topics").text(`${format(visibleGraph.nodes.length)} of ${format(activeGraph.nodes.length)}`);
   d3.select("#relations").text(`${format(visibleGraph.links.length)} of ${format(activeGraph.links.length)}`);
+}
+
+function update() {
+  activeGraph = {nodes:graph.nodes(), links:graph.edges()};
+  let scales = activeGraph.nodes.reduce( (p, c) => { p.push(c.scale); return p;}, []);
+  nodeSelector.data(scales);
+  update_nodes();
 }
 
 function update_nodes() {
@@ -218,21 +198,24 @@ function update_nodes() {
     node.visible = node.excluded || node.selected || (node.scale >= nodesRange[0] && node.scale <= nodesRange[1]);
     if (node.visible) nodes.push(node);
   }
+
   // update links based on visible nodes
+  let scales = [];
   let links = [];
   for (let link of activeGraph.links) {
-    link.visible = link.source.visible && link.target.visible;
+    link.visible = false;
+    if (link.source.visible && link.target.visible) {
+      scales.push(link.r);
+      if (edgesRange[0] <= link.r && link.r <= edgesRange[1]) {
+        link.visible = true;
+        links.push(link);
+      }
+    }
   }
   // update edgeSelector
-  edgeSelector.data(links.filter(l => l.visible));
+  edgeSelector.data(scales);
 
-  // update visible edges based on edge selector
-  for (let link of activeGraph.links) {
-    link.visible = link.visible && edgesRange[0] <= link.r && link.r <= edgesRange[1];
-    if (link.visible) links.push(link);
-  }
   visibleGraph = {nodes: nodes, links: links};
-  // view.graph(visibleGraph);
 }
 
 function update_edges() {
@@ -242,11 +225,12 @@ function update_edges() {
     if (link.visible) links.push(link);
   }
   visibleGraph.links = links;
-  // view.graph(visibleGraph);
 }
 
 function dataChanged() {
   updateGraph();
+  update();
+  show();
 }
 
 function detectorChanged(prob) {

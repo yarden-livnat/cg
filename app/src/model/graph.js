@@ -133,7 +133,6 @@ function applyEdgeMeasure(nodes, edgeFunc) {
       //}
     }
   }
-  console.log(d3.extent(edges, d => d.r));
   return edges;
 }
 
@@ -151,16 +150,6 @@ function correlation(f) {
         let d = patients.encountersMap.get(e).day;
         days[d]++;
       }
-      // days.mean = d3.mean(days);
-      // days.var = 0; //d3.variance(days);
-      // let n = days.length;
-      // for (let i = 0; i < n; i++) {
-      //   let v = days[i] - days.mean;
-      //   days[i] = v;
-      //   days.var += v * v;
-      //
-      // }
-      // days.var = Math.sqrt(days.var / (n - 1));
       node.days = days;
     }
 
