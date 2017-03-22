@@ -14,8 +14,8 @@ import * as tagSelection from './model/tag_selection';
 import patients from './model/patients';
 import Selector from './components/selector';
 
-let nodesMeasureName = Lockr.get('explore.nodesMeasureName','category');
-let edgesMeasureName = Lockr.get('expore.edgesMeasureName', 'cosine');
+let nodesMeasureName = Lockr.get('explore.nodesMeasure','category');
+let edgesMeasureName = Lockr.get('explore.edgesMeasure', 'cosine');
 let nodesRange = Lockr.get('explore.nodesRange', [0.2, 1]);
 let edgesRange = Lockr.get('explore.edgesRange', [0.7, 1]);
 
@@ -154,12 +154,41 @@ export function init(_) {
   });
 
 
+  let v = Lockr.get('explore.charge', view.charge());
+  view.charge(v);
   d3.select('#charge')
-    .on('change', function() { view.charge(+this.value);} );
-  d3.select('#dist')
-    .on('change', function() { view.charge_dist(+this.value);} );
+    .property('value', v)
+    .on('change', function() { console.log('charge:', this.value); Lockr.set('explore.charge', +this.value); view.charge(+this.value);} );
+
+  v = Lockr.get('explore.min_dist', view.charge_mindist());
+  view.charge_mindist(v);
+  d3.select('#min_dist')
+    .property('value', v)
+    .on('change', function() { console.log('min dist:', this.value); Lockr.set('explore.min_dist', +this.value);view.charge_mindist(+this.value);} );
+
+  v = Lockr.get('explore.max_dist', view.charge_maxdist());
+  view.charge_maxdist(v);
+  d3.select('#max_dist')
+    .property('value', v)
+    .on('change', function() { console.log('max dist:', this.value); Lockr.set('explore.max_dist', +this.value);view.charge_maxdist(+this.value);} );
+
+  v = Lockr.get('explore.d1', view.link_d1());
+  view.link_d1(v);
+  d3.select('#link_d1')
+    .property('value', v)
+    .on('change', function() { console.log('d1:', this.value); Lockr.set('explore.d1', +this.value);view.link_d1(+this.value);} );
+
+  v = Lockr.get('explore.d0', view.link_d0());
+  view.link_d0(v);
+  d3.select('#link_d0')
+    .property('value', v)
+    .on('change', function() { console.log('d0:', this.value); Lockr.set('explore.d0', +this.value);view.link_d0(+this.value);} );
+
+  v = Lockr.get('explore.factor', view.linkFactor());
+  view.linkFactor(v);
   d3.select('#factor')
-    .on('change', function() { view.linkFactor(+this.value);} );
+    .property('value', v)
+    .on('change', function() { console.log('factor:', this.value); Lockr.set('explore.factor', +this.value);view.linkFactor(+this.value);} );
 }
 
 function updateGraph() {

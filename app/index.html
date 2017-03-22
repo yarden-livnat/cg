@@ -71,9 +71,30 @@
             <input id="show-relations" type="checkbox" value="None">
         </div>
     </div>
-    <input id="charge" type="range"  min="-200" max="0" value="-30">
-    <input id="dist" type="range" min="0" max="300" value="100">
-    <input id="factor" type="range" min="1" max="100" value="50">
+    <div>
+        <label for="charge">Charge</label>
+        <input id="charge" type="range"  min="-200" max="0" value="-30">
+    </div>
+    <div>
+        <label for="min_dist">min dist</label>
+        <input id="min_dist" type="range" min="1" max="100" value="1">
+    </div>
+    <div>
+        <label for="max_dist">max dist</label>
+        <input id="max_dist" type="range" min="1" max="500" value="300">
+    </div>
+    <div>
+        <label for="link_d1">link_d1</label>
+        <input id="link_d1" type="range" min="10" max="200" value="50">
+    </div>
+    <div>
+        <label for="link_d0">link d0</label>
+        <input id="link_d0" type="range" min="50" max="300" value="150">
+    </div>
+    <div>
+        <label for="factor">factor</label>
+        <input id="factor" type="range" min="1" max="100" value="50">
+    </div>
 </div>
 
 <div id="info-area">
