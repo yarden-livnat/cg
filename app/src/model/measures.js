@@ -96,7 +96,7 @@ function ps(a, b, N) {
   let fp1 = b.length;
   let f11 = shared(a, b);
 
-  return f11/N + f1p*fp1/(N*N);
+  return f11/N _ f1p*fp1/(N*N);
 }
 measures.push( {name: 'leverage', f: ps, range:[-1,1], ind: 0} );
 
