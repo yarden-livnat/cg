@@ -18,7 +18,9 @@ let nodesMeasureName = Lockr.get('explore.nodesMeasure','category');
 let edgesMeasureName = Lockr.get('explore.edgesMeasure', 'cosine');
 let nodesRange = Lockr.get('explore.nodesRange', [0.2, 1]);
 let edgesRange = Lockr.get('explore.edgesRange', [0.7, 1]);
+let supportRange = Lockr.get('explore.supportRange', [0, 1]);
 
+let currentMeasure;
 
 let format = d3.format(',d');
 let scale_fmt = d3.format('3.1f');
@@ -30,7 +32,7 @@ let activeGraph;
 let visibleGraph;
 
 let cache = new Map();
-let nodeSelector, edgeSelector;
+let nodeSelector, edgeSelector, supportSelector;
 
 export function init(_) {
   group = _;
@@ -67,6 +69,20 @@ export function init(_) {
       Lockr.set('explore.edgesRange', r);
       edgesRange = r;
       if (activeGraph) {
+        update_links();
+        update_support();
+        show();
+      }
+    });
+
+  supportSelector = Selector()
+    .width(100).height(50)
+    .select(supportRange)
+    .on('select', r => {
+      Lockr.set('explore.supportRange', r);
+      supportRange = r;
+      if (activeGraph) {
+        update_links();
         update_edges();
         show();
       }
@@ -90,6 +106,11 @@ export function init(_) {
     });
   view.showEdges(Lockr.get('explore.showRelations', false));
 
+  d3.select('#support-chart')
+    .append('g')
+    .attr('class', 'supportSelector')
+    .call(supportSelector);
+
   d3.select('#nodeMeasure')
     .on('change', function() {
       Lockr.set('explore.nodesMeasure', this.value);
@@ -110,9 +131,9 @@ export function init(_) {
   d3.select('#edgeMeasure')
     .on('change', function() {
       Lockr.set('explore.edgesMeasure', this.value);
-      let measure = edgeMeasures.find( m => m.name == this.value);
-      graph.edgeMeasure(measure);
-      edgeSelector.xdomain(measure.range, measure.ind);
+      currentMeasure = edgeMeasures.find( m => m.name == this.value);
+      graph.edgeMeasure(currentMeasure);
+      edgeSelector.xdomain(currentMeasure.range, currentMeasure.ind);
       update();
       show();
     })
@@ -124,12 +145,13 @@ export function init(_) {
         .property('value', function(d) { return d.name;})
         .property('selected', d => d.name == edgesMeasureName);
 
-  let measure = (edgeMeasures.find(d => d.name == edgesMeasureName) || edgeMeasures[0]);
-  graph.edgeMeasure(measure);
+  currentMeasure = (edgeMeasures.find(d => d.name == edgesMeasureName) || edgeMeasures[0]);
+  graph.edgeMeasure(currentMeasure);
+  graph.edgeMeasure(currentMeasure);
 
   edgeSelector
-    .ignore(measure.ind)
-    .xdomain(measure.range);
+    .ignore(currentMeasure.ind)
+    .xdomain(currentMeasure.range);
 
   d3.select('#color')
     .on('change', function() {
@@ -253,33 +275,52 @@ function update_nodes() {
     if (node.visible) nodes.push(node);
   }
 
-  // update links based on visible nodes
-  let scales = [];
-  let links = [];
-  for (let link of activeGraph.links) {
-    link.visible = false;
-    if (link.source.visible && link.target.visible) {
-      scales.push(link.r);
-      if (edgesRange[0] <= link.r && link.r <= edgesRange[1]) {
-        link.visible = true;
-        links.push(link);
-      }
-    }
-  }
-  // update edgeSelector
-  edgeSelector.data(scales);
+  visibleGraph = {nodes: nodes, links: activeGraph.links};
 
-  visibleGraph = {nodes: nodes, links: links};
+  update_edges();
+  update_support();
+
+  update_links();
 }
+
 
 function update_edges() {
+  let scales = [];
+  for (let link of activeGraph.links) {
+    if (link.source.visible && link.target.visible
+        && (currentMeasure.type == 'correlation' ||
+            (supportRange[0] <= link.support && link.support <= supportRange[1]))) {
+      scales.push(link.r);
+    }
+  }
+  edgeSelector.data(scales);
+}
+
+function update_support() {
+  let support = [];
+  for (let link of activeGraph.links) {
+    if (link.source.visible && link.target.visible
+         && edgesRange[0] <= link.r && link.r <= edgesRange[1]) {
+      support.push(link.support);
+    }
+  }
+  supportSelector.data(support);
+}
+
+function update_links() {
   let links = [];
   for (let link of activeGraph.links) {
-    link.visible = link.source.visible && link.target.visible && edgesRange[0] <= link.r && link.r <= edgesRange[1];
-    if (link.visible) links.push(link);
+    link.visible = link.source.visible && link.target.visible
+      && supportRange[0] <= link.support && link.support <= supportRange[1]
+      && edgesRange[0] <= link.r && link.r <= edgesRange[1];
+    if (link.visible) {
+      links.push(link);
+    }
   }
+
   visibleGraph.links = links;
 }
+
 
 function dataChanged() {
   updateGraph();

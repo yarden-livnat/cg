@@ -32,6 +32,32 @@ import patients from './patients';
 // }
 //
 
+function shared(a, b) {
+  let count = 0,
+    ia = 0, ib = 0, // indices
+    na = a.length, nb = b.length,
+    va, vb;
+
+  if (a.length === 0 || b.length === 0) { return count; }
+
+  va = a[0];
+  vb = b[0];
+  while (true) {
+    if (va < vb) {
+      if (++ia === na) { return count; }
+      va = a[ia];
+    } else if (va > vb) {
+      if (++ib === nb) { return count; }
+      vb = b[ib];
+    } else { // va== vb
+      count++;
+      if (++ia === na || ++ib === nb) { return count; }
+      va = a[ia];
+      vb = b[ib];
+    }
+  }
+}
+
 /*
   Node measures
  */
@@ -120,6 +146,7 @@ function applyEdgeMeasure(nodes, edgeFunc) {
 
     for(let j = i + 1; j < n; j++) {
       dest = nodes[j];
+      let support = shared(src.items, dest.items);
       let value = edgeFunc(src, dest, N);
       //if (value > 0) {
         edges.push({
@@ -127,7 +154,8 @@ function applyEdgeMeasure(nodes, edgeFunc) {
             source: src,
             target: dest,
             value:  Math.abs(value),
-            r: value
+            r: value,
+            support: support/N
           }
         );
       //}

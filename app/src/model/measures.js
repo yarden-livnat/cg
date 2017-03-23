@@ -3,6 +3,8 @@
  */
 
 import {mean} from 'd3';
+// import  {sqrt, max, min} from 'math';
+let sqrt = Math.sqrt;
 
 let measures = [];
 
@@ -119,6 +121,18 @@ function jaccard(a, b) {
 
 measures.push( {name: 'jaccard', f: jaccard, range:[0,1], ind: 0} );
 
+
+function klosgen(a, b, N) {
+  let f1p = a.length;
+  let fp1 = b.length;
+  let f11 = shared(a, b);
+
+  return Math.sqrt(f11/N) * Math.max(f11/f1p - fp1/N, f11/fp1 - fp1/N);
+}
+
+measures.push( {name: 'klosgen', f: klosgen, range:
+  [sqrt(2/sqrt(2)-1)*(2-sqrt(3)-1/sqrt(3)),2/(3*sqrt(3))], ind: 0} );
+
 function confidence(a, b) {
   let f1p = a.length;
   let fp1 = b.length;
@@ -206,7 +220,7 @@ function conviction(a, b, N) {
 
   return Math.max(va, vb);
 }
-// measures.push( {name: 'conviction', f: conviction, range:[0,Infinity], ind: 1} );
+// measures.push( {name: 'conviction', f: conviction, range:[0.5,Infinity], ind: 1} );
 
 
 // function certainty(a, b, N) {
@@ -216,6 +230,7 @@ function conviction(a, b, N) {
 //
 //   return (f11/f1p - fp1/N)/(1 - fp1/N);
 // }
+// measures.push( {name: 'certainty', f: certainty, range:[-1,1], ind: 0} );
 
 function added_value(a, b, N) {
   let f1p = a.length;
