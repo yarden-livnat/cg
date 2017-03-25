@@ -24,7 +24,7 @@ let cat = Table(container)
     {name: 'key', title: 'Category'},
     {name: 'value', title: '#tags', attr:'numeric'}])
     .dimension(patients.topics_cat)
-  .color(colorScheme.scheme('category'))
+  .color(colorScheme.scheme( colorScheme.current == 'category' ? 'category' : 'none'))
   .on('change', filter);
 
 let sys = Table(container)
@@ -33,7 +33,7 @@ let sys = Table(container)
     {name: 'key', title: 'System'},
     {name: 'value', title: '#tags', attr:'numeric'}])
   .dimension(patients.topics_sys)
-  .color(colorScheme.scheme('system'))
+  .color(colorScheme.scheme( colorScheme.current == 'system' ? 'system' : 'none'))
   .on('change', filter);
 
 let bars = bar();

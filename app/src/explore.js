@@ -6,7 +6,7 @@ import postal from 'postal';
 import Lockr from 'lockr';
 import {panel} from 'cg-core';
 
-import edgeMeasures from './model/measures';
+import {measures as edgeMeasures, apply_measure} from './model/measures';
 import Graph from './model/graph';
 import colorScheme from './utils/colorscheme';
 import {topicsMap} from './service';
@@ -132,7 +132,7 @@ export function init(_) {
     .on('change', function() {
       Lockr.set('explore.edgesMeasure', this.value);
       currentMeasure = edgeMeasures.find( m => m.name == this.value);
-      graph.edgeMeasure(currentMeasure);
+      graph.edgeMeasure(apply_measure(currentMeasure));
       edgeSelector.xdomain(currentMeasure.range, currentMeasure.ind);
       update();
       show();
@@ -146,8 +146,7 @@ export function init(_) {
         .property('selected', d => d.name == edgesMeasureName);
 
   currentMeasure = (edgeMeasures.find(d => d.name == edgesMeasureName) || edgeMeasures[0]);
-  graph.edgeMeasure(currentMeasure);
-  graph.edgeMeasure(currentMeasure);
+  graph.edgeMeasure(apply_measure(currentMeasure));
 
   edgeSelector
     .ignore(currentMeasure.ind)
@@ -176,11 +175,11 @@ export function init(_) {
   });
 
 
-  let v = Lockr.get('explore.charge', view.charge());
+  let v = -Lockr.get('explore.charge', view.charge());
   view.charge(v);
   d3.select('#charge')
     .property('value', v)
-    .on('change', function() { console.log('charge:', this.value); Lockr.set('explore.charge', +this.value); view.charge(+this.value);} );
+    .on('change', function() { console.log('charge:', this.value); Lockr.set('explore.charge', +this.value); view.charge(-this.value);} );
 
   v = Lockr.get('explore.min_dist', view.charge_mindist());
   view.charge_mindist(v);

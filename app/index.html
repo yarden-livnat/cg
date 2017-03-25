@@ -81,7 +81,7 @@
         <div style="display: flex">
             <div style="display: inline-grid">
                 <label for="charge">Charge</label>
-                <input id="charge" type="range"  min="-200" max="0" value="-30">
+                <input id="charge" type="range"  min="0" max="400" value="30">
             </div>
             <div style="display: inline-grid">
                 <label for="min_dist">min dist</label>
@@ -94,13 +94,15 @@
         </div>
         <div>
             <div style="display: inline-grid">
-                <label for="link_d1">link_d1</label>
-                <input id="link_d1" type="range" min="10" max="200" value="50">
-            </div>
-            <div style="display: inline-grid">
                 <label for="link_d0">link d0</label>
-                <input id="link_d0" type="range" min="50" max="300" value="150">
+                <input id="link_d0" type="range" min="0" max="300" value="50">
             </div>
+
+            <div style="display: inline-grid">
+                <label for="link_d1">link_d1</label>
+                <input id="link_d1" type="range" min="100" max="600" value="200">
+            </div>
+
             <div style="display: inline-grid">
                 <label for="factor">factor</label>
                 <input id="factor" type="range" min="1" max="100" value="50">
