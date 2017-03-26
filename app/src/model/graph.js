@@ -154,13 +154,16 @@ function applyEdgeMeasure(nodes, edgeFunc) {
             target: dest,
             value:  Math.abs(value),
             r: value,
-            support: support/N
+            support: support/N,
+            cross_support: r(src.items.length, dest.items.length)
           }
         );
       //}
     }
   }
   return edges;
+
+  function r(a,b) { return a < b ? a/b : b/a;}
 }
 
 function association(f) {

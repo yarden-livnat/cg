@@ -276,10 +276,10 @@ function update_nodes() {
 
   visibleGraph = {nodes: nodes, links: activeGraph.links};
 
+  update_links();
+
   update_edges();
   update_support();
-
-  update_links();
 }
 
 
@@ -288,7 +288,8 @@ function update_edges() {
   for (let link of activeGraph.links) {
     if (link.source.visible && link.target.visible
         && (currentMeasure.type == 'correlation' ||
-            (supportRange[0] <= link.support && link.support <= supportRange[1]))) {
+           // (supportRange[0] <= link.support && link.support <= supportRange[1]))
+      (supportRange[0] <= link.cross_support && link.cross_support <= supportRange[1]))) {
       scales.push(link.r);
     }
   }
@@ -300,7 +301,7 @@ function update_support() {
   for (let link of activeGraph.links) {
     if (link.source.visible && link.target.visible
          && edgesRange[0] <= link.r && link.r <= edgesRange[1]) {
-      support.push(link.support);
+      support.push(link.cross_support); //link.support);
     }
   }
   supportSelector.data(support);
@@ -310,7 +311,8 @@ function update_links() {
   let links = [];
   for (let link of activeGraph.links) {
     link.visible = link.source.visible && link.target.visible
-      && supportRange[0] <= link.support && link.support <= supportRange[1]
+      // && supportRange[0] <= link.support && link.support <= supportRange[1]
+      && supportRange[0] <= link.cross_support && link.cross_support <= supportRange[1]
       && edgesRange[0] <= link.r && link.r <= edgesRange[1];
     if (link.visible) {
       links.push(link);
