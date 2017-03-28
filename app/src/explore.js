@@ -149,7 +149,7 @@ export function init(_) {
   graph.edgeMeasure(apply_measure(currentMeasure));
 
   edgeSelector
-    .ignore(currentMeasure.ind)
+    // .ignore(currentMeasure.ind)
     .xdomain(currentMeasure.range);
 
   d3.select('#color')

@@ -73,6 +73,6 @@ export let cgOptions = {
 };
 
 export let DETECTOR_OPT = {
-  MIN_PROB: 0.2
+  MIN_PROB: 0
 };
 

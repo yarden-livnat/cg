@@ -6,7 +6,7 @@ import * as d3 from 'd3';
 
 export default function(options) {
 
-  let margin = {top:5, left: 15, bottom: 20, right:5};
+  let margin = {top:5, left: 30, bottom: 20, right:5};
 
   let width = 200 - margin.left - margin.right;
   let height = 100 - margin.top - margin.bottom;
@@ -19,8 +19,10 @@ export default function(options) {
     .domain([min_x, 1])
     .range([0, width]);
 
-  let y = d3.scaleLinear()
-    .range([height, 0]);
+  let y = d3.scaleLog() //Linear()
+    .domain([0.1, 1])
+    .range([height, 0])
+    .clamp(true);
 
   let xAxis = d3.axisBottom(x)
       .tickSize(2)
@@ -46,7 +48,7 @@ export default function(options) {
     selection.each( function(d) {
       let num = d.data.length;
       let max = d3.max(d.data, v => v.p + v.s);
-      y.domain([0, max]);
+      y.domain([0.1, max]);
       yAxis.ticks(max > 2 ? 4 : 2);
 
       let svg = d3.select(this).select('g');

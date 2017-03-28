@@ -146,19 +146,20 @@ function applyEdgeMeasure(nodes, edgeFunc) {
     for(let j = i + 1; j < n; j++) {
       dest = nodes[j];
       let support = shared(src.items, dest.items);
-      let value = edgeFunc(src, dest, N);
-      //if (value > 0) {
+      let [value, dir] = edgeFunc(src, dest, N);
+      if (value > 0) {
         edges.push({
-            id:     src.id + ':' + dest.id,
+            id: src.id + ':' + dest.id,
             source: src,
             target: dest,
-            value:  Math.abs(value),
+            value: Math.abs(value),
             r: value,
-            support: support/N,
+            direction: dir,
+            support: support / N,
             cross_support: r(src.items.length, dest.items.length)
           }
         );
-      //}
+      }
     }
   }
   return edges;
