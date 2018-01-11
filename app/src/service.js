@@ -12,6 +12,7 @@ export let topicsMap = new Map();
 export let pathogens = [];
 export let detectors = [];
 
+
 export function init(cb) {
     queue()
       .defer(d3.json, '/data/kb')
